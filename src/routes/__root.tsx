@@ -48,7 +48,7 @@ const generalLinkClasses =
 
 function Navbar() {
   return (
-    <nav className="flex h-full flex-col justify-between border-r-2 px-4 py-3">
+    <nav className="flex h-full flex-col justify-between w-32 border-r-2 px-4 py-3">
       <ul className="flex flex-col justify-between gap-2.5">
         <li>
           <Link

@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { FinancePeriod } from "../types";
 import { createAppSlice } from "@/features/createAppSlice";
 import { RootState } from "../store";
-import { uploadPeriod } from "./periodsApi";
+import { getPeriods, uploadPeriod } from "./periodsApi";
 
 interface AddPeriodProps {
   prevPeriodId: FinancePeriod["id"];
@@ -12,6 +12,7 @@ interface AddPeriodProps {
 
 const periodsAdapter = createEntityAdapter<FinancePeriod>();
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const samplePeriods = [
   {
     id: uuidv4(),
@@ -42,13 +43,7 @@ const samplePeriods = [
   },
 ];
 
-const initialState = periodsAdapter.getInitialState(
-  {
-    status: "idle",
-    error: null,
-  },
-  samplePeriods
-);
+const initialState = await getPeriods(periodsAdapter);
 
 export const periodsSlice = createAppSlice({
   name: "periods",
@@ -82,6 +77,7 @@ export const periodsSlice = createAppSlice({
         pending: (state) => {
           state.status = "loading";
         },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         rejected: (state, action) => {
           state.status = "failed";
         },
@@ -94,10 +90,14 @@ export const periodsSlice = createAppSlice({
       }
     ),
   }),
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   extraReducers: (builder) => {},
   selectors: {},
 });
 
 export const { periodAdded } = periodsSlice.actions;
+
+export const { selectAll: selectAllPeriods, selectById: selectPeriodById } =
+  periodsAdapter.getSelectors((state: RootState) => state.periods);
 
 export default periodsSlice.reducer;
