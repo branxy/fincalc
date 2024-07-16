@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Cashflow } from "../features/types";
+import { Cashflow, Periods } from "../features/types";
 
 import { v4 as uuidv4 } from "uuid";
 
@@ -43,4 +43,25 @@ export function generateTestCashflow(
   }
 
   return arr;
+}
+
+export function getMarkedCashflow(periods: Periods, casfhlow: Cashflow) {
+  // Returns an object with indexes of every last transaction in a period and that period's end_balance
+  const returnObject: {
+    [key: number]: number;
+  } = {};
+
+  const sortedCashflow = casfhlow.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  for (const p of periods) {
+    const lastCashflowIndex = sortedCashflow.findLastIndex(
+      (c) => c.period_id === p.id
+    );
+
+    returnObject[lastCashflowIndex] = p.end_balance;
+  }
+
+  return returnObject;
 }
