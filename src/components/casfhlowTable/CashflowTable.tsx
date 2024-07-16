@@ -44,8 +44,8 @@ function CashflowTable({ cashflow, periods }: CasfhlowTableProps) {
       <table className="w-full table-fixed mt-4 max-w-[720px] overflow-x-auto">
         <colgroup>
           <col className="w-12" />
-          <col className="w-40 max-w-64" />
-          <col className="w-28" />
+          <col className="w-28 md:w-40 max-w-64" />
+          <col className="w-16 md:w-28" />
           <col className="w-32" />
           <col className="w-28" />
           <col className="w-16" />

@@ -9,6 +9,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/navbar";
+import { Toaster } from "sonner";
 
 export const Route = createRootRoute({
   component: Root,
@@ -35,6 +36,7 @@ function Root() {
         <ThemeProvider defaultTheme="dark" storageKey="fincalc-ui-theme">
           <Navbar />
           <Outlet />
+          <Toaster />
           <TanStackRouterDevtools position="top-right" />
         </ThemeProvider>
       </div>

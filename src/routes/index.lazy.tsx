@@ -8,7 +8,6 @@ export const Route = createLazyFileRoute("/")({
 
 function PeriodsGrid() {
   const financePeriods = useAppSelector(selectAllPeriods);
-  console.log({ financePeriods });
 
   return <main className="flex-grow py-2 sm:px-5">grid</main>;
 }

@@ -1,9 +1,14 @@
 import { createEntityAdapter } from "@reduxjs/toolkit";
 import { CashflowItem } from "../types";
-import { generateTestCashflow } from "../../lib/utils";
+import {
+  generateTestCashflow,
+  getCurrentPeriodId,
+  getTodayDate,
+} from "../../lib/utils";
 import { createAppSlice } from "../createAppSlice";
 import { RootState } from "../store";
-import { getCashflow } from "./cashflowApi";
+import { getCashflow, uploadTransaction } from "./cashflowApi";
+import { supabase } from "@/db/supabaseClient";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const testCashflow = generateTestCashflow(
@@ -19,13 +24,60 @@ const initialState = await getCashflow(casfhlowAdapter);
 export const cashflowSlice = createAppSlice({
   name: "cashflow",
   initialState,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  reducers: (create) => ({}),
+  reducers: (create) => ({
+    transactionAdded: create.asyncThunk(
+      async (_, { getState }) => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) throw new Error("Unauthorized");
+
+        const {
+          periods: { entities },
+        } = getState() as RootState;
+
+        const periods = Object.values(entities);
+        const currentPeriodId = getCurrentPeriodId(periods);
+
+        if (!currentPeriodId)
+          throw new Error("Couldn't find a current period id");
+        const newTransaction: Omit<CashflowItem, "id"> = {
+          period_id: currentPeriodId,
+          user_id: user.id,
+          type: "payment/fixed",
+          title: "",
+          amount: 0,
+          date: getTodayDate(),
+          date_created: new Date().toISOString(),
+        };
+
+        const uploadedTransaction = await uploadTransaction(newTransaction);
+
+        return uploadedTransaction;
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state) => {
+          state.status = "failed";
+        },
+        fulfilled: (state, action) => {
+          state.status = "succeeded";
+
+          casfhlowAdapter.addOne(state, action.payload);
+        },
+      }
+    ),
+  }),
   selectors: {},
 });
 
 export const { selectAll: selectAllCashflow } = casfhlowAdapter.getSelectors(
   (state: RootState) => state.cashflow
 );
+
+export const { transactionAdded } = cashflowSlice.actions;
 
 export default cashflowSlice.reducer;

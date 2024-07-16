@@ -30,3 +30,17 @@ export async function getCashflow(
 
   return initialState;
 }
+
+export async function uploadTransaction(payment: Omit<CashflowItem, "id">) {
+  const { data, error } = await supabase
+    .from("cashflow")
+    .insert(payment)
+    .select();
+
+  if (error?.message) {
+    console.error({ error });
+    throw new Error(error.message);
+  }
+  if (!data) throw new Error("No data received from database");
+  return data[0];
+}

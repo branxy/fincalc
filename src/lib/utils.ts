@@ -65,3 +65,31 @@ export function getMarkedCashflow(periods: Periods, casfhlow: Cashflow) {
 
   return returnObject;
 }
+
+export function getTodayDate() {
+  const today = new Date().toISOString().split("T")[0];
+  return today;
+}
+
+export function getCurrentPeriodId(periods: Periods) {
+  const today = getTodayDate();
+
+  const currentPeriod = periods.findLast((p) => p.start_date <= today);
+
+  return currentPeriod?.id ?? null;
+}
+
+export function getToastByDispatchStatus(
+  dispatchStatus: "fulfilled" | "rejected",
+  message: {
+    success: string;
+    error: string;
+  }
+) {
+  switch (dispatchStatus) {
+    case "fulfilled":
+      return toast.success(message.success);
+    case "rejected":
+      return toast.error(message.error);
+  }
+}
