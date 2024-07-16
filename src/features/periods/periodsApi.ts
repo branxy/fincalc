@@ -1,5 +1,5 @@
 import { EntityAdapter, EntityState } from "@reduxjs/toolkit";
-import { FinancePeriod } from "../types";
+import { FinancePeriod, Periods } from "../types";
 import { v4 as uuidv4 } from "uuid";
 import { PostgrestError } from "@supabase/supabase-js";
 import { supabase } from "@/db/supabaseClient";
@@ -39,3 +39,14 @@ export async function uploadPeriod(
   const newPeriod: FinancePeriod = { id, ...period };
   return new Promise((resolve) => resolve(newPeriod));
 }
+
+export async function updatePeriodsBalance(periodsToUpdate: Periods) {
+  const { data, error } = await supabase
+    .from("periods")
+    .upsert(periodsToUpdate)
+    .select();
+
+  if (error) throw new Error(error.message);
+  return data!;
+}
+

@@ -2,9 +2,11 @@ import { CashflowItem } from "@/features/types";
 import { useAppDispatch } from "@/lib/hooks";
 
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
-import { transactionAdded } from "@/features/cashflow/cashflowSlice";
+import {
+  deletedCashflowItems,
+  transactionAdded,
+} from "@/features/cashflow/cashflowSlice";
 
 interface CashflowTableActionButtonsProps {
   selectedTransactions: CashflowItem["id"][];

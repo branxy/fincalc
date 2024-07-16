@@ -1,110 +1,114 @@
-import type { CashflowItem } from "../features/types";
-
 export type Json =
   | string
   | number
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[];
+  | Json[]
 
 export type Database = {
   public: {
     Tables: {
       cashflow: {
         Row: {
-          amount: number;
-          date: string;
-          date_created: string;
-          id: string;
-          period_id: string;
-          title: string;
-          type: CashflowItem["type"];
-          user_id: string;
-        };
+          amount: number
+          date: string
+          date_created: string
+          id: string
+          period_id: string
+          title: string
+          type: string
+          user_id: string
+        }
         Insert: {
-          amount: number;
-          date: string;
-          date_created?: string | null;
-          id?: string;
-          period_id: string;
-          title?: string;
-          type: string;
-          user_id?: string;
-        };
+          amount: number
+          date: string
+          date_created?: string
+          id?: string
+          period_id: string
+          title?: string
+          type: string
+          user_id?: string
+        }
         Update: {
-          amount?: number;
-          date?: string;
-          date_created?: string | null;
-          id?: string;
-          period_id?: string;
-          title?: string;
-          type?: string;
-          user_id?: string;
-        };
+          amount?: number
+          date?: string
+          date_created?: string
+          id?: string
+          period_id?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "cashflow_period_id_fkey";
-            columns: ["period_id"];
-            isOneToOne: false;
-            referencedRelation: "periods";
-            referencedColumns: ["id"];
+            foreignKeyName: "cashflow_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "periods"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       periods: {
         Row: {
-          created_at: string;
-          end_balance: number;
-          forward_payments: number;
-          id: string;
-          start_balance: number;
-          start_date: string;
-          stock: number;
-          user_id: string;
-        };
+          created_at: string
+          end_balance: number
+          forward_payments: number
+          id: string
+          start_balance: number
+          start_date: string
+          stock: number
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          end_balance: number;
-          forward_payments: number;
-          id: string;
-          start_balance: number;
-          start_date: string;
-          stock: number;
-          user_id?: string;
-        };
+          created_at?: string
+          end_balance: number
+          forward_payments: number
+          id: string
+          start_balance: number
+          start_date: string
+          stock: number
+          user_id?: string
+        }
         Update: {
-          created_at?: string;
-          end_balance?: number;
-          forward_payments?: number;
-          id?: string;
-          start_balance?: number;
-          start_date?: string;
-          stock?: number;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
-    };
+          created_at?: string
+          end_balance?: number
+          forward_payments?: number
+          id?: string
+          start_balance?: number
+          start_date?: string
+          stock?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+    }
     Views: {
-      [_ in never]: never;
-    };
+      [_ in never]: never
+    }
     Functions: {
       bulkdelete: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-    };
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      update_periods_balance: {
+        Args: {
+          periods_to_update: Json
+        }
+        Returns: Record<string, unknown>
+      }
+    }
     Enums: {
-      [_ in never]: never;
-    };
+      [_ in never]: never
+    }
     CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
-};
+      [_ in never]: never
+    }
+  }
+}
 
-type PublicSchema = Database[Extract<keyof Database, "public">];
+type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
   PublicTableNameOrOptions extends
@@ -117,7 +121,7 @@ export type Tables<
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R;
+      Row: infer R
     }
     ? R
     : never
@@ -125,11 +129,11 @@ export type Tables<
         PublicSchema["Views"])
     ? (PublicSchema["Tables"] &
         PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-        Row: infer R;
+        Row: infer R
       }
       ? R
       : never
-    : never;
+    : never
 
 export type TablesInsert<
   PublicTableNameOrOptions extends
@@ -140,17 +144,17 @@ export type TablesInsert<
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I;
+      Insert: infer I
     }
     ? I
     : never
   : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
     ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-        Insert: infer I;
+        Insert: infer I
       }
       ? I
       : never
-    : never;
+    : never
 
 export type TablesUpdate<
   PublicTableNameOrOptions extends
@@ -161,17 +165,17 @@ export type TablesUpdate<
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U;
+      Update: infer U
     }
     ? U
     : never
   : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
     ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-        Update: infer U;
+        Update: infer U
       }
       ? U
       : never
-    : never;
+    : never
 
 export type Enums<
   PublicEnumNameOrOptions extends
@@ -184,4 +188,4 @@ export type Enums<
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
-    : never;
+    : never

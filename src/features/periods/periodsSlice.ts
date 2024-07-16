@@ -1,9 +1,14 @@
 import { createEntityAdapter } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
-import { FinancePeriod } from "../types";
+import { CashflowItem, FinancePeriod } from "../types";
 import { createAppSlice } from "@/features/createAppSlice";
 import { RootState } from "../store";
-import { getPeriods, uploadPeriod } from "./periodsApi";
+import { getPeriods, updatePeriodsBalance, uploadPeriod } from "./periodsApi";
+import {
+  getPeriodsChangesOnTransactionsDelete,
+  getPeriodsOnEndBalanceChange,
+} from "./periodsCalculator";
+import { toast } from "sonner";
 
 interface AddPeriodProps {
   prevPeriodId: FinancePeriod["id"];
@@ -89,13 +94,109 @@ export const periodsSlice = createAppSlice({
         },
       }
     ),
+    endBalanceChanged: create.asyncThunk(
+      async (
+        {
+          periodId,
+          whatChanged,
+          difference,
+        }: {
+          periodId: CashflowItem["period_id"];
+          whatChanged: "income" | "payment";
+          difference: number;
+        },
+        { getState }
+      ) => {
+        const {
+          periods: { entities },
+        } = getState() as RootState;
+
+        const periods = Object.values(entities);
+        const currentPeriodIndex = periods.findIndex((p) => p.id === periodId);
+        const currentPeriod = periods[currentPeriodIndex];
+
+        if (currentPeriod) {
+          const valuesToUpdate = getPeriodsOnEndBalanceChange(
+            periods,
+            currentPeriodIndex,
+            periodId,
+            whatChanged,
+            difference
+          );
+
+          const newValues = await updatePeriodsBalance(valuesToUpdate);
+
+          return newValues;
+        } else {
+          throw new Error(`Period with id ${periodId} not found`);
+        }
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state) => {
+          state.status = "failed";
+        },
+        fulfilled: (state, action) => {
+          periodsAdapter.upsertMany(state, action.payload);
+
+          state.status = "succeeded";
+        },
+      }
+    ),
+    cashflowDeletedFromCashflow: create.asyncThunk(
+      async (
+        {
+          deletedTransactionsIds,
+        }: {
+          deletedTransactionsIds: CashflowItem["id"][];
+        },
+        { getState }
+      ) => {
+        const {
+          periods: { entities },
+          cashflow: { entities: casfhlowEntities },
+        } = getState() as RootState;
+
+        const cashflow = Object.values(casfhlowEntities);
+        const periods = Object.values(entities);
+        const deletedTransactions = cashflow.filter((c) =>
+          deletedTransactionsIds.includes(c.id)
+        );
+
+        const valuesToUpdate = getPeriodsChangesOnTransactionsDelete(
+          periods,
+          deletedTransactions
+        );
+
+        const periodsToUpdate = await updatePeriodsBalance(valuesToUpdate);
+
+        return { periodsToUpdate };
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state) => {
+          state.status = "failed";
+        },
+        fulfilled: (state, action) => {
+          const { periodsToUpdate } = action.payload;
+          periodsAdapter.upsertMany(state, periodsToUpdate);
+          state.status = "succeeded";
+          toast.success("Updated balance");
+        },
+      }
+    ),
   }),
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   extraReducers: (builder) => {},
   selectors: {},
 });
 
-export const { periodAdded } = periodsSlice.actions;
+export const { periodAdded, endBalanceChanged, cashflowDeletedFromCashflow } =
+  periodsSlice.actions;
 
 export const { selectAll: selectAllPeriods, selectById: selectPeriodById } =
   periodsAdapter.getSelectors((state: RootState) => state.periods);

@@ -1,5 +1,5 @@
 import { EntityAdapter, EntityState } from "@reduxjs/toolkit";
-import { CashflowItem } from "../types";
+import { Cashflow, CashflowItem } from "../types";
 import { PostgrestError } from "@supabase/supabase-js";
 import { supabase } from "@/db/supabaseClient";
 
@@ -25,9 +25,8 @@ export async function getCashflow(
       status: "idle",
       error: null,
     },
-    data!
+    data as Cashflow
   );
-
   return initialState;
 }
 
@@ -42,5 +41,65 @@ export async function uploadTransaction(payment: Omit<CashflowItem, "id">) {
     throw new Error(error.message);
   }
   if (!data) throw new Error("No data received from database");
-  return data[0];
+  return data[0] as CashflowItem;
+}
+
+export async function updateTransaction(
+  itemId: CashflowItem["id"],
+  newValueType: "title" | "type" | "amount" | "date",
+  newValue: string | number
+) {
+  switch (newValueType) {
+    case "title": {
+      const { data, error } = await supabase
+        .from("cashflow")
+        .update({ title: newValue as string })
+        .eq("id", itemId)
+        .select();
+
+      if (error) throw new Error(error.message);
+      return data[0];
+    }
+    case "type": {
+      const { data, error } = await supabase
+        .from("cashflow")
+        .update({ type: newValue as string })
+        .eq("id", itemId)
+        .select();
+
+      if (error) throw new Error(error.message);
+      return data[0];
+    }
+    case "amount": {
+      const { data, error } = await supabase
+        .from("cashflow")
+        .update({ amount: newValue as number })
+        .eq("id", itemId)
+        .select();
+
+      if (error) throw new Error(error.message);
+      return data[0];
+    }
+    case "date": {
+      const { data, error } = await supabase
+        .from("cashflow")
+        .update({ type: newValue as string })
+        .eq("id", itemId)
+        .select();
+
+      if (error) throw new Error(error.message);
+      return data[0];
+    }
+  }
+}
+
+export async function deleteCashflowItems(
+  casfhlowItemsIds: CashflowItem["id"][]
+) {
+  const response = await supabase
+    .from("cashflow")
+    .delete()
+    .in("id", casfhlowItemsIds);
+
+  return response.status;
 }
