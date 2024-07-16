@@ -1,4 +1,4 @@
-import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
+import { createRootRoute, Outlet } from "@tanstack/react-router";
 
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
@@ -7,9 +7,8 @@ import { Auth } from "@supabase/auth-ui-react";
 import { supabase } from "@/db/supabaseClient";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 
-import { Button } from "@/components/ui/button";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ModeToggle } from "@/components/mode-toggle";
+import Navbar from "@/components/navbar";
 
 export const Route = createRootRoute({
   component: Root,
@@ -32,59 +31,12 @@ function Root() {
     );
   } else
     return (
-      <div className="flex h-screen">
+      <div className="flex h-screen relative">
         <ThemeProvider defaultTheme="dark" storageKey="fincalc-ui-theme">
           <Navbar />
           <Outlet />
-          <TanStackRouterDevtools position="bottom-right" />
+          <TanStackRouterDevtools position="top-right" />
         </ThemeProvider>
       </div>
     );
-}
-
-const generalLinkClasses =
-    "px-2 pb-1 hover:ring-1 ring-green-300 rounded align-baseline",
-  activeLinkClasses = "bg-green-300 text-zinc-700 font-semibold";
-
-function Navbar() {
-  return (
-    <nav className="flex h-full flex-col justify-between w-32 border-r-2 px-4 py-3">
-      <ul className="flex flex-col justify-between gap-2.5">
-        <li>
-          <Link
-            to="/"
-            activeProps={{
-              className: activeLinkClasses,
-            }}
-            activeOptions={{ exact: true }}
-            className={generalLinkClasses}
-          >
-            Dashboard
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/list"
-            activeProps={{ className: activeLinkClasses }}
-            activeOptions={{ exact: true }}
-            className={generalLinkClasses}
-          >
-            List
-          </Link>
-        </li>
-      </ul>
-      <div className="flex flex-col gap-2">
-        <ModeToggle />
-        <Button
-          variant="outline"
-          onClick={async () => {
-            const { error } = await supabase.auth.signOut();
-            if (error) console.error(error);
-          }}
-        >
-          Sign out
-        </Button>
-      </div>
-    </nav>
-  );
 }
