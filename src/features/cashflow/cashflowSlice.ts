@@ -9,6 +9,7 @@ import { createAppSlice } from "../createAppSlice";
 import { RootState } from "../store";
 import { getCashflow, uploadTransaction } from "./cashflowApi";
 import { supabase } from "@/db/supabaseClient";
+import { toast } from "sonner";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const testCashflow = generateTestCashflow(
@@ -62,11 +63,13 @@ export const cashflowSlice = createAppSlice({
         },
         rejected: (state) => {
           state.status = "failed";
+          toast.error("Failed to add a transaction");
         },
         fulfilled: (state, action) => {
           state.status = "succeeded";
 
           casfhlowAdapter.addOne(state, action.payload);
+          toast.success("Added a transaction");
         },
       }
     ),
