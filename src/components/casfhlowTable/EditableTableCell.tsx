@@ -1,7 +1,9 @@
+import { transactionChanged } from "@/features/cashflow/cashflowSlice";
 import { CashflowItem } from "@/features/types";
 import { useAppDispatch } from "@/lib/hooks";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
+import { Input } from "../ui/input";
 
 interface EditableTableCellProps {
   cashflowItemId: CashflowItem["id"];
@@ -30,46 +32,45 @@ function EditableTableCell({
     setIsEditing(true);
   }
 
-  function handleInputBlur() {
+  function handleCellFormSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    handleCellInputBlur();
+  }
+
+  function handleCellInputBlur() {
     const inputDoesntExceedLimits =
       (cellType === "amount" && Number(inputValue) <= 100000000000) ||
       cellType !== "amount";
 
-    if (inputDoesntExceedLimits) {
+    if (inputDoesntExceedLimits && inputValue !== cellValue) {
       dispatch(
-        cashflowItemChanged({
+        transactionChanged({
           cashflowItemId,
           whatChanged: cellType,
           newValue: cellType === "amount" ? Number(inputValue) : inputValue,
         })
       );
-
-      setIsEditing(false);
-      setIsHovered(false);
     }
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter" && Boolean(inputValue)) {
-      handleInputBlur();
-    }
+    setIsEditing(false);
+    setIsHovered(false);
   }
 
   if (isEditing) {
     return (
       <td className="">
-        <input
-          type={inputType[cellType]}
-          id="table-cell-input"
-          name="table-cell-input"
-          value={inputValue}
-          max="1000000000"
-          autoFocus={isEditing}
-          onFocus={(e) => e.target.select()}
-          onChange={(e) => setInputValue(e.target.value)}
-          onBlur={handleInputBlur}
-          onKeyDown={handleKeyDown}
-        />
+        <form onSubmit={handleCellFormSubmit}>
+          <Input
+            type={inputType[cellType]}
+            value={inputValue}
+            name="cell-value-input"
+            max="1000000000"
+            autoFocus={isEditing}
+            onFocus={(e) => e.target.select()}
+            onChange={(e) => setInputValue(e.target.value)}
+            onBlur={handleCellInputBlur}
+          />
+        </form>
       </td>
     );
   } else {
