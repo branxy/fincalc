@@ -17,7 +17,8 @@ function List() {
     cashflow = useAppSelector((state) => selectAllCashflow(state));
 
   return (
-    <main className="flex-grow py-2 sm:px-5">
+    <main className="flex-grow py-2 sm:px-5 px-3">
+      <h1 className="text-2xl font-semibold">All transactions</h1>
       <CashflowTable periods={periods} cashflow={cashflow} />
     </main>
   );

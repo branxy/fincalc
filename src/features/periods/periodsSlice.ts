@@ -11,6 +11,7 @@ import {
 import {
   getPeriodsChangesOnTransactionsDelete,
   getPeriodsOnEndBalanceChange,
+  getPeriodsOnStartBalanceChange,
 } from "./periodsCalculator";
 import { toast } from "sonner";
 import {
@@ -22,7 +23,9 @@ import {
 } from "@/lib/utils";
 import { createAppSelector } from "@/lib/hooks";
 
-const periodsAdapter = createEntityAdapter<FinancePeriod>();
+const periodsAdapter = createEntityAdapter<FinancePeriod>({
+  sortComparer: (a, b) => a.start_date.localeCompare(b.start_date),
+});
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const samplePeriods = [
@@ -146,6 +149,49 @@ export const periodsSlice = createAppSlice({
         },
       }
     ),
+    startBalanceChanged: create.asyncThunk(
+      async (
+        {
+          newStartBalance,
+        }: {
+          newStartBalance: FinancePeriod["start_balance"];
+        },
+        { getState }
+      ) => {
+        const {
+          periods: { entities },
+        } = getState() as RootState;
+
+        const periods = Object.values(entities),
+          firstPeriod = periods[0],
+          balanceDifference = firstPeriod.start_balance - newStartBalance;
+
+        const periodsToUpdateInDB = getPeriodsOnStartBalanceChange(
+          periods,
+          balanceDifference
+        );
+
+        const receivedPeriods = await updatePeriodsBalance(periodsToUpdateInDB);
+
+        return receivedPeriods;
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state, action) => {
+          state.status = "failed";
+          state.error = action.error.message ?? null;
+          toast.error("Failed to update start balance");
+        },
+        fulfilled: (state, action) => {
+          const periodsToUpdate = action.payload;
+          periodsAdapter.upsertMany(state, periodsToUpdate);
+          state.status = "succeeded";
+          toast.success("Updated start balance");
+        },
+      }
+    ),
     endBalanceChanged: create.asyncThunk(
       async (
         {
@@ -250,6 +296,7 @@ export const periodsSlice = createAppSlice({
 export const {
   fetchPeriods,
   periodAdded,
+  startBalanceChanged,
   endBalanceChanged,
   cashflowDeletedFromCashflow,
 } = periodsSlice.actions;
@@ -272,6 +319,11 @@ export const selectPeriodsIdsAndEndBalance = createAppSelector(
 export const selectCurrentWeekPeriodId = createAppSelector(
   selectAllPeriods,
   (state) => getCurrentPeriodId(state)
+);
+
+export const selectFirstPeriod = createAppSelector(
+  selectAllPeriods,
+  (state) => state[0]
 );
 
 export default periodsSlice.reducer;

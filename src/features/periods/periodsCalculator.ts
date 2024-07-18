@@ -10,6 +10,27 @@ interface ValueToUpdate {
 
 export type ValuesToUpdate = ValueToUpdate[];
 
+export function getPeriodsOnStartBalanceChange(
+  periods: Periods,
+  balanceDifference: number
+) {
+  const valuesToUpdate: Periods = [];
+
+  for (let i = 0; i < periods.length; i++) {
+    const p = periods[i],
+      newStartBalanceForPeriod = p.start_balance - balanceDifference,
+      newEndBalanceForPeriod = p.end_balance - balanceDifference;
+
+    valuesToUpdate.push({
+      ...p,
+      start_balance: newStartBalanceForPeriod,
+      end_balance: newEndBalanceForPeriod,
+    });
+  }
+
+  return valuesToUpdate;
+}
+
 export function getPeriodsOnEndBalanceChange(
   periods: Periods,
   currentPeriodIndex: number,

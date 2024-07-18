@@ -3,6 +3,7 @@ import { useTableCheckbox } from "@/lib/hooks";
 import { getMarkedCashflow } from "@/lib/utils";
 import CashflowTableRow from "./CashflowTableRow";
 import CashflowTableActionButtons from "./CashflowTableActionButtons";
+import StartBalance from "./StartBalance";
 
 interface CasfhlowTableProps {
   cashflow: Cashflow;
@@ -37,11 +38,14 @@ function CashflowTable({ cashflow, periods }: CasfhlowTableProps) {
     );
   });
   return (
-    <div className="md:overflow-x-auto h-full">
-      <CashflowTableActionButtons
-        selectedTransactions={selectedTransactions}
-        setSelectedTransactions={setSelectedTransactions}
-      />
+    <div className="md:overflow-x-auto h-full mt-6">
+      <div className="flex sm:flex-row items-end sm: justify-between">
+        <CashflowTableActionButtons
+          selectedTransactions={selectedTransactions}
+          setSelectedTransactions={setSelectedTransactions}
+        />
+        <StartBalance />
+      </div>
       {cashflow.length === 0 ? (
         <p className="text-center mt-3">No transactions yet</p>
       ) : (
