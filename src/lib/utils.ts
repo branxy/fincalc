@@ -1,9 +1,10 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Cashflow, Periods } from "../features/types";
+import { Cashflow, FinancePeriod, Periods } from "../features/types";
 
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
+import { supabase } from "@/db/supabaseClient";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -46,18 +47,17 @@ export function generateTestCashflow(
   return arr;
 }
 
-export function getMarkedCashflow(periods: Periods, casfhlow: Cashflow) {
+export function getMarkedCashflow(
+  periods: Pick<FinancePeriod, "id" | "end_balance">[],
+  cashflow: Cashflow
+) {
   // Returns an object with indexes of every last transaction in a period and that period's end_balance
   const returnObject: {
     [key: number]: number;
   } = {};
 
-  const sortedCashflow = casfhlow.sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
-
   for (const p of periods) {
-    const lastCashflowIndex = sortedCashflow.findLastIndex(
+    const lastCashflowIndex = cashflow.findLastIndex(
       (c) => c.period_id === p.id
     );
 
@@ -73,11 +73,14 @@ export function getTodayDate() {
 }
 
 export function getCurrentPeriodId(periods: Periods) {
-  const today = getTodayDate();
+  const currentWeek = getCurrentWeek();
 
-  const currentPeriod = periods.findLast((p) => p.start_date <= today);
+  const currentPeriod = periods.find((p) => {
+    const periodStartDate = new Date(p.start_date).getDate();
+    return periodStartDate === currentWeek.startDate;
+  });
 
-  return currentPeriod?.id ?? null;
+  return currentPeriod?.id;
 }
 
 export function getToastByDispatchStatus(
@@ -93,4 +96,89 @@ export function getToastByDispatchStatus(
     case "rejected":
       return toast.error(message.error);
   }
+}
+
+export async function performAuthCheck() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Unauthorized");
+  return user.id;
+}
+
+export function getCurrentMonthNumber() {
+  return new Date().getMonth();
+}
+
+export function getCurrentYearNumber() {
+  return new Date().getFullYear();
+}
+export function getCurrentYearAndMonthNumber() {
+  const rawDate = new Date(),
+    year = rawDate.getFullYear(),
+    month = rawDate.getMonth();
+
+  return [year, month] as const;
+}
+
+interface Week {
+  startDate: number;
+  endDate: number;
+}
+
+export function getCurrentDayOfMonthNumber() {
+  return new Date().getDate();
+}
+
+export function getNumberOfDaysInCurrentMonth() {
+  const [year, month] = getCurrentYearAndMonthNumber(),
+    daysInAMonth = new Date(year, month, 0).getDate();
+
+  return daysInAMonth;
+}
+
+export function getDBStartDate(year: number, month: number, day: number) {
+  return new Date(year, month, day + 1).toISOString().split("T")[0];
+}
+
+export function getCurrentWeek() {
+  const daysInAMonth = getNumberOfDaysInCurrentMonth(),
+    weeks: Week[] = [
+      {
+        startDate: 1,
+        endDate: 8,
+      },
+      {
+        startDate: 8,
+        endDate: 15,
+      },
+      {
+        startDate: 15,
+        endDate: 22,
+      },
+      {
+        startDate: 22,
+        endDate: daysInAMonth,
+      },
+    ],
+    today = getCurrentDayOfMonthNumber(),
+    currentWeek = weeks.find(
+      (w) => w.startDate <= today && w.endDate >= today
+    )!;
+
+  return currentWeek;
+}
+
+export function getPreviousPeriodAndCurrentWeek(periods: Periods) {
+  const sortedPeriods = periods.toSorted(
+      (a, b) =>
+        new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+    ),
+    currentWeek = getCurrentWeek(),
+    prevPeriod = sortedPeriods.findLast(
+      (p) => new Date(p.start_date).getDate() < currentWeek.startDate
+    );
+
+  return [prevPeriod, currentWeek] as const;
 }

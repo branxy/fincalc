@@ -1,19 +1,26 @@
-import { createEntityAdapter } from "@reduxjs/toolkit";
+import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 import { CashflowItem, FinancePeriod } from "../types";
 import { createAppSlice } from "@/features/createAppSlice";
 import { RootState } from "../store";
-import { getPeriods, updatePeriodsBalance, uploadPeriod } from "./periodsApi";
+import {
+  fetchPeriodsFromDB,
+  updatePeriodsBalance,
+  uploadPeriod,
+} from "./periodsApi";
 import {
   getPeriodsChangesOnTransactionsDelete,
   getPeriodsOnEndBalanceChange,
 } from "./periodsCalculator";
 import { toast } from "sonner";
-
-interface AddPeriodProps {
-  prevPeriodId: FinancePeriod["id"];
-  user_id: FinancePeriod["user_id"];
-}
+import {
+  getCurrentPeriodId,
+  getCurrentYearAndMonthNumber,
+  getDBStartDate,
+  getPreviousPeriodAndCurrentWeek,
+  performAuthCheck,
+} from "@/lib/utils";
+import { createAppSelector } from "@/lib/hooks";
 
 const periodsAdapter = createEntityAdapter<FinancePeriod>();
 
@@ -48,47 +55,92 @@ const samplePeriods = [
   },
 ];
 
-const initialState = await getPeriods(periodsAdapter);
+type InitialState = EntityState<FinancePeriod, string> & {
+  status: "idle" | "loading" | "failed" | "succeeded";
+  error: string | null;
+};
+
+const initialState: InitialState = periodsAdapter.getInitialState({
+  status: "idle",
+  error: null,
+});
 
 export const periodsSlice = createAppSlice({
   name: "periods",
   initialState,
   reducers: (create) => ({
-    periodAdded: create.asyncThunk(
-      async ({ prevPeriodId, user_id }: AddPeriodProps, { getState }) => {
-        const state = getState() as RootState;
+    fetchPeriods: create.asyncThunk(
+      async () => {
+        const periods = await fetchPeriodsFromDB();
 
-        const prevPeriod = state.periods.entities[prevPeriodId];
-
-        if (prevPeriod) {
-          const { end_balance, stock, forward_payments } = prevPeriod;
-
-          const newPeriod: Omit<FinancePeriod, "id"> = {
-            user_id: user_id,
-            start_date: prevPeriod.start_date,
-            start_balance: end_balance,
-            end_balance: end_balance,
-            stock: stock,
-            forward_payments: forward_payments,
-          };
-
-          const receivedPeriod: FinancePeriod = await uploadPeriod(newPeriod);
-          return { newPeriod: receivedPeriod };
-        } else {
-          throw new Error(`No previous period found: ${prevPeriod}`);
-        }
+        return periods;
       },
       {
         pending: (state) => {
           state.status = "loading";
         },
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        rejected: (state, action) => {
+        rejected: (state) => {
           state.status = "failed";
         },
         fulfilled: (state, action) => {
-          const { newPeriod } = action.payload;
-          periodsAdapter.addOne(state, newPeriod);
+          periodsAdapter.setAll(state, action.payload);
+          state.status = "succeeded";
+        },
+      }
+    ),
+    periodAdded: create.asyncThunk(
+      async (_, { getState }) => {
+        const userId = await performAuthCheck();
+
+        const {
+          periods: { entities },
+        } = getState() as RootState;
+
+        const periods = Object.values(entities);
+        const [prevPeriod, currentWeek] =
+          getPreviousPeriodAndCurrentWeek(periods);
+
+        let newPeriod: Omit<FinancePeriod, "id">;
+        const [year, month] = getCurrentYearAndMonthNumber(),
+          currentWeekStartDate = getDBStartDate(
+            year,
+            month,
+            currentWeek.startDate
+          );
+
+        if (prevPeriod) {
+          const { end_balance, stock, forward_payments } = prevPeriod;
+
+          newPeriod = {
+            user_id: userId,
+            start_date: currentWeekStartDate,
+            start_balance: end_balance,
+            end_balance: end_balance,
+            stock: stock,
+            forward_payments: forward_payments,
+          };
+        } else {
+          newPeriod = {
+            user_id: userId,
+            start_date: currentWeekStartDate,
+            start_balance: 0,
+            end_balance: 0,
+            stock: 0,
+            forward_payments: 0,
+          };
+        }
+        const receivedPeriod: FinancePeriod = await uploadPeriod(newPeriod);
+        return receivedPeriod;
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state) => {
+          state.status = "failed";
+        },
+        fulfilled: (state, action) => {
+          periodsAdapter.addOne(state, action.payload);
 
           state.status = "succeeded";
         },
@@ -195,10 +247,31 @@ export const periodsSlice = createAppSlice({
   selectors: {},
 });
 
-export const { periodAdded, endBalanceChanged, cashflowDeletedFromCashflow } =
-  periodsSlice.actions;
+export const {
+  fetchPeriods,
+  periodAdded,
+  endBalanceChanged,
+  cashflowDeletedFromCashflow,
+} = periodsSlice.actions;
 
-export const { selectAll: selectAllPeriods, selectById: selectPeriodById } =
-  periodsAdapter.getSelectors((state: RootState) => state.periods);
+export const {
+  selectAll: selectAllPeriods,
+  selectById: selectPeriodById,
+  selectIds: selectPeriodsIds,
+} = periodsAdapter.getSelectors((state: RootState) => state.periods);
+
+export const selectPeriodsIdsAndEndBalance = createAppSelector(
+  selectAllPeriods,
+  (state) =>
+    state.map((p) => ({
+      id: p.id,
+      end_balance: p.end_balance,
+    }))
+);
+
+export const selectCurrentWeekPeriodId = createAppSelector(
+  selectAllPeriods,
+  (state) => getCurrentPeriodId(state)
+);
 
 export default periodsSlice.reducer;

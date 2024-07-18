@@ -1,15 +1,11 @@
-import { createEntityAdapter } from "@reduxjs/toolkit";
-import { CashflowItem } from "../types";
-import {
-  generateTestCashflow,
-  getCurrentPeriodId,
-  getTodayDate,
-} from "../../lib/utils";
+import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
+import { CashflowItem, FinancePeriod } from "../types";
+import { generateTestCashflow, getTodayDate } from "../../lib/utils";
 import { createAppSlice } from "../createAppSlice";
 import { RootState } from "../store";
 import {
   deleteCashflowItems,
-  getCashflow,
+  fetchCashflow,
   updateTransaction,
   uploadTransaction,
 } from "./cashflowApi";
@@ -18,6 +14,7 @@ import { toast } from "sonner";
 import {
   cashflowDeletedFromCashflow,
   endBalanceChanged,
+  periodAdded,
 } from "../periods/periodsSlice";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -27,36 +24,71 @@ const testCashflow = generateTestCashflow(
   [10000, 4000, 6000, 5000, 5000]
 );
 
-const casfhlowAdapter = createEntityAdapter<CashflowItem>();
+const casfhlowAdapter = createEntityAdapter<CashflowItem>({
+  sortComparer: (a, b) => a.date.localeCompare(b.date),
+});
 
-const initialState = await getCashflow(casfhlowAdapter);
+type InitialState = EntityState<CashflowItem, string> & {
+  status: "idle" | "loading" | "failed" | "succeeded";
+  error: string | null;
+};
+
+const initialState: InitialState = casfhlowAdapter.getInitialState({
+  status: "idle",
+  error: null,
+});
 
 export const cashflowSlice = createAppSlice({
   name: "cashflow",
   initialState,
   reducers: (create) => ({
+    fetchTransactions: create.asyncThunk(
+      async () => {
+        const transactions = await fetchCashflow();
+        return transactions;
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state, action) => {
+          state.status = "failed";
+          state.error = action.error.message ?? "Failed to fetch transactions";
+          toast.error("Failed to fetch transactions");
+        },
+        fulfilled: (state, action) => {
+          state.status = "succeeded";
+          casfhlowAdapter.setAll(state, action.payload);
+          toast.success("Fetched transactions");
+        },
+      }
+    ),
     transactionAdded: create.asyncThunk(
-      async (_, { getState }) => {
+      async (
+        {
+          currentWeekPeriodId,
+        }: {
+          currentWeekPeriodId?: FinancePeriod["id"];
+        },
+        { dispatch }
+      ) => {
         const {
           data: { user },
         } = await supabase.auth.getUser();
 
         if (!user) throw new Error("Unauthorized");
 
-        const {
-          periods: { entities },
-        } = getState() as RootState;
+        if (!currentWeekPeriodId) {
+          // If a period with dates correlating with a transaction date doesn't exist yet, create it
+          const currentPeriod = await dispatch(periodAdded()).unwrap();
+          currentWeekPeriodId = currentPeriod.id;
+        }
 
-        const periods = Object.values(entities);
-        const currentPeriodId = getCurrentPeriodId(periods);
-
-        if (!currentPeriodId)
-          throw new Error("Couldn't find a current period id");
         const newTransaction: Omit<CashflowItem, "id"> = {
-          period_id: currentPeriodId,
+          period_id: currentWeekPeriodId,
           user_id: user.id,
           type: "payment/fixed",
-          title: "",
+          title: "New transaction",
           amount: 0,
           date: getTodayDate(),
           date_created: new Date().toISOString(),
@@ -70,8 +102,9 @@ export const cashflowSlice = createAppSlice({
         pending: (state) => {
           state.status = "loading";
         },
-        rejected: (state) => {
+        rejected: (state, action) => {
           state.status = "failed";
+          if (action.error.message) state.error = action.error.message;
           toast.error("Failed to add a transaction");
         },
         fulfilled: (state, action) => {
@@ -85,11 +118,11 @@ export const cashflowSlice = createAppSlice({
     transactionChanged: create.asyncThunk(
       async (
         {
-          cashflowItemId,
+          transactionId,
           whatChanged,
           newValue,
         }: {
-          cashflowItemId: CashflowItem["id"];
+          transactionId: CashflowItem["id"];
           whatChanged: "title" | "type" | "amount" | "date";
           newValue: string | number;
         },
@@ -100,7 +133,7 @@ export const cashflowSlice = createAppSlice({
         } = getState() as RootState;
 
         if (whatChanged === "amount" && typeof newValue === "number") {
-          const currentItem = entities[cashflowItemId];
+          const currentItem = entities[transactionId];
           if (currentItem) {
             const difference = newValue - currentItem.amount;
             dispatch(
@@ -115,7 +148,7 @@ export const cashflowSlice = createAppSlice({
         }
 
         const updatedValue = await updateTransaction(
-          cashflowItemId,
+          transactionId,
           whatChanged,
           newValue
         );
@@ -178,11 +211,14 @@ export const cashflowSlice = createAppSlice({
   selectors: {},
 });
 
-export const { selectAll: selectAllCashflow } = casfhlowAdapter.getSelectors(
-  (state: RootState) => state.cashflow
-);
+export const { selectAll: selectAllCashflow, selectIds: selectCashflowIds } =
+  casfhlowAdapter.getSelectors((state: RootState) => state.cashflow);
 
-export const { transactionAdded, transactionChanged, deletedCashflowItems } =
-  cashflowSlice.actions;
+export const {
+  fetchTransactions,
+  transactionAdded,
+  transactionChanged,
+  deletedCashflowItems,
+} = cashflowSlice.actions;
 
 export default cashflowSlice.reducer;

@@ -1,43 +1,26 @@
-import { EntityAdapter, EntityState } from "@reduxjs/toolkit";
 import { FinancePeriod, Periods } from "../types";
 import { v4 as uuidv4 } from "uuid";
-import { PostgrestError } from "@supabase/supabase-js";
 import { supabase } from "@/db/supabaseClient";
 
-export async function getPeriods(
-  periodsAdapter: EntityAdapter<FinancePeriod, string>
-) {
-  let initialState: EntityState<FinancePeriod, string> & {
-    status: string;
-    error: PostgrestError | null;
-  };
-
+export async function fetchPeriodsFromDB() {
   const { data, error } = await supabase.from("periods").select();
 
-  if (error) {
-    initialState = periodsAdapter.getInitialState({
-      status: "idle",
-      error,
-    });
-  }
+  if (error) throw new Error(error.message);
 
-  initialState = periodsAdapter.getInitialState(
-    {
-      status: "idle",
-      error: null,
-    },
-    data!
-  );
-
-  return initialState;
+  return data as Periods;
 }
 
-export async function uploadPeriod(
-  period: Omit<FinancePeriod, "id">
-): Promise<FinancePeriod> {
+export async function uploadPeriod(period: Omit<FinancePeriod, "id">) {
   const id = uuidv4();
   const newPeriod: FinancePeriod = { id, ...period };
-  return new Promise((resolve) => resolve(newPeriod));
+  const { data, error } = await supabase
+    .from("periods")
+    .insert(newPeriod)
+    .select();
+
+  if (error) throw new Error(error.message);
+
+  return data[0];
 }
 
 export async function updatePeriodsBalance(periodsToUpdate: Periods) {
@@ -49,4 +32,3 @@ export async function updatePeriodsBalance(periodsToUpdate: Periods) {
   if (error) throw new Error(error.message);
   return data!;
 }
-

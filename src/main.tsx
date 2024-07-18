@@ -6,9 +6,12 @@ import { Provider } from "react-redux";
 import { store } from "@/features/store.ts";
 
 import "./index.css";
+import { fetchPeriods } from "./features/periods/periodsSlice.ts";
+import { fetchTransactions } from "./features/cashflow/cashflowSlice.ts";
 
 const router = createRouter({ routeTree });
-
+store.dispatch(fetchPeriods());
+store.dispatch(fetchTransactions());
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;

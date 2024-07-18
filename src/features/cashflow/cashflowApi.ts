@@ -1,33 +1,12 @@
-import { EntityAdapter, EntityState } from "@reduxjs/toolkit";
 import { Cashflow, CashflowItem } from "../types";
-import { PostgrestError } from "@supabase/supabase-js";
 import { supabase } from "@/db/supabaseClient";
 
-export async function getCashflow(
-  casfhlowAdapter: EntityAdapter<CashflowItem, string>
-) {
-  let initialState: EntityState<CashflowItem, string> & {
-    status: string;
-    error: PostgrestError | null;
-  };
-
+export async function fetchCashflow() {
   const { data, error } = await supabase.from("cashflow").select();
 
-  if (error) {
-    initialState = casfhlowAdapter.getInitialState({
-      status: "idle",
-      error,
-    });
-  }
+  if (error) throw new Error(error.message);
 
-  initialState = casfhlowAdapter.getInitialState(
-    {
-      status: "idle",
-      error: null,
-    },
-    data as Cashflow
-  );
-  return initialState;
+  return data as Cashflow;
 }
 
 export async function uploadTransaction(payment: Omit<CashflowItem, "id">) {
@@ -45,7 +24,7 @@ export async function uploadTransaction(payment: Omit<CashflowItem, "id">) {
 }
 
 export async function updateTransaction(
-  itemId: CashflowItem["id"],
+  transactionId: CashflowItem["id"],
   newValueType: "title" | "type" | "amount" | "date",
   newValue: string | number
 ) {
@@ -54,7 +33,7 @@ export async function updateTransaction(
       const { data, error } = await supabase
         .from("cashflow")
         .update({ title: newValue as string })
-        .eq("id", itemId)
+        .eq("id", transactionId)
         .select();
 
       if (error) throw new Error(error.message);
@@ -64,7 +43,7 @@ export async function updateTransaction(
       const { data, error } = await supabase
         .from("cashflow")
         .update({ type: newValue as string })
-        .eq("id", itemId)
+        .eq("id", transactionId)
         .select();
 
       if (error) throw new Error(error.message);
@@ -74,7 +53,7 @@ export async function updateTransaction(
       const { data, error } = await supabase
         .from("cashflow")
         .update({ amount: newValue as number })
-        .eq("id", itemId)
+        .eq("id", transactionId)
         .select();
 
       if (error) throw new Error(error.message);
@@ -84,7 +63,7 @@ export async function updateTransaction(
       const { data, error } = await supabase
         .from("cashflow")
         .update({ type: newValue as string })
-        .eq("id", itemId)
+        .eq("id", transactionId)
         .select();
 
       if (error) throw new Error(error.message);

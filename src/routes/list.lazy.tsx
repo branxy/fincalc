@@ -1,16 +1,20 @@
-import CashflowTable from "@/components/casfhlowTable/CashflowTable";
-import { selectAllCashflow } from "@/features/cashflow/cashflowSlice";
-import { selectAllPeriods } from "@/features/periods/periodsSlice";
-import { useAppSelector } from "@/lib/hooks";
 import { createLazyFileRoute } from "@tanstack/react-router";
+
+import { useAppSelector } from "@/lib/hooks";
+import { selectAllCashflow } from "@/features/cashflow/cashflowSlice";
+import { selectPeriodsIdsAndEndBalance } from "@/features/periods/periodsSlice";
+
+import CashflowTable from "@/components/casfhlowTable/CashflowTable";
 
 export const Route = createLazyFileRoute("/list")({
   component: List,
 });
 
 function List() {
-  const periods = useAppSelector((state) => selectAllPeriods(state));
-  const cashflow = useAppSelector((state) => selectAllCashflow(state));
+  const periods = useAppSelector((state) =>
+      selectPeriodsIdsAndEndBalance(state)
+    ),
+    cashflow = useAppSelector((state) => selectAllCashflow(state));
 
   return (
     <main className="flex-grow py-2 sm:px-5">

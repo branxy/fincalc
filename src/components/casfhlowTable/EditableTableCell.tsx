@@ -46,7 +46,7 @@ function EditableTableCell({
     if (inputDoesntExceedLimits && inputValue !== cellValue) {
       dispatch(
         transactionChanged({
-          cashflowItemId,
+          transactionId: cashflowItemId,
           whatChanged: cellType,
           newValue: cellType === "amount" ? Number(inputValue) : inputValue,
         })
@@ -76,7 +76,7 @@ function EditableTableCell({
   } else {
     return (
       <td
-        className="editable relative"
+        className="editable relative h-full"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -86,7 +86,7 @@ function EditableTableCell({
         </span>
         {isHovered && (
           <button
-            className="bg-slate-800 px-2 py-1 rounded-md absolute top-[calc(100% - 16px)] right-1"
+            className="bg-slate-800 px-2 py-1 rounded-md absolute top-1 right-1"
             onClick={handleClickEdit}
           >
             <Pencil size={16} />

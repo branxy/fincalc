@@ -26,7 +26,9 @@ function CashflowTableRow({
   const isSelectedRow = Boolean(
     selectedTransactions?.find((id) => id === casfhlowItemId)
   );
-  const endBalance = periodEndBalance && <td>${periodEndBalance}</td>;
+  const endBalance = typeof periodEndBalance === "number" && (
+    <td>${periodEndBalance}</td>
+  );
 
   return (
     <tr className={clsx("h-8", isSelectedRow && "bg-zinc-500 text-slate-100")}>
