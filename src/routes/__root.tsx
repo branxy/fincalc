@@ -1,15 +1,10 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
-
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { createRootRoute } from "@tanstack/react-router";
 
 import useSupabaseSession from "@/db/useSupabaseSession";
 import { Auth } from "@supabase/auth-ui-react";
 import { supabase } from "@/db/supabaseClient";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-
-import { ThemeProvider } from "@/components/theme-provider";
-import Navbar from "@/components/navbar";
-import { Toaster } from "sonner";
+import App from "@/components/app";
 
 export const Route = createRootRoute({
   component: Root,
@@ -30,15 +25,7 @@ function Root() {
         />
       </div>
     );
-  } else
-    return (
-      <div className="flex h-screen relative">
-        <ThemeProvider defaultTheme="dark" storageKey="fincalc-ui-theme">
-          <Navbar />
-          <Outlet />
-          <Toaster />
-          <TanStackRouterDevtools position="top-right" />
-        </ThemeProvider>
-      </div>
-    );
+  } else {
+    return <App />;
+  }
 }
