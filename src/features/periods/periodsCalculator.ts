@@ -107,3 +107,68 @@ export function getPeriodsChangesOnTransactionsDelete(
 
   return valuesToUpdate;
 }
+
+export function recalculatePeriodsFromIndex(
+  periods: Periods,
+  transactions: Transactions,
+  startIndex: number
+): Periods {
+  const recalculatedPeriods: Periods = [];
+
+  for (let i = startIndex; i < periods.length; i++) {
+    const p = periods[i];
+    const periodTransactions = transactions.filter((t) => t.period_id === p.id);
+    const periodTransactionsSum =
+      getTransactionsSumByPeriod(periodTransactions);
+
+    const newEndBalance = p.start_balance + periodTransactionsSum.endBalance,
+      newStock = p.stock + periodTransactionsSum.stock,
+      newForwardPayments =
+        p.forward_payments + periodTransactionsSum.forward_payments;
+    recalculatedPeriods.push({
+      ...p,
+      end_balance: newEndBalance,
+      stock: newStock,
+      forward_payments: newForwardPayments,
+    });
+  }
+
+  return recalculatedPeriods;
+}
+
+function getTransactionsSumByPeriod(transactions: Transactions) {
+  return transactions.reduce(
+    (sum, t) => {
+      switch (t.type) {
+        case "payment/fixed":
+        case "payment/variable":
+          sum.endBalance -= t.amount;
+          break;
+        case "income/profit":
+          sum.endBalance += t.amount;
+          break;
+        case "compensation/stock":
+          sum.stock -= t.amount;
+          break;
+        case "income/stock":
+          sum.stock += t.amount;
+          break;
+        case "compensation/forward-payment":
+          sum.forward_payments -= t.amount;
+          break;
+        case "income/forward-payment":
+          sum.forward_payments += t.amount;
+          break;
+        default:
+          throw new Error(`Unknown transation type: ${t.type}`);
+      }
+
+      return sum;
+    },
+    {
+      endBalance: 0,
+      stock: 0,
+      forward_payments: 0,
+    }
+  );
+}

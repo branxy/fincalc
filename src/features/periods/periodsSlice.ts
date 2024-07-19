@@ -8,6 +8,7 @@ import {
   getPeriodsChangesOnTransactionsDelete,
   getPeriodsOnEndBalanceChange,
   getPeriodsOnStartBalanceChange,
+  recalculatePeriodsFromIndex,
 } from "./periodsCalculator";
 import { toast } from "sonner";
 import {
@@ -145,6 +146,46 @@ export const periodsSlice = createAppSlice({
         },
       }
     ),
+    periodsRecalculated: create.asyncThunk(
+      async (
+        {
+          startIndex,
+        }: {
+          startIndex: number;
+        },
+        { getState }
+      ) => {
+        const {
+          periods: { entities: periodEntities },
+          cashflow: { entities: transactionEntities },
+        } = getState() as RootState;
+
+        const recalculatedPeriods = recalculatePeriodsFromIndex(
+          Object.values(periodEntities),
+          Object.values(transactionEntities),
+          startIndex
+        );
+
+        const receivedPeriods = await upsertPeriods(recalculatedPeriods);
+
+        return receivedPeriods;
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state, action) => {
+          state.status = "failed";
+          state.error = action.error.message ?? null;
+          toast.error("Failed to update periods");
+        },
+        fulfilled: (state, action) => {
+          const periodsToUpdate = action.payload;
+          periodsAdapter.upsertMany(state, periodsToUpdate);
+          state.status = "succeeded";
+        },
+      }
+    ),
     startBalanceChanged: create.asyncThunk(
       async (
         {
@@ -202,12 +243,12 @@ export const periodsSlice = createAppSlice({
         { getState }
       ) => {
         const {
-          periods: { entities },
+          periods: { entities, ids },
         } = getState() as RootState;
 
+        const currentPeriod = entities[periodId];
         const periods = Object.values(entities);
-        const currentPeriodIndex = periods.findIndex((p) => p.id === periodId);
-        const currentPeriod = periods[currentPeriodIndex];
+        const currentPeriodIndex = ids.findIndex((id) => id === periodId);
 
         if (currentPeriod) {
           const valuesToUpdate = getPeriodsOnEndBalanceChange(
@@ -292,6 +333,7 @@ export const periodsSlice = createAppSlice({
 export const {
   fetchPeriods,
   periodAdded,
+  periodsRecalculated,
   startBalanceChanged,
   endBalanceChanged,
   cashflowDeletedFromCashflow,

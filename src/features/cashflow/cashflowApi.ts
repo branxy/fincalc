@@ -62,7 +62,7 @@ export async function updateTransaction(
     case "date": {
       const { data, error } = await supabase
         .from("cashflow")
-        .update({ type: newValue as string })
+        .update({ date: newValue as string })
         .eq("id", transactionId)
         .select();
 
@@ -70,6 +70,16 @@ export async function updateTransaction(
       return data[0];
     }
   }
+}
+
+export async function upsertTransaction(transaction: Transaction) {
+  const { data, error } = await supabase
+    .from("cashflow")
+    .upsert(transaction)
+    .select();
+
+  if (error) throw new Error(error.message);
+  return data[0];
 }
 
 export async function deleteCashflowItems(

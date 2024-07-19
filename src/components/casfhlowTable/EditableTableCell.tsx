@@ -31,7 +31,8 @@ function EditableTableCell({
   function handleCellFormSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    handleCellInputBlur();
+    dispatchActionByCellType(cellType);
+    // handleCellInputBlur();
   }
 
   function handleCellInputBlur() {
@@ -48,6 +49,29 @@ function EditableTableCell({
         })
       );
     }
+    setIsEditing(false);
+    setIsHovered(false);
+  }
+
+  function dispatchActionByCellType(
+    cellType: "title" | "type" | "amount" | "date"
+  ) {
+    switch (cellType) {
+      case "title":
+        //
+        break;
+      case "amount":
+        dispatch(
+          transactionAmountChangedAndPeriodsRecalculated({
+            transactionId,
+            newAmount: Number(inputValue),
+          })
+        );
+        break;
+      default:
+        throw new Error(`Unknown transaction type: ${cellType}`);
+    }
+
     setIsEditing(false);
     setIsHovered(false);
   }
@@ -83,7 +107,7 @@ function EditableTableCell({
         </span>
         {isHovered && (
           <button
-            className="bg-slate-800 px-2 py-1 rounded-md absolute top-1 right-1"
+            className="bg-slate-800 px-2 py-1 rounded-md absolute top-2 right-1"
             onClick={handleClickEdit}
           >
             <Pencil size={16} />

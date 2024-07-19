@@ -5,6 +5,7 @@ import { Transactions, FinancePeriod, Periods } from "../features/types";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { supabase } from "@/db/supabaseClient";
+import { format } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -83,6 +84,17 @@ export function getCurrentPeriodId(periods: Periods) {
   return currentPeriod?.id;
 }
 
+export function getCurrentPeriod(periods: Periods) {
+  const currentWeek = getCurrentWeek();
+
+  const currentPeriod = periods.find((p) => {
+    const periodStartDate = new Date(p.start_date).getDate();
+    return periodStartDate === currentWeek.startDate;
+  });
+
+  return currentPeriod;
+}
+
 export function getToastByDispatchStatus(
   dispatchStatus: "fulfilled" | "rejected",
   message: {
@@ -136,6 +148,11 @@ export function getNumberOfDaysInCurrentMonth() {
     daysInAMonth = new Date(year, month, 0).getDate();
 
   return daysInAMonth;
+}
+
+export function getDBDateFromObject(date: Date) {
+  const dBDate = format(date, "yyyy-MM-dd");
+  return dBDate;
 }
 
 export function getDBStartDate(year: number, month: number, day: number) {
