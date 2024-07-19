@@ -52,11 +52,11 @@ function CashflowTableRow({
         />
       </td>
       <TransactionsTableTitleCell title={title} transactionId={transactionId} />
-      <EditableTableCell
+      <TransactionsTableAmountCell
+        amount={amount}
         transactionId={transactionId}
-        cellType="amount"
-        cellValue={amount}
       />
+
       <EditableTableCell
         transactionId={transactionId}
         cellType="type"
