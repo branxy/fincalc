@@ -1,6 +1,5 @@
 import {
   transactionAmountChangedAndPeriodsRecalculated,
-  transactionChanged,
   transactionTitleChanged,
 } from "@/features/cashflow/cashflowSlice";
 import { Transaction } from "@/features/types";
@@ -33,25 +32,6 @@ function EditableTableCell({
     e.preventDefault();
 
     dispatchActionByCellType(cellType);
-    // handleCellInputBlur();
-  }
-
-  function handleCellInputBlur() {
-    const inputDoesntExceedLimits =
-      (cellType === "amount" && Number(inputValue) <= 100000000000) ||
-      cellType !== "amount";
-
-    if (inputDoesntExceedLimits && inputValue !== cellValue) {
-      dispatch(
-        transactionChanged({
-          transactionId: transactionId,
-          whatChanged: cellType,
-          newValue: cellType === "amount" ? Number(inputValue) : inputValue,
-        })
-      );
-    }
-    setIsEditing(false);
-    setIsHovered(false);
   }
 
   function dispatchActionByCellType(
@@ -91,7 +71,6 @@ function EditableTableCell({
             cellType={cellType}
             inputValue={inputValue}
             setInputValue={setInputValue}
-            handleCellInputBlur={handleCellInputBlur}
             dispatchActionByCellType={dispatchActionByCellType}
             isEditing={isEditing}
           />
