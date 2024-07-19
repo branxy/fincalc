@@ -26,8 +26,8 @@ function CashflowTable({ cashflow, periods }: CasfhlowTableProps) {
     return (
       <CashflowTableRow
         key={item.id}
-        cashflowType={item.type}
-        casfhlowItemId={item.id}
+        transactionType={item.type}
+        transactionId={item.id}
         title={item.title}
         amount={item.amount}
         date={item.date}

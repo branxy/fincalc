@@ -3,8 +3,8 @@ import EditableTableCell from "@/components/casfhlowTable/EditableTableCell";
 import clsx from "clsx";
 
 interface CashflowTableRowProps {
-  cashflowType: Transaction["type"];
-  casfhlowItemId: Transaction["id"];
+  transactionType: Transaction["type"];
+  transactionId: Transaction["id"];
   title: Transaction["title"];
   amount: Transaction["amount"];
   date: Transaction["date"];
@@ -14,8 +14,8 @@ interface CashflowTableRowProps {
 }
 
 function CashflowTableRow({
-  cashflowType,
-  casfhlowItemId,
+  transactionType,
+  transactionId,
   title,
   amount,
   date,
@@ -24,7 +24,7 @@ function CashflowTableRow({
   handleSelectTransaction,
 }: CashflowTableRowProps) {
   const isSelectedRow = Boolean(
-    selectedTransactions?.find((id) => id === casfhlowItemId)
+    selectedTransactions?.find((id) => id === transactionId)
   );
   const endBalance = typeof periodEndBalance === "number" && (
     <td>${periodEndBalance}</td>
@@ -38,8 +38,8 @@ function CashflowTableRow({
           type="checkbox"
           name="select-cashflow-item"
           id="select-cashflow-item"
-          aria-label={`Select ${cashflowType}`}
-          onChange={() => handleSelectTransaction(casfhlowItemId)}
+          aria-label={`Select ${transactionType}`}
+          onChange={() => handleSelectTransaction(transactionId)}
           checked={isSelectedRow}
         />
       </td>
@@ -49,17 +49,17 @@ function CashflowTableRow({
         cellValue={title}
       />
       <EditableTableCell
-        transactionId={casfhlowItemId}
+        transactionId={transactionId}
         cellType="amount"
         cellValue={amount}
       />
       <EditableTableCell
-        transactionId={casfhlowItemId}
+        transactionId={transactionId}
         cellType="type"
-        cellValue={cashflowType!}
+        cellValue={transactionType!}
       />
       <EditableTableCell
-        transactionId={casfhlowItemId}
+        transactionId={transactionId}
         cellType="date"
         cellValue={date}
       />
