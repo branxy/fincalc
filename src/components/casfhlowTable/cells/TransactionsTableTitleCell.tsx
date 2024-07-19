@@ -1,17 +1,17 @@
 import { transactionTitleChanged } from "@/features/cashflow/cashflowSlice";
 import { Transaction } from "@/features/types";
-import { useAppDispatch, useEditTableCell } from "@/lib/hooks";
+import { useEditTableCell } from "@/lib/hooks";
 import EditCellButton from "./EditCellButton";
 import { Input } from "@/components/ui/input";
 
-interface TransactionTableTitleColumnProps {
+interface TransactionsTableTitleCellProps {
   transactionId: Transaction["id"];
   title: string;
 }
 function TransactionsTableTitleCell({
   transactionId,
   title,
-}: TransactionTableTitleColumnProps) {
+}: TransactionsTableTitleCellProps) {
   const [
     titleState,
     setTitleState,
@@ -19,13 +19,18 @@ function TransactionsTableTitleCell({
     setIsEditing,
     isHovered,
     setIsHovered,
+    finishEditing,
+    dispatch,
   ] = useEditTableCell(title);
-
-  const dispatch = useAppDispatch();
 
   function handleCellFormSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     finishEditingAndSave();
+  }
+
+  function finishEditingAndSave() {
+    finishEditing();
+    if (title !== titleState) dispatchAction();
   }
 
   function dispatchAction() {
@@ -35,16 +40,6 @@ function TransactionsTableTitleCell({
         newTitle: titleState.toString(),
       })
     );
-  }
-
-  function finishEditing() {
-    setIsEditing(false);
-    setIsHovered(false);
-  }
-
-  function finishEditingAndSave() {
-    finishEditing();
-    if (title !== titleState) dispatchAction();
   }
 
   return (

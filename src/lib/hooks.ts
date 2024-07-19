@@ -4,7 +4,12 @@ import type { Transactions, Transaction } from "@/features/types";
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/features/store";
-import { createSelector } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  Dispatch,
+  ThunkDispatch,
+  UnknownAction,
+} from "@reduxjs/toolkit";
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();
@@ -55,10 +60,27 @@ export function useEditTableCell<T>(
   React.Dispatch<React.SetStateAction<boolean>>,
   boolean,
   React.Dispatch<React.SetStateAction<boolean>>,
+  () => void,
+  ThunkDispatch<RootState, undefined, UnknownAction> & Dispatch<UnknownAction>,
 ] {
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [state, setState] = useState(value);
+  const dispatch = useAppDispatch();
 
-  return [state, setState, isEditing, setIsEditing, isHovered, setIsHovered];
+  function finishEditing() {
+    setIsEditing(false);
+    setIsHovered(false);
+  }
+
+  return [
+    state,
+    setState,
+    isEditing,
+    setIsEditing,
+    isHovered,
+    setIsHovered,
+    finishEditing,
+    dispatch,
+  ];
 }
