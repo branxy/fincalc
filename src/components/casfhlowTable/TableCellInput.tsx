@@ -25,9 +25,6 @@ function TableCellInput({
   inputValue,
   setInputValue,
   isEditing,
-  setIsEditing,
-  setIsHovered,
-  handleCellInputBlur,
   dispatchActionByCellType,
 }: {
   transactionId: Transaction["id"];
@@ -35,9 +32,6 @@ function TableCellInput({
   inputValue: string | number;
   setInputValue: React.Dispatch<React.SetStateAction<string | number>>;
   isEditing: boolean;
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsHovered: React.Dispatch<React.SetStateAction<boolean>>;
-  handleCellInputBlur: () => void;
   dispatchActionByCellType: (
     cellType: "title" | "type" | "amount" | "date"
   ) => void;
@@ -67,7 +61,12 @@ function TableCellInput({
       />
     ),
     type: (
-      <Select defaultOpen={true} onOpenChange={handleCellInputBlur}>
+      <Select
+        defaultOpen={true}
+        onOpenChange={() => dispatchActionByCellType(cellType)}
+        defaultValue={inputValue.toString()}
+        onValueChange={setInputValue}
+      >
         <SelectTrigger aria-label="Transaction type">
           <SelectValue placeholder={inputValue} />
         </SelectTrigger>
@@ -104,8 +103,6 @@ function TableCellInput({
       <DatePicker
         transactionId={transactionId}
         inputValue={inputValue as string}
-        setIsEditing={setIsEditing}
-        setIsHovered={setIsHovered}
       />
     ),
   };

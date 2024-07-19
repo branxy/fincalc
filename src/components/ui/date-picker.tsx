@@ -15,13 +15,9 @@ import { Transaction } from "@/features/types";
 function DatePicker({
   transactionId,
   inputValue,
-  setIsEditing,
-  setIsHovered,
 }: {
   transactionId: Transaction["id"];
   inputValue: string;
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsHovered: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [date, setDate] = useState<Date | undefined>(new Date(inputValue));
   const dispatch = useAppDispatch();
@@ -41,13 +37,8 @@ function DatePicker({
     }
   }
 
-  function close() {
-    setIsEditing(false);
-    setIsHovered(false);
-  }
-
   return (
-    <Popover defaultOpen={true} onOpenChange={close}>
+    <Popover defaultOpen={true}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}

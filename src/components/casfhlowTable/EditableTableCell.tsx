@@ -94,8 +94,6 @@ function EditableTableCell({
             handleCellInputBlur={handleCellInputBlur}
             dispatchActionByCellType={dispatchActionByCellType}
             isEditing={isEditing}
-            setIsEditing={setIsEditing}
-            setIsHovered={setIsHovered}
           />
         </form>
       </td>

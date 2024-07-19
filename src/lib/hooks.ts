@@ -45,3 +45,20 @@ export function useTableCheckbox(tableItems: Transactions) {
     handleSelectAllTransactions,
   ] as const;
 }
+
+export function useEditTableCell<T>(
+  value: T
+): [
+  T,
+  React.Dispatch<React.SetStateAction<T>>,
+  boolean,
+  React.Dispatch<React.SetStateAction<boolean>>,
+  boolean,
+  React.Dispatch<React.SetStateAction<boolean>>,
+] {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [state, setState] = useState(value);
+
+  return [state, setState, isEditing, setIsEditing, isHovered, setIsHovered];
+}
