@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Cashflow, CashflowItem } from "@/features/types";
+import type { Transactions, Transaction } from "@/features/types";
 
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 import { useDispatch, useSelector } from "react-redux";
@@ -10,16 +10,16 @@ export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();
 export const createAppSelector = createSelector.withTypes<RootState>();
 
-export function useTableCheckbox(tableItems: Cashflow) {
+export function useTableCheckbox(tableItems: Transactions) {
   const [selectedTransactions, setSelectedTransactions] = useState<
-    CashflowItem["id"][]
+    Transaction["id"][]
   >([]);
 
   const isCheckedCheckbox =
     selectedTransactions.length === tableItems.length &&
     selectedTransactions.length > 0;
 
-  function handleSelectTransaction(cashflowItemId: CashflowItem["id"]) {
+  function handleSelectTransaction(cashflowItemId: Transaction["id"]) {
     if (!selectedTransactions.length) {
       setSelectedTransactions([cashflowItemId]);
     } else if (!selectedTransactions.includes(cashflowItemId)) {

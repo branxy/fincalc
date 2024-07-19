@@ -1,6 +1,6 @@
 import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
-import { CashflowItem, FinancePeriod } from "../types";
+import { Transaction, FinancePeriod } from "../types";
 import { createAppSlice } from "@/features/createAppSlice";
 import { RootState } from "../store";
 import {
@@ -199,7 +199,7 @@ export const periodsSlice = createAppSlice({
           whatChanged,
           difference,
         }: {
-          periodId: CashflowItem["period_id"];
+          periodId: Transaction["period_id"];
           whatChanged: "income" | "payment";
           difference: number;
         },
@@ -248,7 +248,7 @@ export const periodsSlice = createAppSlice({
         {
           deletedTransactionsIds,
         }: {
-          deletedTransactionsIds: CashflowItem["id"][];
+          deletedTransactionsIds: Transaction["id"][];
         },
         { getState }
       ) => {

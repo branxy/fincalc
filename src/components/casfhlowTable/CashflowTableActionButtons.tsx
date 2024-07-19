@@ -1,4 +1,4 @@
-import { CashflowItem } from "@/features/types";
+import { Transaction } from "@/features/types";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { LoaderCircle } from "lucide-react";
 import { selectCurrentWeekPeriodId } from "@/features/periods/periodsSlice";
 
 interface CashflowTableActionButtonsProps {
-  selectedTransactions: CashflowItem["id"][];
+  selectedTransactions: Transaction["id"][];
   setSelectedTransactions: React.Dispatch<React.SetStateAction<string[]>>;
 }
 

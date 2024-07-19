@@ -1,5 +1,5 @@
 import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
-import { CashflowItem, FinancePeriod } from "../types";
+import { Transaction, FinancePeriod } from "../types";
 import { generateTestCashflow, getTodayDate } from "../../lib/utils";
 import { createAppSlice } from "../createAppSlice";
 import { RootState } from "../store";
@@ -28,7 +28,7 @@ const casfhlowAdapter = createEntityAdapter<CashflowItem>({
   sortComparer: (a, b) => a.date.localeCompare(b.date),
 });
 
-type InitialState = EntityState<CashflowItem, string> & {
+type InitialState = EntityState<Transaction, string> & {
   status: "idle" | "loading" | "failed" | "succeeded";
   error: string | null;
 };
@@ -84,7 +84,7 @@ export const cashflowSlice = createAppSlice({
           currentWeekPeriodId = currentPeriod.id;
         }
 
-        const newTransaction: Omit<CashflowItem, "id"> = {
+        const newTransaction: Omit<Transaction, "id"> = {
           period_id: currentWeekPeriodId,
           user_id: user.id,
           type: "payment/fixed",
@@ -122,7 +122,7 @@ export const cashflowSlice = createAppSlice({
           whatChanged,
           newValue,
         }: {
-          transactionId: CashflowItem["id"];
+          transactionId: Transaction["id"];
           whatChanged: "title" | "type" | "amount" | "date";
           newValue: string | number;
         },
@@ -175,7 +175,7 @@ export const cashflowSlice = createAppSlice({
         {
           selectedTransactions,
         }: {
-          selectedTransactions: CashflowItem["id"][];
+          selectedTransactions: Transaction["id"][];
         },
         { dispatch }
       ) => {

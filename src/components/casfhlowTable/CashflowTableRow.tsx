@@ -1,16 +1,16 @@
-import { CashflowItem } from "@/features/types";
+import { Transaction } from "@/features/types";
 import EditableTableCell from "@/components/casfhlowTable/EditableTableCell";
 import clsx from "clsx";
 
 interface CashflowTableRowProps {
-  cashflowType: CashflowItem["type"];
-  casfhlowItemId: CashflowItem["id"];
-  title: CashflowItem["title"];
-  amount: CashflowItem["amount"];
-  date: CashflowItem["date"];
-  selectedTransactions: CashflowItem["id"][];
+  cashflowType: Transaction["type"];
+  casfhlowItemId: Transaction["id"];
+  title: Transaction["title"];
+  amount: Transaction["amount"];
+  date: Transaction["date"];
+  selectedTransactions: Transaction["id"][];
   periodEndBalance?: number;
-  handleSelectTransaction: (periodId: CashflowItem["id"]) => void;
+  handleSelectTransaction: (periodId: Transaction["id"]) => void;
 }
 
 function CashflowTableRow({
@@ -31,7 +31,7 @@ function CashflowTableRow({
   );
 
   return (
-    <tr className={clsx("h-8", isSelectedRow && "bg-zinc-500 text-slate-100")}>
+    <tr className={clsx("h-10", isSelectedRow && "bg-zinc-500 text-slate-100")}>
       <td className="text-center">
         <input
           className="w-4 h-4"
@@ -44,22 +44,22 @@ function CashflowTableRow({
         />
       </td>
       <EditableTableCell
-        cashflowItemId={casfhlowItemId}
+        transactionId={casfhlowItemId}
         cellType="title"
         cellValue={title}
       />
       <EditableTableCell
-        cashflowItemId={casfhlowItemId}
+        transactionId={casfhlowItemId}
         cellType="amount"
         cellValue={amount}
       />
       <EditableTableCell
-        cashflowItemId={casfhlowItemId}
+        transactionId={casfhlowItemId}
         cellType="type"
         cellValue={cashflowType!}
       />
       <EditableTableCell
-        cashflowItemId={casfhlowItemId}
+        transactionId={casfhlowItemId}
         cellType="date"
         cellValue={date}
       />

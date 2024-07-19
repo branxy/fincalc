@@ -1,4 +1,4 @@
-import { Cashflow, FinancePeriod } from "@/features/types";
+import { Transactions, FinancePeriod } from "@/features/types";
 import { useTableCheckbox } from "@/lib/hooks";
 import { getMarkedCashflow } from "@/lib/utils";
 import CashflowTableRow from "./CashflowTableRow";
@@ -6,7 +6,7 @@ import CashflowTableActionButtons from "./CashflowTableActionButtons";
 import StartBalance from "./StartBalance";
 
 interface CasfhlowTableProps {
-  cashflow: Cashflow;
+  cashflow: Transactions;
   periods: Pick<FinancePeriod, "id" | "end_balance">[];
 }
 function CashflowTable({ cashflow, periods }: CasfhlowTableProps) {

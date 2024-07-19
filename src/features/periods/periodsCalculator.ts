@@ -1,4 +1,4 @@
-import { Cashflow, CashflowItem, FinancePeriod, Periods } from "../types";
+import { Transactions, Transaction, FinancePeriod, Periods } from "../types";
 
 interface ValueToUpdate {
   id: FinancePeriod["id"];
@@ -34,7 +34,7 @@ export function getPeriodsOnStartBalanceChange(
 export function getPeriodsOnEndBalanceChange(
   periods: Periods,
   currentPeriodIndex: number,
-  periodId: CashflowItem["period_id"],
+  periodId: Transaction["period_id"],
   whatChanged: "income" | "payment",
   difference: number
 ) {
@@ -64,7 +64,7 @@ export function getPeriodsOnEndBalanceChange(
 
 export function getPeriodsChangesOnTransactionsDelete(
   periods: Periods,
-  deletedTransactions: Cashflow
+  deletedTransactions: Transactions
 ) {
   const valuesToUpdate: Periods = [];
 

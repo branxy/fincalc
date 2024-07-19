@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Cashflow, FinancePeriod, Periods } from "../features/types";
+import { Transactions, FinancePeriod, Periods } from "../features/types";
 
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
@@ -18,8 +18,8 @@ export function generateTestCashflow(
   numberOfItems = 3,
   titles: string[],
   amounts: number[]
-): Cashflow {
-  const arr: Cashflow = [];
+): Transactions {
+  const arr: Transactions = [];
 
   for (let i = 0; i < numberOfItems; i++) {
     const title = titles[i];
@@ -49,7 +49,7 @@ export function generateTestCashflow(
 
 export function getMarkedCashflow(
   periods: Pick<FinancePeriod, "id" | "end_balance">[],
-  cashflow: Cashflow
+  cashflow: Transactions
 ) {
   // Returns an object with indexes of every last transaction in a period and that period's end_balance
   const returnObject: {

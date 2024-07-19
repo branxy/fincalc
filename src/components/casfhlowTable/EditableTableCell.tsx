@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Input } from "../ui/input";
 
 interface EditableTableCellProps {
-  cashflowItemId: CashflowItem["id"];
+  transactionId: Transaction["id"];
   cellType: "title" | "type" | "amount" | "date";
   cellValue: string | number;
 }
@@ -19,7 +19,7 @@ const inputType = {
 };
 
 function EditableTableCell({
-  cashflowItemId,
+  transactionId,
   cellType,
   cellValue,
 }: EditableTableCellProps) {
@@ -46,7 +46,7 @@ function EditableTableCell({
     if (inputDoesntExceedLimits && inputValue !== cellValue) {
       dispatch(
         transactionChanged({
-          transactionId: cashflowItemId,
+          transactionId: transactionId,
           whatChanged: cellType,
           newValue: cellType === "amount" ? Number(inputValue) : inputValue,
         })

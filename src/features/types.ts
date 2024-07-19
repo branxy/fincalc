@@ -10,7 +10,7 @@ export interface FinancePeriod {
 
 export type Periods = FinancePeriod[];
 
-export interface CashflowItem {
+export interface Transaction {
   id: string;
   period_id: FinancePeriod["id"];
   user_id: FinancePeriod["user_id"];
@@ -28,32 +28,32 @@ export interface CashflowItem {
   date_created: string;
 }
 
-export type Cashflow = CashflowItem[];
+export type Transactions = Transaction[];
 
 export interface CashFlowTable {
-  cashflow: Cashflow;
+  cashflow: Transactions;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
 }
 
 export interface StockCompensation {
-  id: CashflowItem["id"];
-  period_id: CashflowItem["period_id"];
+  id: Transaction["id"];
+  period_id: Transaction["period_id"];
   type: "income/stock";
-  title: CashflowItem["title"];
-  amount: CashflowItem["amount"];
-  date: CashflowItem["date"];
+  title: Transaction["title"];
+  amount: Transaction["amount"];
+  date: Transaction["date"];
 }
 
 export type StockCompensations = StockCompensation[];
 
 export interface FPCompensation {
-  id: CashflowItem["id"];
-  period_id: CashflowItem["period_id"];
+  id: Transaction["id"];
+  period_id: Transaction["period_id"];
   type: "income/forward-payment";
-  title: CashflowItem["title"];
-  amount: CashflowItem["amount"];
-  date: CashflowItem["date"];
+  title: Transaction["title"];
+  amount: Transaction["amount"];
+  date: Transaction["date"];
 }
 
 export type FPCompensations = FPCompensation[];

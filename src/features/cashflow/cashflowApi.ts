@@ -1,4 +1,4 @@
-import { Cashflow, CashflowItem } from "../types";
+import { Transactions, Transaction } from "../types";
 import { supabase } from "@/db/supabaseClient";
 
 export async function fetchCashflow() {
@@ -6,10 +6,10 @@ export async function fetchCashflow() {
 
   if (error) throw new Error(error.message);
 
-  return data as Cashflow;
+  return data as Transactions;
 }
 
-export async function uploadTransaction(payment: Omit<CashflowItem, "id">) {
+export async function uploadTransaction(payment: Omit<Transaction, "id">) {
   const { data, error } = await supabase
     .from("cashflow")
     .insert(payment)
@@ -20,11 +20,11 @@ export async function uploadTransaction(payment: Omit<CashflowItem, "id">) {
     throw new Error(error.message);
   }
   if (!data) throw new Error("No data received from database");
-  return data[0] as CashflowItem;
+  return data[0] as Transaction;
 }
 
 export async function updateTransaction(
-  transactionId: CashflowItem["id"],
+  transactionId: Transaction["id"],
   newValueType: "title" | "type" | "amount" | "date",
   newValue: string | number
 ) {
@@ -73,7 +73,7 @@ export async function updateTransaction(
 }
 
 export async function deleteCashflowItems(
-  casfhlowItemsIds: CashflowItem["id"][]
+  casfhlowItemsIds: Transaction["id"][]
 ) {
   const response = await supabase
     .from("cashflow")
