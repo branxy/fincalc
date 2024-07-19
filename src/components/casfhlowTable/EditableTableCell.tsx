@@ -1,6 +1,7 @@
 import {
   transactionAmountChangedAndPeriodsRecalculated,
   transactionChanged,
+  transactionTitleChanged,
 } from "@/features/cashflow/cashflowSlice";
 import { Transaction } from "@/features/types";
 import { useAppDispatch } from "@/lib/hooks";
@@ -58,7 +59,12 @@ function EditableTableCell({
   ) {
     switch (cellType) {
       case "title":
-        //
+        dispatch(
+          transactionTitleChanged({
+            transactionId,
+            newTitle: inputValue.toString(),
+          })
+        );
         break;
       case "amount":
         dispatch(

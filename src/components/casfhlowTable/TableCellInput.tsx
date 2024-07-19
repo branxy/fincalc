@@ -51,7 +51,19 @@ function TableCellInput({
         autoFocus={isEditing}
         onFocus={(e) => e.target.select()}
         onChange={(e) => setInputValue(e.target.value)}
-        onBlur={handleCellInputBlur}
+        onBlur={() => dispatchActionByCellType(cellType)}
+      />
+    ),
+    amount: (
+      <Input
+        type="text"
+        max="1000000000"
+        value={inputValue}
+        name="cell-value-input"
+        autoFocus={isEditing}
+        onFocus={(e) => e.target.select()}
+        onChange={(e) => setInputValue(e.target.value)}
+        onBlur={() => dispatchActionByCellType(cellType)}
       />
     ),
     type: (
@@ -87,18 +99,6 @@ function TableCellInput({
           })}
         </SelectContent>
       </Select>
-    ),
-    amount: (
-      <Input
-        type="text"
-        max="1000000000"
-        value={inputValue}
-        name="cell-value-input"
-        autoFocus={isEditing}
-        onFocus={(e) => e.target.select()}
-        onChange={(e) => setInputValue(e.target.value)}
-        onBlur={() => dispatchActionByCellType(cellType)}
-      />
     ),
     date: (
       <DatePicker

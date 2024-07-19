@@ -226,6 +226,36 @@ export const cashflowSlice = createAppSlice({
         },
       }
     ),
+    transactionTitleChanged: create.asyncThunk(
+      async ({
+        transactionId,
+        newTitle,
+      }: {
+        transactionId: Transaction["id"];
+        newTitle: Transaction["title"];
+      }) => {
+        const updatedTransaction = await updateTransaction(
+          transactionId,
+          "title",
+          newTitle
+        );
+
+        return updatedTransaction;
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state) => {
+          state.status = "failed";
+          toast.error("Failed to update transaction title");
+        },
+        fulfilled: (state, action) => {
+          casfhlowAdapter.upsertOne(state, action.payload as Transaction);
+          state.status = "succeeded";
+        },
+      }
+    ),
     transactionAmountChangedAndPeriodsRecalculated: create.asyncThunk(
       async (
         {
@@ -350,6 +380,7 @@ export const { selectAll: selectAllCashflow, selectIds: selectCashflowIds } =
 export const {
   fetchTransactions,
   transactionAdded,
+  transactionTitleChanged,
   transactionAmountChangedAndPeriodsRecalculated,
   transactionAmountChanged,
   transactionChanged,
