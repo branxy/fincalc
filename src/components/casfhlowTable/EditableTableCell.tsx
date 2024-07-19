@@ -1,22 +1,18 @@
-import { transactionChanged } from "@/features/cashflow/cashflowSlice";
-import { CashflowItem } from "@/features/types";
+import {
+  transactionAmountChangedAndPeriodsRecalculated,
+  transactionChanged,
+} from "@/features/cashflow/cashflowSlice";
+import { Transaction } from "@/features/types";
 import { useAppDispatch } from "@/lib/hooks";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
-import { Input } from "../ui/input";
+import TableCellInput from "./TableCellInput";
 
 interface EditableTableCellProps {
   transactionId: Transaction["id"];
   cellType: "title" | "type" | "amount" | "date";
   cellValue: string | number;
 }
-
-const inputType = {
-  title: "text",
-  date: "text",
-  type: "select",
-  amount: "number",
-};
 
 function EditableTableCell({
   transactionId,
@@ -60,15 +56,16 @@ function EditableTableCell({
     return (
       <td className="">
         <form onSubmit={handleCellFormSubmit}>
-          <Input
-            type={inputType[cellType]}
-            value={inputValue}
-            name="cell-value-input"
-            max="1000000000"
-            autoFocus={isEditing}
-            onFocus={(e) => e.target.select()}
-            onChange={(e) => setInputValue(e.target.value)}
-            onBlur={handleCellInputBlur}
+          <TableCellInput
+            transactionId={transactionId}
+            cellType={cellType}
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+            handleCellInputBlur={handleCellInputBlur}
+            dispatchActionByCellType={dispatchActionByCellType}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+            setIsHovered={setIsHovered}
           />
         </form>
       </td>
