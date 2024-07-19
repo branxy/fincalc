@@ -1,6 +1,7 @@
 import { Transaction } from "@/features/types";
 import EditableTableCell from "@/components/casfhlowTable/EditableTableCell";
 import clsx from "clsx";
+import TransactionsTableTitleCell from "./cells/TransactionsTableTitleCell";
 
 interface CashflowTableRowProps {
   transactionType: Transaction["type"];
@@ -43,11 +44,7 @@ function CashflowTableRow({
           checked={isSelectedRow}
         />
       </td>
-      <EditableTableCell
-        transactionId={casfhlowItemId}
-        cellType="title"
-        cellValue={title}
-      />
+      <TransactionsTableTitleCell title={title} transactionId={transactionId} />
       <EditableTableCell
         transactionId={transactionId}
         cellType="amount"
