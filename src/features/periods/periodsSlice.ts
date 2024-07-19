@@ -3,11 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Transaction, FinancePeriod } from "../types";
 import { createAppSlice } from "@/features/createAppSlice";
 import { RootState } from "../store";
-import {
-  fetchPeriodsFromDB,
-  updatePeriodsBalance,
-  uploadPeriod,
-} from "./periodsApi";
+import { fetchPeriodsFromDB, upsertPeriods, uploadPeriod } from "./periodsApi";
 import {
   getPeriodsChangesOnTransactionsDelete,
   getPeriodsOnEndBalanceChange,
@@ -171,7 +167,7 @@ export const periodsSlice = createAppSlice({
           balanceDifference
         );
 
-        const receivedPeriods = await updatePeriodsBalance(periodsToUpdateInDB);
+        const receivedPeriods = await upsertPeriods(periodsToUpdateInDB);
 
         return receivedPeriods;
       },
@@ -222,7 +218,7 @@ export const periodsSlice = createAppSlice({
             difference
           );
 
-          const newValues = await updatePeriodsBalance(valuesToUpdate);
+          const newValues = await upsertPeriods(valuesToUpdate);
 
           return newValues;
         } else {
@@ -268,7 +264,7 @@ export const periodsSlice = createAppSlice({
           deletedTransactions
         );
 
-        const periodsToUpdate = await updatePeriodsBalance(valuesToUpdate);
+        const periodsToUpdate = await upsertPeriods(valuesToUpdate);
 
         return { periodsToUpdate };
       },

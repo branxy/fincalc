@@ -23,7 +23,7 @@ export async function uploadPeriod(period: Omit<FinancePeriod, "id">) {
   return data[0];
 }
 
-export async function updatePeriodsBalance(periodsToUpdate: Periods) {
+export async function upsertPeriods(periodsToUpdate: Periods) {
   const { data, error } = await supabase
     .from("periods")
     .upsert(periodsToUpdate)
