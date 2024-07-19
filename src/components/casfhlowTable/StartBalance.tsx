@@ -8,7 +8,8 @@ import {
 } from "@/features/periods/periodsSlice";
 
 function StartBalance() {
-  const { start_balance } = useAppSelector((state) => selectFirstPeriod(state));
+  const { start_balance } =
+    useAppSelector((state) => selectFirstPeriod(state)) || 0;
   const [startBalance, setStartBalance] = useState(start_balance);
   const dispatch = useAppDispatch();
 
@@ -36,7 +37,7 @@ function StartBalance() {
       <Input
         type="number"
         id="start-balance-input"
-        placeholder={startBalance.toString()}
+        placeholder={`${startBalance}`}
         value={startBalance || ""}
         onChange={(e) => setStartBalance(Number(e.target.value))}
         onBlur={handleStartBalanceChange}
