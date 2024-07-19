@@ -2,6 +2,9 @@ import { Transaction } from "@/features/types";
 import EditableTableCell from "@/components/casfhlowTable/EditableTableCell";
 import clsx from "clsx";
 import TransactionsTableTitleCell from "./cells/TransactionsTableTitleCell";
+import TransactionsTableAmountCell from "./cells/TransactionsTableAmountCell";
+import { useAppSelector } from "@/lib/hooks";
+import { LoaderCircle } from "lucide-react";
 
 interface CashflowTableRowProps {
   transactionType: Transaction["type"];
@@ -24,12 +27,16 @@ function CashflowTableRow({
   periodEndBalance,
   handleSelectTransaction,
 }: CashflowTableRowProps) {
+  const periodsStatus = useAppSelector((state) => state.periods.status);
   const isSelectedRow = Boolean(
-    selectedTransactions?.find((id) => id === transactionId)
-  );
-  const endBalance = typeof periodEndBalance === "number" && (
-    <td>${periodEndBalance}</td>
-  );
+      selectedTransactions?.find((id) => id === transactionId)
+    ),
+    isLoading = periodsStatus === "loading",
+    endBalance = isLoading ? (
+      <LoaderCircle className="animate-spin" />
+    ) : (
+      typeof periodEndBalance === "number" && <td>${periodEndBalance}</td>
+    );
 
   return (
     <tr className={clsx("h-10", isSelectedRow && "bg-zinc-500 text-slate-100")}>
