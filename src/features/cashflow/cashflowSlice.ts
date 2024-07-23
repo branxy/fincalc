@@ -14,8 +14,8 @@ import { supabase } from "@/db/supabaseClient";
 import { toast } from "sonner";
 import {
   cashflowDeletedFromCashflow,
-  endBalanceChanged,
   periodAdded,
+  periodAddedWithDate,
   periodsRecalculated,
 } from "../periods/periodsSlice";
 import { differenceInCalendarDays } from "date-fns";
@@ -112,115 +112,6 @@ export const cashflowSlice = createAppSlice({
         },
       }
     ),
-    transactionChanged: create.asyncThunk(
-      async (
-        {
-          transactionId,
-          whatChanged,
-          newValue,
-        }: {
-          transactionId: Transaction["id"];
-          whatChanged: "title" | "type" | "amount" | "date";
-          newValue: string | number;
-        },
-        { dispatch, getState }
-      ) => {
-        const {
-          cashflow: { entities },
-          periods: { entities: periodEntities, ids: periodsIds },
-        } = getState() as RootState;
-        const updatedTransaction = entities[transactionId];
-
-        if (whatChanged === "amount" && typeof newValue === "number") {
-          if (updatedTransaction) {
-            const difference = newValue - updatedTransaction.amount;
-            dispatch(
-              endBalanceChanged({
-                periodId: updatedTransaction.period_id,
-                whatChanged:
-                  updatedTransaction.type === "income/profit"
-                    ? "income"
-                    : "payment",
-                difference,
-              })
-            );
-          }
-
-          const updatedValue = await updateTransaction(
-            transactionId,
-            whatChanged,
-            newValue
-          );
-
-          return updatedValue;
-        } else if (whatChanged === "date") {
-          const transactionPeriod =
-            periodEntities[updatedTransaction.period_id];
-
-          const newValueIsWithinSamePeriod =
-            newValue >= transactionPeriod.start_date &&
-            newValue <= transactionPeriod.start_date + 7;
-          if (newValueIsWithinSamePeriod) {
-            const updatedValue = await updateTransaction(
-              transactionId,
-              whatChanged,
-              newValue
-            );
-
-            return updatedValue;
-          } else {
-            // handle moving transaction to another period — change period_id on a transaction
-
-            // search for another period to attach the transaction to
-            const periods = Object.values(periodEntities);
-            const newTransactionPeriod = periods.find(
-              (p) => p.start_date <= newValue && p.start_date + 7 >= newValue
-            );
-
-            if (newTransactionPeriod) {
-              const newTransaction: Transaction = {
-                ...updatedTransaction,
-                period_id: newTransactionPeriod.id,
-              };
-
-              const periodsStartDateOrder =
-                transactionPeriod.start_date.localeCompare(
-                  newTransactionPeriod.start_date
-                );
-
-              if (periodsStartDateOrder === -1) {
-                // new period comes after the current one and you need to start recalculation from the current period
-                // dispatch balance recalculation
-              } else {
-                // new period comes before the current one and you need to start recalculation from the new period
-                // dispatch balance recalculation
-              }
-              // upload to db
-              const updatedValue = await upsertTransaction(newTransaction);
-
-              // return updatedValue;
-            } else {
-              // create new period
-              // dispatch periodAdded with desired date frame
-            }
-          }
-        }
-      },
-      {
-        pending: (state) => {
-          state.status = "loading";
-        },
-        rejected: (state) => {
-          state.status = "failed";
-          toast.error("Failed to update the transaction");
-        },
-        fulfilled: (state, action) => {
-          state.status = "succeeded";
-          casfhlowAdapter.upsertOne(state, action.payload as Transaction);
-          toast.success("Transaction updated");
-        },
-      }
-    ),
     transactionTitleChanged: create.asyncThunk(
       async ({
         transactionId,
@@ -268,20 +159,15 @@ export const cashflowSlice = createAppSlice({
 
         const {
           cashflow: { entities },
-          periods: { ids },
         } = getState() as RootState;
 
         const pendingTransaction = entities[transactionId];
-        const startIndex = ids.findIndex(
-          (periodId) => periodId === pendingTransaction.period_id
+
+        dispatch(
+          periodsRecalculated({
+            originallyAffectedPeriodId: pendingTransaction.period_id,
+          })
         );
-
-        if (startIndex === -1)
-          throw new Error(
-            "Failed to find the corresponding period for transaction"
-          );
-
-        dispatch(periodsRecalculated({ startIndex }));
       },
       {
         pending: (state) => {
@@ -324,6 +210,227 @@ export const cashflowSlice = createAppSlice({
         },
         fulfilled: (state, action) => {
           casfhlowAdapter.upsertOne(state, action.payload as Transaction);
+          state.status = "succeeded";
+        },
+      }
+    ),
+    transactionTypeChangedAndPeriodsRecalculated: create.asyncThunk(
+      async (
+        {
+          transactionId,
+          newType,
+        }: {
+          transactionId: Transaction["id"];
+          newType: Transaction["type"];
+        },
+        { dispatch, getState }
+      ) => {
+        await dispatch(
+          transactionTypeChanged({ transactionId, newType })
+        ).unwrap();
+
+        const {
+          cashflow: { entities },
+        } = getState() as RootState;
+
+        const pendingTransaction = entities[transactionId];
+
+        dispatch(
+          periodsRecalculated({
+            originallyAffectedPeriodId: pendingTransaction.period_id,
+          })
+        );
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state) => {
+          state.status = "failed";
+        },
+        fulfilled: (state) => {
+          state.status = "succeeded";
+          toast.success(
+            "Transaction type and its corresponding period are updated"
+          );
+        },
+      }
+    ),
+    transactionTypeChanged: create.asyncThunk(
+      async ({
+        transactionId,
+        newType,
+      }: {
+        transactionId: Transaction["id"];
+        newType: Transaction["type"];
+      }) => {
+        const updatedTransaction = await updateTransaction(
+          transactionId,
+          "type",
+          newType
+        );
+
+        return updatedTransaction;
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state) => {
+          state.status = "failed";
+          toast.error("Failed to update transaction type");
+        },
+        fulfilled: (state, action) => {
+          casfhlowAdapter.upsertOne(state, action.payload as Transaction);
+          state.status = "succeeded";
+        },
+      }
+    ),
+    transactionDateChangedAndPeriodsRecalculated: create.asyncThunk(
+      async (
+        {
+          transactionId,
+          newDate,
+        }: {
+          transactionId: Transaction["id"];
+          newDate: Transaction["date"];
+        },
+        { dispatch, getState }
+      ) => {
+        const {
+          cashflow: { entities },
+        } = getState() as RootState;
+        const pendingTransaction = entities[transactionId];
+
+        const { newTransaction: updatedTransaction, initialStartBalance } =
+          await dispatch(
+            transactionDateChanged({ transactionId, newDate })
+          ).unwrap();
+
+        // if transaction had to be moved to a new period, recalculate balance
+        if (pendingTransaction.period_id !== updatedTransaction.period_id) {
+          dispatch(
+            periodsRecalculated({
+              originallyAffectedPeriodId: pendingTransaction.period_id,
+              newAffectedPeriodId: updatedTransaction.period_id,
+              originalStartBalance: initialStartBalance,
+            })
+          );
+        }
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state) => {
+          state.status = "failed";
+        },
+        fulfilled: (state) => {
+          state.status = "succeeded";
+          toast.success(
+            "Transaction type and its corresponding period are updated"
+          );
+        },
+      }
+    ),
+    transactionDateChanged: create.asyncThunk(
+      async (
+        {
+          transactionId,
+          newDate,
+        }: {
+          transactionId: Transaction["id"];
+          newDate: Transaction["date"];
+        },
+        { dispatch, getState }
+      ) => {
+        // if the new date is outside of scope of the new period, assign the transaction to a new period
+        const {
+          periods: { entities: periodEntities },
+          cashflow: { entities: transactionEntities },
+        } = getState() as RootState;
+
+        const pendingTransaction = transactionEntities[transactionId],
+          pendingPeriod = periodEntities[pendingTransaction.period_id],
+          periods = Object.values(periodEntities),
+          startBalance = getStartBalance(periods),
+          newDateIsWithinTheSamePeriod =
+            newDate >= pendingPeriod.start_date &&
+            newDate <
+              getPeriodWeekByDate(pendingPeriod.start_date).periodEndDate;
+
+        switch (true) {
+          case newDateIsWithinTheSamePeriod: {
+            const updatedTransaction = await updateTransaction(
+              transactionId,
+              "date",
+              newDate
+            );
+
+            return { newTransaction: updatedTransaction };
+          }
+          case !newDateIsWithinTheSamePeriod: {
+            // attempt to find an existing period with appropriate dates range
+            const existingPeriodForNewDate = periods.findLast(
+              (p) =>
+                p.start_date <= newDate &&
+                differenceInCalendarDays(newDate, p.start_date) < 7
+            );
+
+            if (existingPeriodForNewDate?.start_date) {
+              const newTransaction: Transaction = {
+                ...pendingTransaction,
+                period_id: existingPeriodForNewDate.id,
+                date: newDate,
+              };
+
+              const upsertedTransaction =
+                await upsertTransaction(newTransaction);
+
+              return { newTransaction: upsertedTransaction };
+            } else {
+              // if appropriate period doesn't already exist, create it
+              const { periodStartDate: newPeriodStartDate } =
+                getPeriodWeekByDate(newDate);
+              const { id } = await dispatch(
+                periodAddedWithDate({ newPeriodStartDate })
+              ).unwrap();
+
+              const newTransaction: Transaction = {
+                ...pendingTransaction,
+                period_id: id,
+                date: newDate,
+              };
+
+              const upsertedTransaction =
+                await upsertTransaction(newTransaction);
+
+              return {
+                newTransaction: upsertedTransaction,
+                initialStartBalance: startBalance,
+              };
+            }
+          }
+
+          default:
+            throw new Error("Unexpected relation between new date and periods");
+        }
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state) => {
+          state.status = "failed";
+          toast.error("Failed to update transaction date");
+        },
+        fulfilled: (state, action) => {
+          if ("newTransaction" in action.payload) {
+            casfhlowAdapter.upsertOne(
+              state,
+              action.payload.newTransaction as Transaction
+            );
+          }
           state.status = "succeeded";
         },
       }
@@ -378,7 +485,10 @@ export const {
   transactionTitleChanged,
   transactionAmountChangedAndPeriodsRecalculated,
   transactionAmountChanged,
-  transactionChanged,
+  transactionTypeChangedAndPeriodsRecalculated,
+  transactionTypeChanged,
+  transactionDateChangedAndPeriodsRecalculated,
+  transactionDateChanged,
   deletedCashflowItems,
 } = cashflowSlice.actions;
 

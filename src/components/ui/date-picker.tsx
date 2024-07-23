@@ -4,57 +4,54 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { cn, getDBDateFromObject } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/hooks";
-import { transactionChanged } from "@/features/cashflow/cashflowSlice";
+import { transactionDateChangedAndPeriodsRecalculated } from "@/features/cashflow/cashflowSlice";
 import { Transaction } from "@/features/types";
 
 function DatePicker({
   transactionId,
-  inputValue,
+  date,
+  finishEditing,
 }: {
   transactionId: Transaction["id"];
-  inputValue: string;
+  date: string;
+  finishEditing: () => void;
 }) {
-  const [date, setDate] = useState<Date | undefined>(new Date(inputValue));
   const dispatch = useAppDispatch();
 
-  function handleSelectDate(e: Date | undefined) {
-    if (e) {
-      console.log({ e });
-
-      setDate(e);
+  function handleSelectDate(newDate: Date | undefined) {
+    if (newDate) {
+      finishEditing();
       dispatch(
-        transactionChanged({
+        transactionDateChangedAndPeriodsRecalculated({
           transactionId,
-          whatChanged: "date",
-          newValue: getDBDateFromObject(e),
+          newDate: getDBDateFromObject(newDate),
         })
       );
     }
   }
 
   return (
-    <Popover defaultOpen={true}>
+    <Popover defaultOpen={true} onOpenChange={finishEditing}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
           className={cn(
             "justify-start text-left font-normal",
-            !inputValue && "text-muted-foreground"
+            !date && "text-muted-foreground"
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          <span>{inputValue || "Pick a date"}</span>
+          <span>{date || "Pick a date"}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="p-0">
         <Calendar
           mode="single"
-          selected={date}
+          selected={new Date(date)}
           onSelect={handleSelectDate}
           initialFocus
         />

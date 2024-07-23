@@ -1,10 +1,11 @@
 import { Transaction } from "@/features/types";
-import EditableTableCell from "@/components/casfhlowTable/EditableTableCell";
 import clsx from "clsx";
 import TransactionsTableTitleCell from "./cells/TransactionsTableTitleCell";
 import TransactionsTableAmountCell from "./cells/TransactionsTableAmountCell";
 import { useAppSelector } from "@/lib/hooks";
 import { LoaderCircle } from "lucide-react";
+import TransactionsTableTypeCell from "./cells/TransactionsTableTypeCell";
+import TransactionsTableDateCell from "./cells/TransactionsTableDateCell";
 
 interface CashflowTableRowProps {
   transactionType: Transaction["type"];
@@ -63,17 +64,11 @@ function CashflowTableRow({
         amount={amount}
         transactionId={transactionId}
       />
-
-      <EditableTableCell
+      <TransactionsTableTypeCell
+        type={transactionType}
         transactionId={transactionId}
-        cellType="type"
-        cellValue={transactionType!}
       />
-      <EditableTableCell
-        transactionId={transactionId}
-        cellType="date"
-        cellValue={date}
-      />
+      <TransactionsTableDateCell transactionId={transactionId} date={date} />
       {endBalance}
     </tr>
   );

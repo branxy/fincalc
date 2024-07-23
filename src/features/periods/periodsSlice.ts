@@ -1,24 +1,28 @@
-import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
-import { v4 as uuidv4 } from "uuid";
-import { Transaction, FinancePeriod } from "../types";
 import { createAppSlice } from "@/features/createAppSlice";
-import { RootState } from "../store";
-import { fetchPeriodsFromDB, upsertPeriods, uploadPeriod } from "./periodsApi";
-import {
-  getPeriodsChangesOnTransactionsDelete,
-  getPeriodsOnEndBalanceChange,
-  getPeriodsOnStartBalanceChange,
-  recalculatePeriodsFromIndex,
-} from "./periodsCalculator";
-import { toast } from "sonner";
+import { createAppSelector } from "@/lib/hooks";
 import {
   getCurrentPeriodId,
   getCurrentYearAndMonthNumber,
   getDBStartDate,
   getPreviousPeriodAndCurrentWeek,
+  getPreviousPeriodByDate,
   performAuthCheck,
 } from "@/lib/utils";
-import { createAppSelector } from "@/lib/hooks";
+import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
+import { toast } from "sonner";
+import { RootState } from "../store";
+import { FinancePeriod, Transaction } from "@/features/types";
+import {
+  fetchPeriodsFromDB,
+  uploadPeriod,
+  upsertPeriods,
+} from "@periods/periodsApi";
+import {
+  getPeriodsChangesOnTransactionsDelete,
+  getPeriodsOnEndBalanceChange,
+  getPeriodsOnStartBalanceChange,
+  recalculatePeriods,
+} from "@/features/periods/periodsCalculator";
 
 const periodsAdapter = createEntityAdapter<FinancePeriod>({
   sortComparer: (a, b) => a.start_date.localeCompare(b.start_date),
@@ -62,10 +66,9 @@ export const periodsSlice = createAppSlice({
         const userId = await performAuthCheck();
 
         const {
-          periods: { entities },
-        } = getState() as RootState;
-
-        const periods = Object.values(entities);
+            periods: { entities },
+          } = getState() as RootState,
+          periods = Object.values(entities);
         const [prevPeriod, currentWeek] =
           getPreviousPeriodAndCurrentWeek(periods);
 
@@ -110,7 +113,65 @@ export const periodsSlice = createAppSlice({
         },
         fulfilled: (state, action) => {
           periodsAdapter.addOne(state, action.payload);
+          state.status = "succeeded";
+        },
+      }
+    ),
+    periodAddedWithDate: create.asyncThunk(
+      async (
+        {
+          newPeriodStartDate,
+        }: {
+          newPeriodStartDate: FinancePeriod["start_date"];
+        },
+        { getState }
+      ) => {
+        const userId = await performAuthCheck();
 
+        const {
+          periods: { entities },
+        } = getState() as RootState;
+
+        const periods = Object.values(entities);
+        const prevPeriod = getPreviousPeriodByDate(periods, newPeriodStartDate);
+
+        let newPeriod: Omit<FinancePeriod, "id">;
+
+        if (prevPeriod) {
+          const { end_balance, stock, forward_payments } = prevPeriod;
+
+          newPeriod = {
+            user_id: userId,
+            start_date: newPeriodStartDate,
+            start_balance: end_balance,
+            end_balance,
+            stock,
+            forward_payments,
+          };
+        } else {
+          newPeriod = {
+            user_id: userId,
+            start_date: newPeriodStartDate,
+            start_balance: 0,
+            end_balance: 0,
+            stock: 0,
+            forward_payments: 0,
+          };
+        }
+        const receivedPeriod: FinancePeriod = await uploadPeriod(newPeriod);
+        return receivedPeriod;
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state) => {
+          state.status = "failed";
+        },
+        fulfilled: (state, action) => {
+          periodsAdapter.addOne(state, action.payload);
+          const periods = Object.values(state.entities);
+          periods.sort((a, b) => a.start_date.localeCompare(b.start_date));
           state.status = "succeeded";
         },
       }
@@ -118,21 +179,29 @@ export const periodsSlice = createAppSlice({
     periodsRecalculated: create.asyncThunk(
       async (
         {
-          startIndex,
+          originallyAffectedPeriodId,
+          newAffectedPeriodId,
+          originalStartBalance,
         }: {
-          startIndex: number;
+          originallyAffectedPeriodId: FinancePeriod["id"];
+          newAffectedPeriodId?: FinancePeriod["id"];
+          originalStartBalance?: FinancePeriod["start_balance"];
         },
         { getState }
       ) => {
         const {
-          periods: { entities: periodEntities },
-          cashflow: { entities: transactionEntities },
-        } = getState() as RootState;
+            periods: { entities: periodEntities },
+            cashflow: { entities: transactionEntities },
+          } = getState() as RootState,
+          periods = Object.values(periodEntities),
+          transactions = Object.values(transactionEntities);
 
-        const recalculatedPeriods = recalculatePeriodsFromIndex(
-          Object.values(periodEntities),
-          Object.values(transactionEntities),
-          startIndex
+        const recalculatedPeriods = recalculatePeriods(
+          periods,
+          transactions,
+          originallyAffectedPeriodId,
+          newAffectedPeriodId,
+          originalStartBalance
         );
 
         const receivedPeriods = await upsertPeriods(recalculatedPeriods);
@@ -294,14 +363,14 @@ export const periodsSlice = createAppSlice({
       }
     ),
   }),
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  extraReducers: (builder) => {},
+  extraReducers: () => {},
   selectors: {},
 });
 
 export const {
   fetchPeriods,
   periodAdded,
+  periodAddedWithDate,
   periodsRecalculated,
   startBalanceChanged,
   endBalanceChanged,
@@ -312,6 +381,7 @@ export const {
   selectAll: selectAllPeriods,
   selectById: selectPeriodById,
   selectIds: selectPeriodsIds,
+  selectEntities: selectPeriodEntities,
 } = periodsAdapter.getSelectors((state: RootState) => state.periods);
 
 export const selectPeriodsIdsAndEndBalance = createAppSelector(
