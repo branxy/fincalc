@@ -1,5 +1,5 @@
-import { Transactions, Transaction } from "../types";
 import { supabase } from "@/db/supabaseClient";
+import { Transaction, Transactions } from "@/features/types";
 
 export async function fetchCashflow() {
   const { data, error } = await supabase.from("cashflow").select();

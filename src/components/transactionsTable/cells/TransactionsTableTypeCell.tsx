@@ -1,6 +1,6 @@
+import EditCellButton from "@/components/transactionsTable/cells/EditCellButton";
 import { Transaction } from "@/features/types";
 import { ReturnWithoutCellState, useEditTableCell } from "@/lib/hooks";
-import EditCellButton from "./EditCellButton";
 
 import {
   Select,
@@ -12,8 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Fragment } from "react/jsx-runtime";
 import { transactionTypeChangedAndPeriodsRecalculated } from "@/features/cashflow/cashflowSlice";
+import { Fragment } from "react/jsx-runtime";
 
 interface TransactionsTableTypeCellProps {
   transactionId: Transaction["id"];

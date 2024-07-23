@@ -4,7 +4,7 @@ import { useAppSelector } from "@/lib/hooks";
 import { selectAllCashflow } from "@/features/cashflow/cashflowSlice";
 import { selectPeriodsIdsAndEndBalance } from "@/features/periods/periodsSlice";
 
-import CashflowTable from "@/components/casfhlowTable/CashflowTable";
+import CashflowTable from "@/components/transactionsTable/CashflowTable";
 
 export const Route = createLazyFileRoute("/list")({
   component: List,

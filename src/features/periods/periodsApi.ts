@@ -1,4 +1,4 @@
-import { FinancePeriod, Periods } from "../types";
+import { FinancePeriod, Periods } from "@/features/types";
 import { v4 as uuidv4 } from "uuid";
 import { supabase } from "@/db/supabaseClient";
 

@@ -1,7 +1,8 @@
-import { Link } from "@tanstack/react-router";
-import { ModeToggle } from "./mode-toggle";
-import { Button } from "./ui/button";
 import { supabase } from "@/db/supabaseClient";
+import { Link } from "@tanstack/react-router";
+
+import { ModeToggle } from "@/components/mode-toggle";
+import { Button } from "@/components/ui/button";
 
 const generalLinkClasses =
     "px-2 pb-1 hover:ring-1 ring-green-300 rounded align-baseline",

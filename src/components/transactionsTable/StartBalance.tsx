@@ -1,11 +1,11 @@
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   selectFirstPeriod,
   startBalanceChanged,
 } from "@/features/periods/periodsSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { useState } from "react";
 
 function StartBalance() {
   const { start_balance } =

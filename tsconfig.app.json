@@ -25,7 +25,9 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@periods/*": ["./src/features/periods/*"],
+      "@transactions/*": ["./src/features/cashflow/*"]
     }
   },
   "include": ["src"]

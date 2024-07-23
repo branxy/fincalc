@@ -1,11 +1,11 @@
+import TransactionsTableDateCell from "@/components/transactionsTable//cells/TransactionsTableDateCell";
+import TransactionsTableTypeCell from "@/components/transactionsTable//cells/TransactionsTableTypeCell";
+import TransactionsTableAmountCell from "@/components/transactionsTable/cells/TransactionsTableAmountCell";
+import TransactionsTableTitleCell from "@/components/transactionsTable/cells/TransactionsTableTitleCell";
 import { Transaction } from "@/features/types";
-import clsx from "clsx";
-import TransactionsTableTitleCell from "./cells/TransactionsTableTitleCell";
-import TransactionsTableAmountCell from "./cells/TransactionsTableAmountCell";
 import { useAppSelector } from "@/lib/hooks";
+import clsx from "clsx";
 import { LoaderCircle } from "lucide-react";
-import TransactionsTableTypeCell from "./cells/TransactionsTableTypeCell";
-import TransactionsTableDateCell from "./cells/TransactionsTableDateCell";
 
 interface CashflowTableRowProps {
   transactionType: Transaction["type"];

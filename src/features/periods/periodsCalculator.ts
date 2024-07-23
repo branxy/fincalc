@@ -1,4 +1,9 @@
-import { FinancePeriod, Periods, Transaction, Transactions } from "../types";
+import {
+  FinancePeriod,
+  Periods,
+  Transaction,
+  Transactions,
+} from "@/features/types";
 
 interface ValueToUpdate {
   id: FinancePeriod["id"];

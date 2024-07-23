@@ -1,11 +1,11 @@
+import { cashflowSlice } from "@/features/cashflow/cashflowSlice";
+import { periodsSlice } from "@/features/periods/periodsSlice";
 import {
   Action,
   combineSlices,
   configureStore,
   ThunkAction,
 } from "@reduxjs/toolkit";
-import { cashflowSlice } from "./cashflow/cashflowSlice";
-import { periodsSlice } from "./periods/periodsSlice";
 
 const rootReducer = combineSlices(periodsSlice, cashflowSlice);
 

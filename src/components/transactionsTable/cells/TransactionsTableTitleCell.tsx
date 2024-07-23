@@ -1,27 +1,27 @@
-import { transactionAmountChangedAndPeriodsRecalculated } from "@/features/cashflow/cashflowSlice";
+import EditCellButton from "@/components/transactionsTable/cells/EditCellButton";
+import { Input } from "@/components/ui/input";
+import { transactionTitleChanged } from "@/features/cashflow/cashflowSlice";
 import { Transaction } from "@/features/types";
 import { ReturnWithCellState, useEditTableCell } from "@/lib/hooks";
-import EditCellButton from "./EditCellButton";
-import { Input } from "@/components/ui/input";
 
-interface TransactionsTableAmountCellProps {
+interface TransactionsTableTitleCellProps {
   transactionId: Transaction["id"];
-  amount: number;
+  title: string;
 }
-function TransactionsTableAmountCell({
+function TransactionsTableTitleCell({
   transactionId,
-  amount,
-}: TransactionsTableAmountCellProps) {
+  title,
+}: TransactionsTableTitleCellProps) {
   const [
-    amountState,
-    setAmountState,
+    titleState,
+    setTitleState,
     isEditing,
     setIsEditing,
     isHovered,
     setIsHovered,
     finishEditing,
     dispatch,
-  ] = useEditTableCell(amount) as ReturnWithCellState<number>;
+  ] = useEditTableCell(title) as ReturnWithCellState<string>;
 
   function handleCellFormSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -30,14 +30,14 @@ function TransactionsTableAmountCell({
 
   function finishEditingAndSave() {
     finishEditing();
-    if (amount !== amountState) dispatchAction();
+    if (title !== titleState) dispatchAction();
   }
 
   function dispatchAction() {
     dispatch(
-      transactionAmountChangedAndPeriodsRecalculated({
+      transactionTitleChanged({
         transactionId,
-        newAmount: amountState,
+        newTitle: titleState.toString(),
       })
     );
   }
@@ -46,15 +46,14 @@ function TransactionsTableAmountCell({
     <>
       {isEditing ? (
         <td>
-          <form onSubmit={handleCellFormSubmit}>
+          <form className="h-full" onSubmit={handleCellFormSubmit}>
             <Input
-              type="number"
-              defaultValue={amountState}
-              max="1000000000"
-              name="transaction-amount"
+              type="text"
+              value={titleState}
+              name="cell-value-input"
               autoFocus={isEditing}
               onFocus={(e) => e.target.select()}
-              onChange={(e) => setAmountState(Number(e.target.value))}
+              onChange={(e) => setTitleState(e.target.value)}
               onBlur={finishEditingAndSave}
             />
           </form>
@@ -65,10 +64,7 @@ function TransactionsTableAmountCell({
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <span>
-            {typeof amount === "number" && "$"}
-            {amount}
-          </span>
+          <span>{title}</span>
           <EditCellButton isHovered={isHovered} setIsEditing={setIsEditing} />
         </td>
       )}
@@ -76,4 +72,4 @@ function TransactionsTableAmountCell({
   );
 }
 
-export default TransactionsTableAmountCell;
+export default TransactionsTableTitleCell;

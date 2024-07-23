@@ -1,11 +1,13 @@
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { routeTree } from "./routeTree.gen.ts";
+
 import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { routeTree } from "@/routeTree.gen.ts";
+
 import { Provider } from "react-redux";
 import { store } from "@/features/store.ts";
 
-import "./index.css";
+import "@/index.css";
 
 const router = createRouter({ routeTree });
 

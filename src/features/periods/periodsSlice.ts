@@ -1,4 +1,12 @@
 import { createAppSlice } from "@/features/createAppSlice";
+import {
+  getPeriodsChangesOnTransactionsDelete,
+  getPeriodsOnEndBalanceChange,
+  getPeriodsOnStartBalanceChange,
+  recalculatePeriods,
+} from "@/features/periods/periodsCalculator";
+import { RootState } from "@/features/store";
+import { FinancePeriod, Transaction } from "@/features/types";
 import { createAppSelector } from "@/lib/hooks";
 import {
   getCurrentPeriodId,
@@ -8,21 +16,13 @@ import {
   getPreviousPeriodByDate,
   performAuthCheck,
 } from "@/lib/utils";
-import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
-import { toast } from "sonner";
-import { RootState } from "../store";
-import { FinancePeriod, Transaction } from "@/features/types";
 import {
   fetchPeriodsFromDB,
   uploadPeriod,
   upsertPeriods,
 } from "@periods/periodsApi";
-import {
-  getPeriodsChangesOnTransactionsDelete,
-  getPeriodsOnEndBalanceChange,
-  getPeriodsOnStartBalanceChange,
-  recalculatePeriods,
-} from "@/features/periods/periodsCalculator";
+import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
+import { toast } from "sonner";
 
 const periodsAdapter = createEntityAdapter<FinancePeriod>({
   sortComparer: (a, b) => a.start_date.localeCompare(b.start_date),

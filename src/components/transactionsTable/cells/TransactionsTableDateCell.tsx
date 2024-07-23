@@ -1,6 +1,6 @@
+import EditCellButton from "@/components/transactionsTable/cells/EditCellButton";
 import { Transaction } from "@/features/types";
 import { ReturnWithoutCellState, useEditTableCell } from "@/lib/hooks";
-import EditCellButton from "./EditCellButton";
 
 import DatePicker from "@/components/ui/date-picker";
 
