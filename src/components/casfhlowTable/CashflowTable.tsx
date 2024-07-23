@@ -38,7 +38,7 @@ function CashflowTable({ cashflow, periods }: CasfhlowTableProps) {
     );
   });
   return (
-    <div className="md:overflow-x-auto h-full mt-6">
+    <div className="md:overflow-x-auto mt-6">
       <div className="flex sm:flex-row items-end sm: justify-between">
         <CashflowTableActionButtons
           selectedTransactions={selectedTransactions}

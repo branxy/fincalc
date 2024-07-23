@@ -12,7 +12,7 @@ store.dispatch(fetchTransactions());
 
 function App() {
   return (
-    <div className="flex h-screen relative">
+    <div className="h-screen md:flex relative">
       <ThemeProvider defaultTheme="dark" storageKey="fincalc-ui-theme">
         <Navbar />
         <Outlet />

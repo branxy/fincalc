@@ -46,7 +46,7 @@ function TransactionsTableTitleCell({
     <>
       {isEditing ? (
         <td>
-          <form onSubmit={handleCellFormSubmit}>
+          <form className="h-full" onSubmit={handleCellFormSubmit}>
             <Input
               type="text"
               value={titleState}

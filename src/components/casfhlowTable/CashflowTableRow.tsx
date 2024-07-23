@@ -39,7 +39,12 @@ function CashflowTableRow({
     );
 
   return (
-    <tr className={clsx("h-10", isSelectedRow && "bg-zinc-500 text-slate-100")}>
+    <tr
+      className={clsx(
+        "h-[44px]",
+        isSelectedRow && "bg-zinc-500 text-slate-100"
+      )}
+    >
       <td className="text-center">
         <input
           className="w-4 h-4"

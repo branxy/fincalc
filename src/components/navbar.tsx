@@ -9,7 +9,7 @@ const generalLinkClasses =
 
 function Navbar() {
   return (
-    <nav className="absolute md:static bg-background left-0 bottom-0 w-full flex items-center border-t-2 md:h-full md:flex-col md:justify-between md:w-32 md:border-r-2 px-4 py-3">
+    <nav className="absolute md:static bg-background left-0 bottom-0 w-full flex items-center border-t-2 md:h-screen overflow-hidden md:flex-col md:justify-between md:w-32 md:border-r-2 px-4 py-3">
       <ul className="flex flex-1 justify-center md:justify-start md:flex-col gap-2.5">
         <li>
           <Link
