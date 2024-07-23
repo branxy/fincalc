@@ -1,6 +1,11 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Transactions, FinancePeriod, Periods } from "../features/types";
+import {
+  Transactions,
+  FinancePeriod,
+  Periods,
+  Transaction,
+} from "../features/types";
 
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
@@ -126,6 +131,7 @@ export function getCurrentMonthNumber() {
 export function getCurrentYearNumber() {
   return new Date().getFullYear();
 }
+
 export function getCurrentYearAndMonthNumber() {
   const rawDate = new Date(),
     year = rawDate.getFullYear(),
@@ -141,6 +147,13 @@ interface Week {
 
 export function getCurrentDayOfMonthNumber() {
   return new Date().getDate();
+}
+
+export function getNumberOfDaysInMonthByDate(date: Transaction["date"]) {
+  const [year, month] = date.split("-"),
+    numberOfDaysInAMonth = new Date(Number(year), Number(month), 0).getDate();
+
+  return numberOfDaysInAMonth;
 }
 
 export function getNumberOfDaysInCurrentMonth() {
@@ -161,24 +174,7 @@ export function getDBStartDate(year: number, month: number, day: number) {
 
 export function getCurrentWeek() {
   const daysInAMonth = getNumberOfDaysInCurrentMonth(),
-    weeks: Week[] = [
-      {
-        startDate: 1,
-        endDate: 8,
-      },
-      {
-        startDate: 8,
-        endDate: 15,
-      },
-      {
-        startDate: 15,
-        endDate: 22,
-      },
-      {
-        startDate: 22,
-        endDate: daysInAMonth,
-      },
-    ],
+    weeks = getWeeksByDaysInAMonth(daysInAMonth),
     today = getCurrentDayOfMonthNumber(),
     currentWeek = weeks.find(
       (w) => w.startDate <= today && w.endDate >= today
@@ -187,15 +183,56 @@ export function getCurrentWeek() {
   return currentWeek;
 }
 
+export function getWeeksByDaysInAMonth(daysInAMonth: number) {
+  const weeks: Week[] = [
+    {
+      startDate: 1,
+      endDate: 7,
+    },
+    {
+      startDate: 8,
+      endDate: 14,
+    },
+    {
+      startDate: 15,
+      endDate: 21,
+    },
+    {
+      startDate: 22,
+      endDate: daysInAMonth,
+    },
+  ];
+
+  return weeks;
+}
+
+export function getPeriodWeekByDate(date: Transaction["date"]) {
+  const numberOfDaysInAMonth = getNumberOfDaysInMonthByDate(date),
+    weeks = getWeeksByDaysInAMonth(numberOfDaysInAMonth),
+    [year, month, day] = date.split("-");
+
+  const week = weeks.find(
+    (w) => w.startDate <= Number(day) && w.endDate >= Number(day)
+  )!;
+
+  return {
+    periodStartDate: `${year}-${month}-${week.startDate}`,
+    periodEndDate: `${year}-${month}-${week.endDate}`,
+  };
+}
+
 export function getPreviousPeriodAndCurrentWeek(periods: Periods) {
-  const sortedPeriods = periods.toSorted(
-      (a, b) =>
-        new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
-    ),
-    currentWeek = getCurrentWeek(),
-    prevPeriod = sortedPeriods.findLast(
+  const currentWeek = getCurrentWeek(),
+    prevPeriod = periods.findLast(
       (p) => new Date(p.start_date).getDate() < currentWeek.startDate
     );
 
   return [prevPeriod, currentWeek] as const;
+}
+
+export function getPreviousPeriodByDate(
+  periods: Periods,
+  newStartDate: FinancePeriod["start_date"]
+) {
+  return periods.findLast((p) => p.start_date < newStartDate);
 }
