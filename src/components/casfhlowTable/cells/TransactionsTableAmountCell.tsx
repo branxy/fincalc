@@ -1,6 +1,6 @@
 import { transactionAmountChangedAndPeriodsRecalculated } from "@/features/cashflow/cashflowSlice";
 import { Transaction } from "@/features/types";
-import { useEditTableCell } from "@/lib/hooks";
+import { ReturnWithCellState, useEditTableCell } from "@/lib/hooks";
 import EditCellButton from "./EditCellButton";
 import { Input } from "@/components/ui/input";
 
@@ -21,7 +21,7 @@ function TransactionsTableAmountCell({
     setIsHovered,
     finishEditing,
     dispatch,
-  ] = useEditTableCell(amount);
+  ] = useEditTableCell(amount) as ReturnWithCellState<number>;
 
   function handleCellFormSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

@@ -51,9 +51,7 @@ export function useTableCheckbox(tableItems: Transactions) {
   ] as const;
 }
 
-export function useEditTableCell<T>(
-  value: T
-): [
+export type ReturnWithCellState<T> = [
   T,
   React.Dispatch<React.SetStateAction<T>>,
   boolean,
@@ -62,7 +60,20 @@ export function useEditTableCell<T>(
   React.Dispatch<React.SetStateAction<boolean>>,
   () => void,
   ThunkDispatch<RootState, undefined, UnknownAction> & Dispatch<UnknownAction>,
-] {
+];
+
+export type ReturnWithoutCellState = [
+  boolean,
+  React.Dispatch<React.SetStateAction<boolean>>,
+  boolean,
+  React.Dispatch<React.SetStateAction<boolean>>,
+  () => void,
+  ThunkDispatch<RootState, undefined, UnknownAction> & Dispatch<UnknownAction>,
+];
+
+export function useEditTableCell<T>(
+  value?: T
+): ReturnWithCellState<T> | ReturnWithoutCellState {
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [state, setState] = useState(value);
@@ -73,14 +84,24 @@ export function useEditTableCell<T>(
     setIsHovered(false);
   }
 
-  return [
-    state,
-    setState,
-    isEditing,
-    setIsEditing,
-    isHovered,
-    setIsHovered,
-    finishEditing,
-    dispatch,
-  ];
+  if (typeof value === "undefined") {
+    return [
+      isEditing,
+      setIsEditing,
+      isHovered,
+      setIsHovered,
+      finishEditing,
+      dispatch,
+    ] as ReturnWithoutCellState;
+  } else
+    return [
+      state,
+      setState,
+      isEditing,
+      setIsEditing,
+      isHovered,
+      setIsHovered,
+      finishEditing,
+      dispatch,
+    ] as ReturnWithCellState<T>;
 }
