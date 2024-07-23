@@ -9,6 +9,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
       "@periods": path.resolve(__dirname, "./src/features/periods"),
+      "@transactions": path.resolve(__dirname, "./src/features/cashflow"),
     },
   },
 });
