@@ -31,17 +31,21 @@ function StartBalance() {
         handleStartBalanceChange();
       }}
     >
-      <Label htmlFor="start-balance-input" className="shrink-0">
-        Start balance
-      </Label>
-      <Input
-        type="number"
-        id="start-balance-input"
-        placeholder={`${startBalance}`}
-        value={startBalance || ""}
-        onChange={(e) => setStartBalance(Number(e.target.value))}
-        onBlur={handleStartBalanceChange}
-      />
+      {typeof startBalance === "number" && (
+        <>
+          <Label htmlFor="start-balance-input" className="shrink-0">
+            Start balance
+          </Label>
+          <Input
+            type="number"
+            id="start-balance-input"
+            placeholder={`${startBalance}`}
+            value={startBalance}
+            onChange={(e) => setStartBalance(Number(e.target.value))}
+            onBlur={handleStartBalanceChange}
+          />
+        </>
+      )}
     </form>
   );
 }

@@ -50,7 +50,7 @@ function TransactionsTableAmountCell({
             <Input
               type="number"
               defaultValue={amountState}
-              // value={amountState}
+              max="1000000000"
               name="transaction-amount"
               autoFocus={isEditing}
               onFocus={(e) => e.target.select()}
@@ -65,7 +65,10 @@ function TransactionsTableAmountCell({
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <span>{amount}</span>
+          <span>
+            {typeof amount === "number" && "$"}
+            {amount}
+          </span>
           <EditCellButton isHovered={isHovered} setIsEditing={setIsEditing} />
         </td>
       )}

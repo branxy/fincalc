@@ -33,7 +33,9 @@ function CashflowTableRow({
     ),
     isLoading = periodsStatus === "loading",
     endBalance = isLoading ? (
-      <LoaderCircle className="animate-spin" />
+      <td>
+        <LoaderCircle className="animate-spin" />
+      </td>
     ) : (
       typeof periodEndBalance === "number" && <td>${periodEndBalance}</td>
     );

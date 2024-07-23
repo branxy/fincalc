@@ -24,37 +24,6 @@ const periodsAdapter = createEntityAdapter<FinancePeriod>({
   sortComparer: (a, b) => a.start_date.localeCompare(b.start_date),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const samplePeriods = [
-  {
-    id: uuidv4(),
-    user_id: "1-user-id",
-    start_date: "2024-07-04",
-    start_balance: 10000,
-    end_balance: -20000,
-    stock: 15000,
-    forward_payments: 23000,
-  },
-  {
-    id: uuidv4(),
-    user_id: "1-user-id",
-    start_date: "2024-07-06",
-    start_balance: -20000,
-    end_balance: -24000,
-    stock: 45000,
-    forward_payments: 23000,
-  },
-  {
-    id: uuidv4(),
-    user_id: "1-user-id",
-    start_date: "2024-07-08",
-    start_balance: -24000,
-    end_balance: -30000,
-    stock: 45000,
-    forward_payments: 23000,
-  },
-];
-
 type InitialState = EntityState<FinancePeriod, string> & {
   status: "idle" | "loading" | "failed" | "succeeded";
   error: string | null;

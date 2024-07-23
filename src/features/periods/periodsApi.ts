@@ -3,7 +3,10 @@ import { v4 as uuidv4 } from "uuid";
 import { supabase } from "@/db/supabaseClient";
 
 export async function fetchPeriodsFromDB() {
-  const { data, error } = await supabase.from("periods").select();
+  const { data, error } = await supabase
+    .from("periods")
+    .select()
+    .order("start_date", { ascending: true });
 
   if (error) throw new Error(error.message);
 
@@ -17,7 +20,6 @@ export async function uploadPeriod(period: Omit<FinancePeriod, "id">) {
     .from("periods")
     .insert(newPeriod)
     .select();
-
   if (error) throw new Error(error.message);
 
   return data[0];

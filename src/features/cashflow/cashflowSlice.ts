@@ -1,6 +1,6 @@
 import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
 import { Transaction, FinancePeriod } from "../types";
-import { generateTestCashflow, getTodayDate } from "../../lib/utils";
+import { getPeriodWeekByDate, getTodayDate } from "../../lib/utils";
 import { createAppSlice } from "../createAppSlice";
 import { RootState } from "../store";
 import {
@@ -18,13 +18,8 @@ import {
   periodAdded,
   periodsRecalculated,
 } from "../periods/periodsSlice";
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const testCashflow = generateTestCashflow(
-  5,
-  ["exp1", "exp2", "exp3", "exp4", "exp5"],
-  [10000, 4000, 6000, 5000, 5000]
-);
+import { differenceInCalendarDays } from "date-fns";
+import { getStartBalance } from "../periods/periodsCalculator";
 
 const casfhlowAdapter = createEntityAdapter<Transaction>({
   sortComparer: (a, b) => a.date.localeCompare(b.date),
