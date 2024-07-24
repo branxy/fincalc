@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";
 
 import {
-  deletedCashflowItems,
+  deletedTransactionsAndPeriodsRecalculated,
   transactionAdded,
 } from "@/features/cashflow/cashflowSlice";
 import { LoaderCircle } from "lucide-react";
@@ -22,16 +22,14 @@ function CashflowTableActionButtons({
   const currentWeekPeriodId = useAppSelector((state) =>
     selectCurrentWeekPeriodId(state)
   );
-  const cashflowStatus = useAppSelector((state) => state.cashflow.status);
-  const isLoading = cashflowStatus === "loading";
+  const transactionsStatus = useAppSelector((state) => state.cashflow.status);
+  const isLoading = transactionsStatus === "loading";
   const dispatch = useAppDispatch();
-  const noRowsSelected = selectedTransactions.length === 0;
+  const hasSelectedTransactions = selectedTransactions.length > 0;
 
   function handleDeleteCashflowItems() {
     dispatch(
-      deletedCashflowItems({
-        selectedTransactions,
-      })
+      deletedTransactionsAndPeriodsRecalculated({ selectedTransactions })
     );
     setSelectedTransactions([]);
   }
@@ -48,11 +46,11 @@ function CashflowTableActionButtons({
         {spinner}
         Add transaction
       </Button>
-      {!noRowsSelected && (
+      {hasSelectedTransactions && (
         <Button
           variant="destructive"
           className="gap-1.5"
-          disabled={noRowsSelected || isLoading}
+          disabled={isLoading}
           onClick={handleDeleteCashflowItems}
         >
           {spinner}

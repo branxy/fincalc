@@ -3,9 +3,11 @@ import { createAppSlice } from "@/features/createAppSlice";
 import { RootState } from "@/features/store";
 import { FinancePeriod, Transaction } from "@/features/types";
 import { getPeriodWeekByDate, getTodayDate } from "@/lib/utils";
-import { getStartBalance } from "@periods/periodsCalculator";
 import {
-  cashflowDeletedFromCashflow,
+  getEarliestPeriodIdByTransactions,
+  getStartBalance,
+} from "@periods/periodsCalculator";
+import {
   periodAdded,
   periodAddedWithDate,
   periodsRecalculated,
@@ -435,26 +437,16 @@ export const cashflowSlice = createAppSlice({
         },
       }
     ),
-    deletedCashflowItems: create.asyncThunk(
-      async (
-        {
-          selectedTransactions,
-        }: {
-          selectedTransactions: Transaction["id"][];
-        },
-        { dispatch }
-      ) => {
-        dispatch(
-          cashflowDeletedFromCashflow({
-            deletedTransactionsIds: selectedTransactions,
-          })
-        );
-        const response = await deleteCashflowItems(selectedTransactions);
-        if (response === 204) {
-          return selectedTransactions;
-        } else {
-          throw new Error("Failed to delete transaction(-s)");
-        }
+    deletedTransactions: create.asyncThunk(
+      async ({
+        selectedTransactions,
+      }: {
+        selectedTransactions: Transaction["id"][];
+      }) => {
+        const deletedTransactionsIds =
+          await deleteCashflowItems(selectedTransactions);
+
+        return deletedTransactionsIds;
       },
       {
         pending: (state) => {
@@ -465,10 +457,49 @@ export const cashflowSlice = createAppSlice({
           toast.error("Failed to delete transaction(-s)");
         },
         fulfilled: (state, action) => {
-          const itemsToDelete = action.payload;
-          casfhlowAdapter.removeMany(state, itemsToDelete);
+          casfhlowAdapter.removeMany(state, action.payload);
           state.status = "succeeded";
-          toast.success("Deleted transaction(-s)");
+        },
+      }
+    ),
+    deletedTransactionsAndPeriodsRecalculated: create.asyncThunk(
+      async (
+        {
+          selectedTransactions,
+        }: {
+          selectedTransactions: Transaction["id"][];
+        },
+        { dispatch, getState }
+      ) => {
+        const {
+            cashflow: { entities },
+            periods: { entities: periodEntities },
+          } = getState() as RootState,
+          periods = Object.values(periodEntities),
+          transactions = Object.values(entities),
+          earliestAffectedPeriodId = getEarliestPeriodIdByTransactions(
+            periods,
+            transactions,
+            selectedTransactions
+          );
+
+        await dispatch(deletedTransactions({ selectedTransactions })).unwrap();
+
+        dispatch(
+          periodsRecalculated({
+            originallyAffectedPeriodId: earliestAffectedPeriodId,
+          })
+        );
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state) => {
+          state.status = "failed";
+        },
+        fulfilled: (state) => {
+          state.status = "succeeded";
         },
       }
     ),
@@ -489,7 +520,8 @@ export const {
   transactionTypeChanged,
   transactionDateChangedAndPeriodsRecalculated,
   transactionDateChanged,
-  deletedCashflowItems,
+  deletedTransactions,
+  deletedTransactionsAndPeriodsRecalculated,
 } = cashflowSlice.actions;
 
 export default cashflowSlice.reducer;

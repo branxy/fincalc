@@ -82,13 +82,14 @@ export async function upsertTransaction(transaction: Transaction) {
   return data[0];
 }
 
-export async function deleteCashflowItems(
-  casfhlowItemsIds: Transaction["id"][]
-) {
-  const response = await supabase
+export async function deleteCashflowItems(transactionIds: Transaction["id"][]) {
+  const { error } = await supabase
     .from("cashflow")
     .delete()
-    .in("id", casfhlowItemsIds);
+    .in("id", transactionIds);
 
-  return response.status;
+  if (error)
+    throw new Error("Failed to delete transactions", { cause: error.message });
+
+  return transactionIds;
 }

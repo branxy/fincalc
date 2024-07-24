@@ -1,6 +1,5 @@
 import { createAppSlice } from "@/features/createAppSlice";
 import {
-  getPeriodsChangesOnTransactionsDelete,
   getPeriodsOnEndBalanceChange,
   getPeriodsOnStartBalanceChange,
   recalculatePeriods,
@@ -318,50 +317,6 @@ export const periodsSlice = createAppSlice({
         },
       }
     ),
-    cashflowDeletedFromCashflow: create.asyncThunk(
-      async (
-        {
-          deletedTransactionsIds,
-        }: {
-          deletedTransactionsIds: Transaction["id"][];
-        },
-        { getState }
-      ) => {
-        const {
-          periods: { entities },
-          cashflow: { entities: casfhlowEntities },
-        } = getState() as RootState;
-
-        const cashflow = Object.values(casfhlowEntities);
-        const periods = Object.values(entities);
-        const deletedTransactions = cashflow.filter((c) =>
-          deletedTransactionsIds.includes(c.id)
-        );
-
-        const valuesToUpdate = getPeriodsChangesOnTransactionsDelete(
-          periods,
-          deletedTransactions
-        );
-
-        const periodsToUpdate = await upsertPeriods(valuesToUpdate);
-
-        return { periodsToUpdate };
-      },
-      {
-        pending: (state) => {
-          state.status = "loading";
-        },
-        rejected: (state) => {
-          state.status = "failed";
-        },
-        fulfilled: (state, action) => {
-          const { periodsToUpdate } = action.payload;
-          periodsAdapter.upsertMany(state, periodsToUpdate);
-          state.status = "succeeded";
-          toast.success("Updated balance");
-        },
-      }
-    ),
   }),
   extraReducers: () => {},
   selectors: {},
@@ -374,7 +329,6 @@ export const {
   periodsRecalculated,
   startBalanceChanged,
   endBalanceChanged,
-  cashflowDeletedFromCashflow,
 } = periodsSlice.actions;
 
 export const {

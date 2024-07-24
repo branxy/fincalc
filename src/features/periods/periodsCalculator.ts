@@ -213,3 +213,23 @@ function getTransactionsSumByPeriod(transactions: Transactions) {
     }
   );
 }
+
+export function getEarliestPeriodIdByTransactions(
+  periods: Periods,
+  transactions: Transactions,
+  selectedTransactions: Transaction["id"][]
+) {
+  const pendingTransactions = transactions.filter((t) =>
+      selectedTransactions.includes(t.id)
+    ),
+    pendingTransactionsPeriodIds = pendingTransactions.map((t) => t.period_id),
+    pendingPeriods = periods.filter((p) =>
+      pendingTransactionsPeriodIds.includes(p.id)
+    ),
+    sortedPendingPeriods = pendingPeriods.toSorted((a, b) =>
+      a.start_date.localeCompare(b.start_date)
+    ),
+    { id: earliestAffectedPeriodId } = sortedPendingPeriods[0];
+
+  return earliestAffectedPeriodId;
+}
