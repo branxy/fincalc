@@ -40,7 +40,7 @@ function CashflowTable({ cashflow, periods }: CashflowTableProps) {
   });
   return (
     <div className="mt-6 overflow-hidden">
-      <div className="flex max-w-[600px] items-end justify-between gap-4">
+      <div className="flex max-w-[600px] flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <CashflowTableActionButtons
           selectedTransactions={selectedTransactions}
           setSelectedTransactions={setSelectedTransactions}

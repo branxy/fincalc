@@ -25,7 +25,7 @@ function StartBalance() {
 
   return (
     <form
-      className="flex flex-col gap-2 text-end sm:items-end"
+      className="flex flex-col gap-2 sm:items-end sm:text-end"
       onSubmit={(e) => {
         e.preventDefault();
         handleStartBalanceChange();
