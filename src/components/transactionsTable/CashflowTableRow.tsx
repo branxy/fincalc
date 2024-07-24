@@ -30,7 +30,7 @@ function CashflowTableRow({
 }: CashflowTableRowProps) {
   const periodsStatus = useAppSelector((state) => state.periods.status);
   const isSelectedRow = Boolean(
-      selectedTransactions?.find((id) => id === transactionId)
+      selectedTransactions?.find((id) => id === transactionId),
     ),
     isLoading = periodsStatus === "loading",
     endBalance = isLoading ? (
@@ -45,12 +45,12 @@ function CashflowTableRow({
     <tr
       className={clsx(
         "h-[44px]",
-        isSelectedRow && "bg-zinc-500 text-slate-100"
+        isSelectedRow && "bg-zinc-500 text-slate-100",
       )}
     >
-      <td className="text-center">
+      <td className="w-fit pr-2 text-right">
         <input
-          className="w-4 h-4"
+          className="h-4 w-4"
           type="checkbox"
           name="select-cashflow-item"
           id="select-cashflow-item"

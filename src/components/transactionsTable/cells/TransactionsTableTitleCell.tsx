@@ -38,7 +38,7 @@ function TransactionsTableTitleCell({
       transactionTitleChanged({
         transactionId,
         newTitle: titleState.toString(),
-      })
+      }),
     );
   }
 
@@ -46,7 +46,7 @@ function TransactionsTableTitleCell({
     <>
       {isEditing ? (
         <td>
-          <form className="h-full" onSubmit={handleCellFormSubmit}>
+          <form className="h-full px-2" onSubmit={handleCellFormSubmit}>
             <Input
               type="text"
               value={titleState}
@@ -60,7 +60,7 @@ function TransactionsTableTitleCell({
         </td>
       ) : (
         <td
-          className="editable relative h-full"
+          className="editable relative h-full max-w-32 pr-9"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >

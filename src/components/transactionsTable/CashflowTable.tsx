@@ -39,8 +39,8 @@ function CashflowTable({ cashflow, periods }: CashflowTableProps) {
     );
   });
   return (
-    <div className="md:overflow-x-auto mt-6">
-      <div className="flex sm:flex-row items-end sm: justify-between">
+    <div className="mt-6 overflow-hidden">
+      <div className="flex max-w-[600px] items-end justify-between gap-4">
         <CashflowTableActionButtons
           selectedTransactions={selectedTransactions}
           setSelectedTransactions={setSelectedTransactions}
@@ -48,38 +48,40 @@ function CashflowTable({ cashflow, periods }: CashflowTableProps) {
         <StartBalance />
       </div>
       {cashflow.length === 0 ? (
-        <p className="text-center mt-3">No transactions yet</p>
+        <p className="mt-3 text-center">No transactions yet</p>
       ) : (
-        <table className="w-full table-fixed mt-4 max-w-[720px] overflow-x-auto">
-          <colgroup>
-            <col className="w-12" />
-            <col className="w-28 md:w-40 max-w-64" />
-            <col className="w-16 md:w-28" />
-            <col className="w-32" />
-            <col className="w-28" />
-            <col className="w-16" />
-          </colgroup>
-          <thead>
-            <tr>
-              <th>
-                <input
-                  className="w-4 h-4"
-                  type="checkbox"
-                  name="select-all"
-                  id="select-all"
-                  onChange={handleSelectAllTransactions}
-                  checked={isCheckedCheckbox}
-                />
-              </th>
-              <th className="text-left">Name</th>
-              <th className="text-left">Amount</th>
-              <th className="text-left">Type</th>
-              <th className="text-left">Date</th>
-              <th className="text-left">Balance</th>
-            </tr>
-          </thead>
-          <tbody>{tableContent}</tbody>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="mt-4 w-[600px] table-fixed overflow-x-scroll">
+            <colgroup>
+              <col className="" />
+              <col className="w-36 md:w-40" />
+              <col className="w-16 md:w-20" />
+              <col className="w-32" />
+              <col className="w-28" />
+              <col className="w-16" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th className="w-6 pr-2 text-right">
+                  <input
+                    className="h-4 w-4"
+                    type="checkbox"
+                    name="select-all"
+                    id="select-all"
+                    onChange={handleSelectAllTransactions}
+                    checked={isCheckedCheckbox}
+                  />
+                </th>
+                <th className="text-left">Name</th>
+                <th className="text-left">Amount</th>
+                <th className="text-left">Type</th>
+                <th className="text-left">Date</th>
+                <th className="text-left">Balance</th>
+              </tr>
+            </thead>
+            <tbody>{tableContent}</tbody>
+          </table>
+        </div>
       )}
     </div>
   );

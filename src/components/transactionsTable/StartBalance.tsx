@@ -18,14 +18,14 @@ function StartBalance() {
       dispatch(
         startBalanceChanged({
           newStartBalance: startBalance,
-        })
+        }),
       );
     }
   }
 
   return (
     <form
-      className="flex flex-col items-end gap-2"
+      className="flex flex-col gap-2 text-end sm:items-end"
       onSubmit={(e) => {
         e.preventDefault();
         handleStartBalanceChange();
@@ -43,6 +43,7 @@ function StartBalance() {
             value={startBalance}
             onChange={(e) => setStartBalance(Number(e.target.value))}
             onBlur={handleStartBalanceChange}
+            className="min-w-24 max-w-32"
           />
         </>
       )}

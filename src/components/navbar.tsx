@@ -6,12 +6,12 @@ import NavbarLink from "./navbar-link";
 
 function Navbar() {
   return (
-    <nav className="fixed bottom-0 left-0 z-10 box-border flex w-full flex-shrink-0 items-center overflow-hidden border-t-2 bg-background px-4 py-3 md:static md:h-screen md:w-36 md:flex-col md:justify-between md:border-r-2">
-      <ul className="flex h-full flex-1 justify-center gap-6 md:flex-col md:justify-start md:gap-2.5">
+    <nav className="fixed bottom-0 left-0 z-10 box-border flex w-full flex-shrink-0 items-center gap-2 overflow-hidden border-t-2 bg-background px-2 py-3 lg:static lg:h-screen lg:w-36 lg:flex-col lg:justify-between lg:border-r-2 lg:px-4">
+      <ul className="flex h-full flex-1 justify-center gap-2 sm:gap-6 lg:flex-col lg:justify-start lg:gap-2.5">
         <NavbarLink path="/" name="Dashboard" />
         <NavbarLink path="/list" name="List" />
       </ul>
-      <div className="flex gap-6 md:flex-col md:gap-2">
+      <div className="flex gap-2 sm:gap-6 lg:flex-col lg:gap-2">
         <ModeToggle />
         <Button
           variant="outline"

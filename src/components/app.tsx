@@ -15,7 +15,7 @@ function App() {
     <div className="relative flex h-screen flex-col md:flex-row">
       <ThemeProvider defaultTheme="dark" storageKey="fincalc-ui-theme">
         <Navbar />
-        <main className="h-full flex-grow overflow-y-auto overflow-x-hidden px-3 pb-24 pt-2 sm:px-5 md:pb-8">
+        <main className="h-full flex-grow overflow-y-auto overflow-x-hidden px-3 pb-24 pt-2 sm:px-5 lg:pb-8">
           <Outlet />
         </main>
         <Toaster />
