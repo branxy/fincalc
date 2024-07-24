@@ -12,14 +12,14 @@ export const Route = createLazyFileRoute("/list")({
 
 function List() {
   const periods = useAppSelector((state) =>
-      selectPeriodsIdsAndEndBalance(state)
+      selectPeriodsIdsAndEndBalance(state),
     ),
     cashflow = useAppSelector((state) => selectAllCashflow(state));
 
   return (
-    <main className="flex-grow py-2 sm:px-5 px-3">
+    <>
       <h1 className="text-2xl font-semibold">All transactions</h1>
       <CashflowTable periods={periods} cashflow={cashflow} />
-    </main>
+    </>
   );
 }

@@ -5,5 +5,9 @@ export const Route = createLazyFileRoute("/")({
 });
 
 function PeriodsGrid() {
-  return <main className="flex-grow py-2 sm:px-5">grid</main>;
+  return (
+    <>
+      <h1 className="text-2xl font-semibold">Grid</h1>
+    </>
+  );
 }

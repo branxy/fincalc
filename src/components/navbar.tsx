@@ -10,8 +10,8 @@ const generalLinkClasses =
 
 function Navbar() {
   return (
-    <nav className="absolute md:static bg-background left-0 bottom-0 w-full flex items-center border-t-2 md:h-screen overflow-hidden md:flex-col md:justify-between md:w-32 md:border-r-2 px-4 py-3">
-      <ul className="flex flex-1 justify-center md:justify-start md:flex-col gap-2.5">
+    <nav className="fixed bottom-0 left-0 z-10 flex w-full items-center overflow-hidden border-t-2 bg-background px-4 py-3 md:static md:h-screen md:w-32 md:flex-col md:justify-between md:border-r-2">
+      <ul className="flex flex-1 justify-center gap-2.5 md:flex-col md:justify-start">
         <li>
           <Link
             to="/"
@@ -35,7 +35,7 @@ function Navbar() {
           </Link>
         </li>
       </ul>
-      <div className="flex md:flex-col gap-2">
+      <div className="flex gap-2 md:flex-col">
         <ModeToggle />
         <Button
           variant="outline"
