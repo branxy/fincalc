@@ -1,41 +1,17 @@
 import { supabase } from "@/db/supabaseClient";
-import { Link } from "@tanstack/react-router";
 
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
-
-const generalLinkClasses =
-    "px-2 pb-1 hover:ring-1 ring-green-300 rounded align-baseline",
-  activeLinkClasses = "bg-green-300 text-zinc-700 font-semibold";
+import NavbarLink from "./navbar-link";
 
 function Navbar() {
   return (
-    <nav className="fixed bottom-0 left-0 z-10 flex w-full items-center overflow-hidden border-t-2 bg-background px-4 py-3 md:static md:h-screen md:w-32 md:flex-col md:justify-between md:border-r-2">
-      <ul className="flex flex-1 justify-center gap-2.5 md:flex-col md:justify-start">
-        <li>
-          <Link
-            to="/"
-            activeProps={{
-              className: activeLinkClasses,
-            }}
-            activeOptions={{ exact: true }}
-            className={generalLinkClasses}
-          >
-            Dashboard
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/list"
-            activeProps={{ className: activeLinkClasses }}
-            activeOptions={{ exact: true }}
-            className={generalLinkClasses}
-          >
-            List
-          </Link>
-        </li>
+    <nav className="fixed bottom-0 left-0 z-10 box-border flex w-full flex-shrink-0 items-center overflow-hidden border-t-2 bg-background px-4 py-3 md:static md:h-screen md:w-36 md:flex-col md:justify-between md:border-r-2">
+      <ul className="flex h-full flex-1 justify-center gap-6 md:flex-col md:justify-start md:gap-2.5">
+        <NavbarLink path="/" name="Dashboard" />
+        <NavbarLink path="/list" name="List" />
       </ul>
-      <div className="flex gap-2 md:flex-col">
+      <div className="flex gap-6 md:flex-col md:gap-2">
         <ModeToggle />
         <Button
           variant="outline"
