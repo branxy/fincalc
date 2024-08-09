@@ -1,8 +1,13 @@
 import EditCellButton from "@/components/transactionsTable/cells/EditCellButton";
 import { Input } from "@/components/ui/input";
+
 import { transactionAmountChangedAndPeriodsRecalculated } from "@/features/cashflow/cashflowSlice";
+
 import { Transaction } from "@/features/types";
+
 import { ReturnWithCellState, useEditTableCell } from "@/lib/hooks";
+import { useContext } from "react";
+import { CurrencyContext } from "@/components/providers";
 
 interface TransactionsTableAmountCellProps {
   transactionId: Transaction["id"];
@@ -22,6 +27,7 @@ function TransactionsTableAmountCell({
     finishEditing,
     dispatch,
   ] = useEditTableCell(amount) as ReturnWithCellState<number>;
+  const [currencySign] = useContext(CurrencyContext)!
 
   function handleCellFormSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -66,7 +72,7 @@ function TransactionsTableAmountCell({
           onMouseLeave={() => setIsHovered(false)}
         >
           <span>
-            {typeof amount === "number" && "$"}
+            {typeof amount === "number" && currencySign}
             {amount}
           </span>
           <EditCellButton isHovered={isHovered} setIsEditing={setIsEditing} />

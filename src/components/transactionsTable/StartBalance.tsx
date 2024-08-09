@@ -1,52 +1,108 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
 import {
   selectFirstPeriod,
   startBalanceChanged,
 } from "@/features/periods/periodsSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+
 import { useState } from "react";
 
-function StartBalance() {
-  const { start_balance } =
-    useAppSelector((state) => selectFirstPeriod(state)) || 0;
-  const [startBalance, setStartBalance] = useState(start_balance);
+export type UpdatedFormFields = {
+  balance_start?: number;
+  stock_start?: number;
+  forward_payments_start?: number;
+};
+
+interface StartBalanceProps {
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+function StartBalance({ setOpen }: StartBalanceProps) {
+  const { balance_start, stock_start, forward_payments_start } = useAppSelector(
+    (state) => selectFirstPeriod(state),
+  );
+  const [newStartBalance, setNewStartBalance] = useState(balance_start);
+  const [newStock, setNewStock] = useState(stock_start);
+  const [newFP, setNewFP] = useState(forward_payments_start);
+
   const dispatch = useAppDispatch();
 
-  function handleStartBalanceChange() {
-    if (startBalance !== start_balance) {
-      dispatch(
-        startBalanceChanged({
-          newStartBalance: startBalance,
-        }),
-      );
+  const onFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const updatedFields: UpdatedFormFields = {};
+
+    if (newStartBalance !== balance_start) {
+      updatedFields.balance_start = newStartBalance;
     }
-  }
+
+    if (newStock !== stock_start) {
+      updatedFields.stock_start = newStock;
+    }
+
+    if (newFP !== forward_payments_start) {
+      updatedFields.forward_payments_start = newFP;
+    }
+
+    dispatch(startBalanceChanged({ newBalance: updatedFields }));
+
+    setOpen(false);
+  };
 
   return (
-    <form
-      className="flex flex-col gap-2 sm:items-end sm:text-end"
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleStartBalanceChange();
-      }}
-    >
-      {typeof startBalance === "number" && (
+    <form className="flex flex-col gap-2" onSubmit={onFormSubmit}>
+      {!isNaN(balance_start) && (
         <>
-          <Label htmlFor="start-balance-input" className="shrink-0">
+          <Label htmlFor="start-balance" className="shrink-0">
             Start balance
           </Label>
           <Input
             type="number"
-            id="start-balance-input"
-            placeholder={`${startBalance}`}
-            value={startBalance}
-            onChange={(e) => setStartBalance(Number(e.target.value))}
-            onBlur={handleStartBalanceChange}
-            className="min-w-24 max-w-32"
+            value={newStartBalance}
+            name="start-balance"
+            id="start-balance"
+            max={1000000000000}
+            className="min-w-24 max-w-48"
+            onChange={(e) => setNewStartBalance(Number(e.target.value))}
           />
         </>
       )}
+      {!isNaN(stock_start) && (
+        <>
+          <Label htmlFor="stock_start" className="shrink-0">
+            Stock
+          </Label>
+          <Input
+            type="number"
+            value={newStock}
+            name="stock_start"
+            id="stock_start"
+            max={1000000000000}
+            className="min-w-24 max-w-48"
+            onChange={(e) => setNewStock(Number(e.target.value))}
+          />
+        </>
+      )}
+
+      {!isNaN(forward_payments_start) && (
+        <>
+          <Label htmlFor="forward-payments" className="shrink-0">
+            Forward payments
+          </Label>
+          <Input
+            type="number"
+            value={newFP}
+            name="forward-payments"
+            id="forward-payments"
+            max={1000000000000}
+            className="min-w-24 max-w-48"
+            onChange={(e) => setNewFP(Number(e.target.value))}
+          />
+        </>
+      )}
+      <button type="submit" />
     </form>
   );
 }

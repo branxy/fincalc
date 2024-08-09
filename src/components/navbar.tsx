@@ -1,8 +1,9 @@
-import { supabase } from "@/db/supabaseClient";
-
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import NavbarLink from "./navbar-link";
+import Settings from "./settings/Settings";
+
+import { supabase } from "@/db/supabaseClient";
 
 function Navbar() {
   return (
@@ -12,12 +13,15 @@ function Navbar() {
         <NavbarLink path="/list" name="List" />
       </ul>
       <div className="flex gap-2 sm:gap-6 lg:flex-col lg:gap-2">
-        <ModeToggle />
+        <div className="flex gap-1.5">
+          <Settings />
+          <ModeToggle />
+        </div>
         <Button
           variant="outline"
           onClick={async () => {
             const { error } = await supabase.auth.signOut();
-            if (error) console.error(error);
+            if (error) console.error(error.message);
           }}
         >
           Sign out
