@@ -11,6 +11,7 @@ import { supabase } from "@/db/supabaseClient";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
+import { MonthNames } from "@/features/periods/periodsCalculator";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -23,7 +24,7 @@ export function getTimestamp() {
 export function generateTestCashflow(
   numberOfItems = 3,
   titles: string[],
-  amounts: number[]
+  amounts: number[],
 ): Transactions {
   const arr: Transactions = [];
 
@@ -54,20 +55,30 @@ export function generateTestCashflow(
 }
 
 export function getMarkedCashflow(
-  periods: Pick<FinancePeriod, "id" | "end_balance">[],
-  cashflow: Transactions
+  periods: Pick<
+    FinancePeriod,
+    "id" | "balance_end" | "stock_end" | "forward_payments_end"
+  >[],
+  cashflow: Transactions,
 ) {
   // Returns an object with indexes of every last transaction in a period and that period's end_balance
   const returnObject: {
-    [key: number]: number;
+    [key: number]: Pick<
+      FinancePeriod,
+      "balance_end" | "stock_end" | "forward_payments_end"
+    >;
   } = {};
 
   for (const p of periods) {
     const lastCashflowIndex = cashflow.findLastIndex(
-      (c) => c.period_id === p.id
+      (c) => c.period_id === p.id,
     );
 
-    returnObject[lastCashflowIndex] = p.end_balance;
+    returnObject[lastCashflowIndex] = {
+      balance_end: p.balance_end,
+      stock_end: p.stock_end,
+      forward_payments_end: p.forward_payments_end,
+    };
   }
 
   return returnObject;
@@ -105,7 +116,7 @@ export function getToastByDispatchStatus(
   message: {
     success: string;
     error: string;
-  }
+  },
 ) {
   switch (dispatchStatus) {
     case "fulfilled":
@@ -177,7 +188,7 @@ export function getCurrentWeek() {
     weeks = getWeeksByDaysInAMonth(daysInAMonth),
     today = getCurrentDayOfMonthNumber(),
     currentWeek = weeks.find(
-      (w) => w.startDate <= today && w.endDate >= today
+      (w) => w.startDate <= today && w.endDate >= today,
     )!;
 
   return currentWeek;
@@ -212,7 +223,7 @@ export function getPeriodWeekByDate(date: Transaction["date"]) {
     [year, month, day] = date.split("-");
 
   const week = weeks.find(
-    (w) => w.startDate <= Number(day) && w.endDate >= Number(day)
+    (w) => w.startDate <= Number(day) && w.endDate >= Number(day),
   )!;
 
   return {
@@ -224,7 +235,7 @@ export function getPeriodWeekByDate(date: Transaction["date"]) {
 export function getPreviousPeriodAndCurrentWeek(periods: Periods) {
   const currentWeek = getCurrentWeek(),
     prevPeriod = periods.findLast(
-      (p) => new Date(p.start_date).getDate() < currentWeek.startDate
+      (p) => new Date(p.start_date).getDate() < currentWeek.startDate,
     );
 
   return [prevPeriod, currentWeek] as const;
@@ -232,7 +243,24 @@ export function getPreviousPeriodAndCurrentWeek(periods: Periods) {
 
 export function getPreviousPeriodByDate(
   periods: Periods,
-  newStartDate: FinancePeriod["start_date"]
+  newStartDate: FinancePeriod["start_date"],
 ) {
   return periods.findLast((p) => p.start_date < newStartDate);
+}
+
+export function getMonths() {
+  const months: MonthNames[] = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "December",
+  ];
+  return months;
 }
