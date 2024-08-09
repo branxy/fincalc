@@ -20,7 +20,16 @@ function Root() {
       <div className="w-full min-w-80 px-3 sm:mx-auto sm:w-96">
         <Auth
           supabaseClient={supabase}
-          appearance={{ theme: ThemeSupa }}
+          appearance={{
+            theme: ThemeSupa,
+            variables: {
+              default: {
+                colors: {
+                  inputText: "bg-foreground",
+                },
+              },
+            },
+          }}
           providers={[]}
         />
       </div>
