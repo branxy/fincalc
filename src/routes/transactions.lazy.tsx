@@ -6,7 +6,7 @@ import { selectPeriodsIdsAndEndBalance } from "@/features/periods/periodsSlice";
 
 import CashflowTable from "@/components/transactionsTable/CashflowTable";
 
-export const Route = createLazyFileRoute("/list")({
+export const Route = createLazyFileRoute("/transactions")({
   component: List,
 });
 
