@@ -1,11 +1,9 @@
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 
-import { createRouter, RouterProvider } from "@tanstack/react-router";
+import Providers from "@/components/providers.tsx";
 import { routeTree } from "@/routeTree.gen.ts";
-
-import { Provider } from "react-redux";
-import { store } from "@/features/store.ts";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
 
 import "@/index.css";
 
@@ -22,9 +20,9 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      <Provider store={store}>
+      <Providers>
         <RouterProvider router={router} />
-      </Provider>
-    </StrictMode>
+      </Providers>
+    </StrictMode>,
   );
 }
