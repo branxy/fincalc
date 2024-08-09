@@ -6,9 +6,19 @@ import { fetchPeriods } from "@/features/periods/periodsSlice";
 import { fetchTransactions } from "@/features/cashflow/cashflowSlice";
 
 import { Outlet } from "@tanstack/react-router";
+import React from "react";
 
 store.dispatch(fetchPeriods());
 store.dispatch(fetchTransactions());
+
+const TanStackRouterDevtools =
+  import.meta.env.VITE_ENV === "development"
+    ? React.lazy(() =>
+        import("@tanstack/router-devtools").then((res) => ({
+          default: res.TanStackRouterDevtools,
+        })),
+      )
+    : () => null;
 
 function App() {
   return (
@@ -18,6 +28,7 @@ function App() {
         <Outlet />
       </main>
       <Toaster />
+      <TanStackRouterDevtools position="top-right" />
     </div>
   );
 }
