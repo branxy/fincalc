@@ -9,6 +9,7 @@ import {
 } from "@/features/cashflow/cashflowSlice";
 import { LoaderCircle } from "lucide-react";
 import { selectCurrentWeekPeriodId } from "@/features/periods/periodsSlice";
+import TableInfo from "./TableInfo";
 
 interface CashflowTableActionButtonsProps {
   selectedTransactions: Transaction["id"][];
@@ -20,7 +21,7 @@ function CashflowTableActionButtons({
   setSelectedTransactions,
 }: CashflowTableActionButtonsProps) {
   const currentWeekPeriodId = useAppSelector((state) =>
-    selectCurrentWeekPeriodId(state)
+    selectCurrentWeekPeriodId(state),
   );
   const transactionsStatus = useAppSelector((state) => state.cashflow.status);
   const isLoading = transactionsStatus === "loading";
@@ -29,7 +30,7 @@ function CashflowTableActionButtons({
 
   function handleDeleteCashflowItems() {
     dispatch(
-      deletedTransactionsAndPeriodsRecalculated({ selectedTransactions })
+      deletedTransactionsAndPeriodsRecalculated({ selectedTransactions }),
     );
     setSelectedTransactions([]);
   }
@@ -57,6 +58,7 @@ function CashflowTableActionButtons({
           <span className="material-symbols-outlined">delete</span>
         </Button>
       )}
+      <TableInfo />
     </div>
   );
 }
