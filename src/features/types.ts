@@ -1,12 +1,27 @@
+import { Database } from "@/db/types_supabase";
+
+type PeriodsTableRow = Database["public"]["Tables"]["periods"]["Row"];
 export interface FinancePeriod {
-  id: string;
-  user_id: string;
-  start_date: string;
-  start_balance: number;
-  end_balance: number;
-  stock: number;
-  forward_payments: number;
+  id: PeriodsTableRow["id"];
+  user_id: PeriodsTableRow["user_id"];
+  start_date: PeriodsTableRow["start_date"];
+  balance_start: PeriodsTableRow["balance_start"];
+  balance_end: PeriodsTableRow["balance_end"];
+  stock_start: PeriodsTableRow["stock_start"];
+  stock_end: PeriodsTableRow["stock_end"];
+  forward_payments_start: PeriodsTableRow["forward_payments_start"];
+  forward_payments_end: PeriodsTableRow["forward_payments_end"];
 }
+
+export type PeriodBalance = Pick<
+  FinancePeriod,
+  | "balance_start"
+  | "balance_end"
+  | "stock_start"
+  | "stock_end"
+  | "forward_payments_start"
+  | "forward_payments_end"
+>;
 
 export type Periods = FinancePeriod[];
 

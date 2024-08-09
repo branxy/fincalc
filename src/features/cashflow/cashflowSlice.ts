@@ -1,7 +1,8 @@
 import { supabase } from "@/db/supabaseClient";
 import { createAppSlice } from "@/features/createAppSlice";
 import { RootState } from "@/features/store";
-import { FinancePeriod, Transaction } from "@/features/types";
+import { FinancePeriod, PeriodBalance, Transaction } from "@/features/types";
+import { createAppSelector } from "@/lib/hooks";
 import { getPeriodWeekByDate, getTodayDate } from "@/lib/utils";
 import {
   getEarliestPeriodIdByTransactions,
@@ -60,7 +61,7 @@ export const cashflowSlice = createAppSlice({
           casfhlowAdapter.setAll(state, action.payload);
           toast.success("Fetched transactions");
         },
-      }
+      },
     ),
     transactionAdded: create.asyncThunk(
       async (
@@ -69,7 +70,7 @@ export const cashflowSlice = createAppSlice({
         }: {
           currentWeekPeriodId?: FinancePeriod["id"];
         },
-        { dispatch }
+        { dispatch },
       ) => {
         const {
           data: { user },
@@ -112,7 +113,7 @@ export const cashflowSlice = createAppSlice({
           casfhlowAdapter.addOne(state, action.payload);
           toast.success("Added a transaction");
         },
-      }
+      },
     ),
     transactionTitleChanged: create.asyncThunk(
       async ({
@@ -125,7 +126,7 @@ export const cashflowSlice = createAppSlice({
         const updatedTransaction = await updateTransaction(
           transactionId,
           "title",
-          newTitle
+          newTitle,
         );
 
         return updatedTransaction;
@@ -142,7 +143,7 @@ export const cashflowSlice = createAppSlice({
           casfhlowAdapter.upsertOne(state, action.payload as Transaction);
           state.status = "succeeded";
         },
-      }
+      },
     ),
     transactionAmountChangedAndPeriodsRecalculated: create.asyncThunk(
       async (
@@ -153,10 +154,10 @@ export const cashflowSlice = createAppSlice({
           transactionId: Transaction["id"];
           newAmount: Transaction["amount"];
         },
-        { dispatch, getState }
+        { dispatch, getState },
       ) => {
         await dispatch(
-          transactionAmountChanged({ transactionId, newAmount })
+          transactionAmountChanged({ transactionId, newAmount }),
         ).unwrap();
 
         const {
@@ -168,7 +169,7 @@ export const cashflowSlice = createAppSlice({
         dispatch(
           periodsRecalculated({
             originallyAffectedPeriodId: pendingTransaction.period_id,
-          })
+          }),
         );
       },
       {
@@ -181,10 +182,10 @@ export const cashflowSlice = createAppSlice({
         fulfilled: (state) => {
           state.status = "succeeded";
           toast.success(
-            "Transaction amount and its corresponding period are updated"
+            "Transaction amount and its corresponding period are updated",
           );
         },
-      }
+      },
     ),
     transactionAmountChanged: create.asyncThunk(
       async ({
@@ -197,7 +198,7 @@ export const cashflowSlice = createAppSlice({
         const updatedTransaction = await updateTransaction(
           transactionId,
           "amount",
-          newAmount
+          newAmount,
         );
 
         return updatedTransaction;
@@ -214,7 +215,7 @@ export const cashflowSlice = createAppSlice({
           casfhlowAdapter.upsertOne(state, action.payload as Transaction);
           state.status = "succeeded";
         },
-      }
+      },
     ),
     transactionTypeChangedAndPeriodsRecalculated: create.asyncThunk(
       async (
@@ -225,22 +226,20 @@ export const cashflowSlice = createAppSlice({
           transactionId: Transaction["id"];
           newType: Transaction["type"];
         },
-        { dispatch, getState }
+        { dispatch },
       ) => {
-        await dispatch(
-          transactionTypeChanged({ transactionId, newType })
-        ).unwrap();
-
         const {
-          cashflow: { entities },
-        } = getState() as RootState;
-
-        const pendingTransaction = entities[transactionId];
+          originalBalance,
+          updatedTransaction: { period_id },
+        } = await dispatch(
+          transactionTypeChanged({ transactionId, newType }),
+        ).unwrap();
 
         dispatch(
           periodsRecalculated({
-            originallyAffectedPeriodId: pendingTransaction.period_id,
-          })
+            originallyAffectedPeriodId: period_id,
+            originalBalance,
+          }),
         );
       },
       {
@@ -253,26 +252,56 @@ export const cashflowSlice = createAppSlice({
         fulfilled: (state) => {
           state.status = "succeeded";
           toast.success(
-            "Transaction type and its corresponding period are updated"
+            "Transaction type and its corresponding period are updated",
           );
         },
-      }
+      },
     ),
     transactionTypeChanged: create.asyncThunk(
-      async ({
-        transactionId,
-        newType,
-      }: {
-        transactionId: Transaction["id"];
-        newType: Transaction["type"];
-      }) => {
-        const updatedTransaction = await updateTransaction(
+      async (
+        {
           transactionId,
-          "type",
-          newType
-        );
+          newType,
+        }: {
+          transactionId: Transaction["id"];
+          newType: Transaction["type"];
+        },
+        { getState },
+      ) => {
+        const {
+          periods: { entities },
+          cashflow: { entities: transactionEntities },
+        } = getState() as RootState;
 
-        return updatedTransaction;
+        const pendingPeriodId = transactionEntities[transactionId].period_id,
+          pendingPeriod = entities[pendingPeriodId],
+          updatedTransaction = await updateTransaction(
+            transactionId,
+            "type",
+            newType,
+          );
+
+        const {
+            balance_start,
+            balance_end,
+            stock_start,
+            stock_end,
+            forward_payments_start,
+            forward_payments_end,
+          } = pendingPeriod,
+          originalBalance: PeriodBalance = {
+            balance_start,
+            balance_end,
+            stock_start,
+            stock_end,
+            forward_payments_start,
+            forward_payments_end,
+          };
+
+        return {
+          updatedTransaction,
+          originalBalance,
+        };
       },
       {
         pending: (state) => {
@@ -283,10 +312,13 @@ export const cashflowSlice = createAppSlice({
           toast.error("Failed to update transaction type");
         },
         fulfilled: (state, action) => {
-          casfhlowAdapter.upsertOne(state, action.payload as Transaction);
+          casfhlowAdapter.upsertOne(
+            state,
+            action.payload.updatedTransaction as Transaction,
+          );
           state.status = "succeeded";
         },
-      }
+      },
     ),
     transactionDateChangedAndPeriodsRecalculated: create.asyncThunk(
       async (
@@ -297,7 +329,7 @@ export const cashflowSlice = createAppSlice({
           transactionId: Transaction["id"];
           newDate: Transaction["date"];
         },
-        { dispatch, getState }
+        { dispatch, getState },
       ) => {
         const {
           cashflow: { entities },
@@ -306,7 +338,7 @@ export const cashflowSlice = createAppSlice({
 
         const { newTransaction: updatedTransaction, initialStartBalance } =
           await dispatch(
-            transactionDateChanged({ transactionId, newDate })
+            transactionDateChanged({ transactionId, newDate }),
           ).unwrap();
 
         // if transaction had to be moved to a new period, recalculate balance
@@ -315,8 +347,8 @@ export const cashflowSlice = createAppSlice({
             periodsRecalculated({
               originallyAffectedPeriodId: pendingTransaction.period_id,
               newAffectedPeriodId: updatedTransaction.period_id,
-              originalStartBalance: initialStartBalance,
-            })
+              originalBalance: initialStartBalance,
+            }),
           );
         }
       },
@@ -330,10 +362,10 @@ export const cashflowSlice = createAppSlice({
         fulfilled: (state) => {
           state.status = "succeeded";
           toast.success(
-            "Transaction type and its corresponding period are updated"
+            "Transaction type and its corresponding period are updated",
           );
         },
-      }
+      },
     ),
     transactionDateChanged: create.asyncThunk(
       async (
@@ -344,7 +376,7 @@ export const cashflowSlice = createAppSlice({
           transactionId: Transaction["id"];
           newDate: Transaction["date"];
         },
-        { dispatch, getState }
+        { dispatch, getState },
       ) => {
         // if the new date is outside of scope of the new period, assign the transaction to a new period
         const {
@@ -355,7 +387,14 @@ export const cashflowSlice = createAppSlice({
         const pendingTransaction = transactionEntities[transactionId],
           pendingPeriod = periodEntities[pendingTransaction.period_id],
           periods = Object.values(periodEntities),
-          startBalance = getStartBalance(periods),
+          {
+            balance_start: startBalance,
+            balance_end,
+            stock_start,
+            stock_end,
+            forward_payments_start,
+            forward_payments_end,
+          } = getStartBalance(periods),
           newDateIsWithinTheSamePeriod =
             newDate >= pendingPeriod.start_date &&
             newDate <
@@ -366,7 +405,7 @@ export const cashflowSlice = createAppSlice({
             const updatedTransaction = await updateTransaction(
               transactionId,
               "date",
-              newDate
+              newDate,
             );
 
             return { newTransaction: updatedTransaction };
@@ -376,7 +415,7 @@ export const cashflowSlice = createAppSlice({
             const existingPeriodForNewDate = periods.findLast(
               (p) =>
                 p.start_date <= newDate &&
-                differenceInCalendarDays(newDate, p.start_date) < 7
+                differenceInCalendarDays(newDate, p.start_date) < 7,
             );
 
             if (existingPeriodForNewDate?.start_date) {
@@ -395,7 +434,7 @@ export const cashflowSlice = createAppSlice({
               const { periodStartDate: newPeriodStartDate } =
                 getPeriodWeekByDate(newDate);
               const { id } = await dispatch(
-                periodAddedWithDate({ newPeriodStartDate })
+                periodAddedWithDate({ newPeriodStartDate }),
               ).unwrap();
 
               const newTransaction: Transaction = {
@@ -407,9 +446,18 @@ export const cashflowSlice = createAppSlice({
               const upsertedTransaction =
                 await upsertTransaction(newTransaction);
 
+              const initialStartBalance: PeriodBalance = {
+                balance_start: startBalance,
+                balance_end,
+                stock_start,
+                stock_end,
+                forward_payments_start,
+                forward_payments_end,
+              };
+
               return {
                 newTransaction: upsertedTransaction,
-                initialStartBalance: startBalance,
+                initialStartBalance,
               };
             }
           }
@@ -430,12 +478,12 @@ export const cashflowSlice = createAppSlice({
           if ("newTransaction" in action.payload) {
             casfhlowAdapter.upsertOne(
               state,
-              action.payload.newTransaction as Transaction
+              action.payload.newTransaction as Transaction,
             );
           }
           state.status = "succeeded";
         },
-      }
+      },
     ),
     deletedTransactions: create.asyncThunk(
       async ({
@@ -460,7 +508,7 @@ export const cashflowSlice = createAppSlice({
           casfhlowAdapter.removeMany(state, action.payload);
           state.status = "succeeded";
         },
-      }
+      },
     ),
     deletedTransactionsAndPeriodsRecalculated: create.asyncThunk(
       async (
@@ -469,7 +517,7 @@ export const cashflowSlice = createAppSlice({
         }: {
           selectedTransactions: Transaction["id"][];
         },
-        { dispatch, getState }
+        { dispatch, getState },
       ) => {
         const {
             cashflow: { entities },
@@ -480,7 +528,7 @@ export const cashflowSlice = createAppSlice({
           earliestAffectedPeriodId = getEarliestPeriodIdByTransactions(
             periods,
             transactions,
-            selectedTransactions
+            selectedTransactions,
           );
 
         await dispatch(deletedTransactions({ selectedTransactions })).unwrap();
@@ -488,7 +536,7 @@ export const cashflowSlice = createAppSlice({
         dispatch(
           periodsRecalculated({
             originallyAffectedPeriodId: earliestAffectedPeriodId,
-          })
+          }),
         );
       },
       {
@@ -501,14 +549,23 @@ export const cashflowSlice = createAppSlice({
         fulfilled: (state) => {
           state.status = "succeeded";
         },
-      }
+      },
     ),
   }),
   selectors: {},
 });
 
-export const { selectAll: selectAllCashflow, selectIds: selectCashflowIds } =
-  casfhlowAdapter.getSelectors((state: RootState) => state.cashflow);
+export const {
+  selectAll: selectAllTransactions,
+  selectIds: selectCashflowIds,
+} = casfhlowAdapter.getSelectors((state: RootState) => state.cashflow);
+
+const returnId = (_state: RootState, id: FinancePeriod["id"]) => id;
+
+export const selectTransactionsByPeriodId = createAppSelector(
+  [selectAllTransactions, returnId],
+  (state, id) => state.filter((t) => t.period_id === id),
+);
 
 export const {
   fetchTransactions,
