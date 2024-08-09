@@ -1,10 +1,12 @@
 import PeriodCard from "@/features/periods/PeriodCard";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 import { useAppSelector } from "@/lib/hooks";
 import { selectAllTransactions } from "@/features/cashflow/cashflowSlice";
 import { selectAllPeriods } from "@/features/periods/periodsSlice";
 
-import { createLazyFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
 
 import {
   getPeriodsByMonth,
@@ -23,15 +25,24 @@ function PeriodsGrid() {
   return (
     <main>
       <h1 className="text-2xl font-semibold">Periods</h1>
-      <ul className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {Object.entries(months).map(([monthName, monthStats]) => (
-          <PeriodCard
-            key={monthName}
-            monthName={monthName as MonthNames}
-            monthStats={monthStats}
-          />
-        ))}
-      </ul>
+      {periods.length === 0 ? (
+        <Button variant="link" className="mt-6">
+          <Link to="/transactions" className="flex items-center">
+            Go to transactions
+            <ArrowRight size={18} className="ml-2" />
+          </Link>
+        </Button>
+      ) : (
+        <ul className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {Object.entries(months).map(([monthName, monthStats]) => (
+            <PeriodCard
+              key={monthName}
+              monthName={monthName as MonthNames}
+              monthStats={monthStats}
+            />
+          ))}
+        </ul>
+      )}
     </main>
   );
 }
