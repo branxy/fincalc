@@ -1,4 +1,5 @@
-import SettingsContent from "./SettingsContent";
+import SettingsContent from "@/components/settings/SettingsContent";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,7 +24,6 @@ import { SettingsIcon } from "lucide-react";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { useState } from "react";
 
-
 function Settings() {
   const [open, setOpen] = useState(false);
   const isDesktop = useMediaQuery("only screen and (min-width: 768px)");
@@ -36,14 +36,14 @@ function Settings() {
             <SettingsIcon size={22} />
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="w-full sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Settings</DialogTitle>
             <DialogDescription className="sr-only">
               List of user settings
             </DialogDescription>
           </DialogHeader>
-          <SettingsContent setOpen={setOpen} />
+          <SettingsContent orientation="horizontal" setOpen={setOpen} />
         </DialogContent>
       </Dialog>
     );
@@ -63,7 +63,7 @@ function Settings() {
             List of user settings
           </DrawerDescription>
         </DrawerHeader>
-        <SettingsContent setOpen={setOpen} />
+        <SettingsContent orientation="vertical" setOpen={setOpen} />
         <DrawerFooter className="px-0 pt-2">
           <DrawerClose asChild>
             <Button variant="outline">Close</Button>

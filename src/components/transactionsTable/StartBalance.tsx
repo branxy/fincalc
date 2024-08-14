@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 import {
   selectFirstPeriod,
@@ -46,63 +47,72 @@ function StartBalance({ setOpen }: StartBalanceProps) {
       updatedFields.forward_payments_start = newFP;
     }
 
-    dispatch(startBalanceChanged({ newBalance: updatedFields }));
+    const hasUpdates = Object.keys(updatedFields).length > 0;
+    if (hasUpdates) {
+      dispatch(startBalanceChanged({ newBalance: updatedFields }));
+    }
 
     setOpen(false);
   };
 
   return (
-    <form className="flex flex-col gap-2" onSubmit={onFormSubmit}>
-      {!isNaN(balance_start) && (
-        <>
-          <Label htmlFor="start-balance" className="shrink-0">
-            Start balance
-          </Label>
-          <Input
-            type="number"
-            value={newStartBalance}
-            name="start-balance"
-            id="start-balance"
-            max={1000000000000}
-            className="min-w-24 max-w-48"
-            onChange={(e) => setNewStartBalance(Number(e.target.value))}
-          />
-        </>
-      )}
-      {!isNaN(stock_start) && (
-        <>
-          <Label htmlFor="stock_start" className="shrink-0">
-            Stock
-          </Label>
-          <Input
-            type="number"
-            value={newStock}
-            name="stock_start"
-            id="stock_start"
-            max={1000000000000}
-            className="min-w-24 max-w-48"
-            onChange={(e) => setNewStock(Number(e.target.value))}
-          />
-        </>
-      )}
-
-      {!isNaN(forward_payments_start) && (
-        <>
-          <Label htmlFor="forward-payments" className="shrink-0">
-            Forward payments
-          </Label>
-          <Input
-            type="number"
-            value={newFP}
-            name="forward-payments"
-            id="forward-payments"
-            max={1000000000000}
-            className="min-w-24 max-w-48"
-            onChange={(e) => setNewFP(Number(e.target.value))}
-          />
-        </>
-      )}
-      <button type="submit" />
+    <form
+      className="flex h-full flex-col justify-between"
+      onSubmit={onFormSubmit}
+    >
+      <div>
+        {!isNaN(balance_start) && (
+          <>
+            <Label htmlFor="start-balance" className="shrink-0">
+              Start balance
+            </Label>
+            <Input
+              type="number"
+              value={newStartBalance}
+              name="start-balance"
+              id="start-balance"
+              max={1000000000000}
+              className="min-w-24 max-w-48"
+              onChange={(e) => setNewStartBalance(Number(e.target.value))}
+            />
+          </>
+        )}
+        {!isNaN(stock_start) && (
+          <>
+            <Label htmlFor="stock_start" className="shrink-0">
+              Stock
+            </Label>
+            <Input
+              type="number"
+              value={newStock}
+              name="stock_start"
+              id="stock_start"
+              max={1000000000000}
+              className="min-w-24 max-w-48"
+              onChange={(e) => setNewStock(Number(e.target.value))}
+            />
+          </>
+        )}
+        {!isNaN(forward_payments_start) && (
+          <>
+            <Label htmlFor="forward-payments" className="shrink-0">
+              Forward payments
+            </Label>
+            <Input
+              type="number"
+              value={newFP}
+              name="forward-payments"
+              id="forward-payments"
+              max={1000000000000}
+              className="min-w-24 max-w-48"
+              onChange={(e) => setNewFP(Number(e.target.value))}
+            />
+          </>
+        )}
+      </div>
+      <Button type="submit" className="mb-1 mt-12 w-full">
+        Apply
+      </Button>
     </form>
   );
 }
