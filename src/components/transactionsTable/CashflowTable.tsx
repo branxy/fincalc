@@ -4,40 +4,54 @@ import CashflowTableRow from "@/components/transactionsTable/CashflowTableRow";
 import { FinancePeriod, Transactions } from "@/features/types";
 import { useTableCheckbox } from "@/lib/hooks";
 import { getMarkedCashflow } from "@/lib/utils";
+import WeekNumber from "./WeekNumber";
+import { Fragment } from "react/jsx-runtime";
 
 interface CashflowTableProps {
-  cashflow: Transactions;
+  transactions: Transactions;
   periods: Pick<
     FinancePeriod,
     "id" | "balance_end" | "stock_end" | "forward_payments_end"
   >[];
 }
-function CashflowTable({ cashflow, periods }: CashflowTableProps) {
+function CashflowTable({ transactions, periods }: CashflowTableProps) {
   const [
     selectedTransactions,
     setSelectedTransactions,
     isCheckedCheckbox,
     handleSelectTransaction,
     handleSelectAllTransactions,
-  ] = useTableCheckbox(cashflow);
+  ] = useTableCheckbox(transactions);
 
-  // For each period, find the last transaction's index and return {"transactionIndex": period_end_balance}
-  const endBalance = getMarkedCashflow(periods, cashflow);
+  // For each period, create a `stats` object. Needed to display week numbers and end-balance on last transactions
+  const periodsStats = getMarkedCashflow(periods, transactions);
 
-  const tableContent = cashflow.map((item, i) => {
-    const periodEndBalance = endBalance[i];
+  const tableContent = transactions.map((t, i) => {
+    const {
+        firstTransactionIndex,
+        lastTransactionIndex,
+        weekNumber,
+        monthName,
+        periodEndBalance,
+      } = periodsStats[t.period_id],
+      isFirstTransactionInAPeriod = firstTransactionIndex === i,
+      periodStats = lastTransactionIndex === i ? periodEndBalance : null;
     return (
-      <CashflowTableRow
-        key={item.id}
-        transactionType={item.type}
-        transactionId={item.id}
-        title={item.title}
-        amount={item.amount}
-        date={item.date}
-        selectedTransactions={selectedTransactions}
-        periodEndBalance={periodEndBalance}
-        handleSelectTransaction={handleSelectTransaction}
-      />
+      <Fragment key={`${t.id}-fragment`}>
+        {isFirstTransactionInAPeriod && (
+          <WeekNumber weekNumber={weekNumber} monthName={monthName} />
+        )}
+        <CashflowTableRow
+          transactionType={t.type}
+          transactionId={t.id}
+          title={t.title}
+          amount={t.amount}
+          date={t.date}
+          selectedTransactions={selectedTransactions}
+          periodEndBalance={periodStats}
+          handleSelectTransaction={handleSelectTransaction}
+        />
+      </Fragment>
     );
   });
   return (
@@ -48,7 +62,7 @@ function CashflowTable({ cashflow, periods }: CashflowTableProps) {
           setSelectedTransactions={setSelectedTransactions}
         />
       </div>
-      {cashflow.length === 0 ? (
+      {transactions.length === 0 ? (
         <p className="mt-3 text-center">No transactions yet</p>
       ) : (
         <div className="overflow-x-auto">

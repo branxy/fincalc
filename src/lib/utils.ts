@@ -54,31 +54,81 @@ export function generateTestCashflow(
   return arr;
 }
 
+interface MarkedCashflow {
+  [key: FinancePeriod["id"]]: {
+    firstTransactionIndex: number;
+    lastTransactionIndex: number;
+    monthName: MonthNames;
+    weekNumber: number;
+    periodEndBalance: Pick<
+      FinancePeriod,
+      "balance_end" | "stock_end" | "forward_payments_end"
+    >;
+  };
+}
+
 export function getMarkedCashflow(
   periods: Pick<
     FinancePeriod,
     "id" | "balance_end" | "stock_end" | "forward_payments_end"
   >[],
   cashflow: Transactions,
-) {
-  // Returns an object with indexes of every last transaction in a period and that period's end_balance
-  const returnObject: {
-    [key: number]: Pick<
-      FinancePeriod,
-      "balance_end" | "stock_end" | "forward_payments_end"
-    >;
-  } = {};
+): MarkedCashflow {
+  // Returns an object of type:
+  // {
+  //    periodId: {
+  //        firstTransactionIndex: number;
+  //        lastTransactionIndex: number;
+  //        monthName: MonthNames;
+  //        weekNumber: number;
+  //        periodEndBalance: {
+  //          balance_end: number;
+  //          stock_end: number;
+  //          forward_payments_end: number;
+  //          }
+  //      }
+  // }
+  const returnObject: MarkedCashflow = {};
 
   for (const p of periods) {
-    const lastCashflowIndex = cashflow.findLastIndex(
-      (c) => c.period_id === p.id,
-    );
+    let firstTransaction = 0;
+    for (let i = 0; i < cashflow.length; i++) {
+      const t = cashflow[i];
+      if (t.period_id === p.id) {
+        if (!firstTransaction) {
+          firstTransaction = 1;
+          const months = getMonths(),
+            monthNumber = new Date(t.date).getMonth(),
+            monthName = months[monthNumber];
+          Object.defineProperty(returnObject, p.id, {
+            value: {
+              firstTransactionIndex: i,
+            },
+          });
 
-    returnObject[lastCashflowIndex] = {
-      balance_end: p.balance_end,
-      stock_end: p.stock_end,
-      forward_payments_end: p.forward_payments_end,
-    };
+          Object.defineProperties(returnObject[p.id], {
+            monthName: {
+              value: monthName,
+            },
+            weekNumber: {
+              value: getWeekNumber(t.date),
+            },
+          });
+        }
+
+        Object.defineProperties(returnObject[p.id], {
+          lastTransactionIndex: { value: i, writable: true },
+          periodEndBalance: {
+            value: {
+              balance_end: p.balance_end,
+              stock_end: p.stock_end,
+              forward_payments_end: p.forward_payments_end,
+            },
+            writable: true,
+          },
+        });
+      }
+    }
   }
 
   return returnObject;
@@ -143,8 +193,10 @@ export function getCurrentYearNumber() {
   return new Date().getFullYear();
 }
 
-export function getCurrentYearAndMonthNumber() {
-  const rawDate = new Date(),
+export function getYearAndMonthNumber(
+  date: Transaction["date"] = getDBDateFromObject(new Date()),
+) {
+  const rawDate = new Date(date),
     year = rawDate.getFullYear(),
     month = rawDate.getMonth();
 
@@ -167,8 +219,10 @@ export function getNumberOfDaysInMonthByDate(date: Transaction["date"]) {
   return numberOfDaysInAMonth;
 }
 
-export function getNumberOfDaysInCurrentMonth() {
-  const [year, month] = getCurrentYearAndMonthNumber(),
+export function getNumberOfDaysInMonth(
+  date: Transaction["date"] = getDBDateFromObject(new Date()),
+) {
+  const [year, month] = getYearAndMonthNumber(date),
     daysInAMonth = new Date(year, month, 0).getDate();
 
   return daysInAMonth;
@@ -184,7 +238,7 @@ export function getDBStartDate(year: number, month: number, day: number) {
 }
 
 export function getCurrentWeek() {
-  const daysInAMonth = getNumberOfDaysInCurrentMonth(),
+  const daysInAMonth = getNumberOfDaysInMonth(),
     weeks = getWeeksByDaysInAMonth(daysInAMonth),
     today = getCurrentDayOfMonthNumber(),
     currentWeek = weeks.find(
@@ -215,6 +269,22 @@ export function getWeeksByDaysInAMonth(daysInAMonth: number) {
   ];
 
   return weeks;
+}
+
+export function getWeekNumber(
+  date: Transaction["date"] = getDBDateFromObject(new Date()),
+) {
+  const daysInAMonth = getNumberOfDaysInMonth(date),
+    weeks = getWeeksByDaysInAMonth(daysInAMonth),
+    dayNumber = new Date(date).getDate();
+
+  const weekNumber = weeks.findIndex(
+    (w) => w.startDate <= dayNumber && w.endDate >= dayNumber,
+  );
+
+  if (weekNumber === -1) throw new Error("Couldn't find a week number");
+
+  return weekNumber + 1;
 }
 
 export function getPeriodWeekByDate(date: Transaction["date"]) {

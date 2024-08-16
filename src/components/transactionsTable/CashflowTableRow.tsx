@@ -19,10 +19,10 @@ interface CashflowTableRowProps {
   amount: Transaction["amount"];
   date: Transaction["date"];
   selectedTransactions: Transaction["id"][];
-  periodEndBalance?: Pick<
+  periodEndBalance: Pick<
     FinancePeriod,
     "balance_end" | "stock_end" | "forward_payments_end"
-  >;
+  > | null;
   handleSelectTransaction: (periodId: Transaction["id"]) => void;
 }
 
@@ -41,62 +41,68 @@ function CashflowTableRow({
   const isSelectedRow = Boolean(
       selectedTransactions?.find((id) => id === transactionId),
     ),
-    isLoading = periodsStatus === "loading",
-    endBalance = isLoading ? (
-      <td>
-        <LoaderCircle className="animate-spin" />
-      </td>
-    ) : (
-      <td>
-        {typeof periodEndBalance?.balance_end === "number" && (
-          <span className="block">
-            End balance: {currencySign + periodEndBalance.balance_end}
-          </span>
-        )}
-        {typeof periodEndBalance?.stock_end === "number" && (
-          <span className="block">
-            Stock: {currencySign + periodEndBalance.stock_end}
-          </span>
-        )}
-        {typeof periodEndBalance?.forward_payments_end === "number" && (
-          <span className="block">
-            Forward payments:{" "}
-            {currencySign + periodEndBalance.forward_payments_end}
-          </span>
-        )}
-      </td>
-    );
+    isLoading = periodsStatus === "loading";
+
+  const endBalance = isLoading ? (
+    <td>
+      <LoaderCircle className="animate-spin" />
+    </td>
+  ) : (
+    <td>
+      {typeof periodEndBalance?.balance_end === "number" && (
+        <span className="block">
+          End balance: {currencySign + periodEndBalance.balance_end}
+        </span>
+      )}
+      {typeof periodEndBalance?.stock_end === "number" && (
+        <span className="block">
+          Stock: {currencySign + periodEndBalance.stock_end}
+        </span>
+      )}
+      {typeof periodEndBalance?.forward_payments_end === "number" && (
+        <span className="block">
+          Forward payments:{" "}
+          {currencySign + periodEndBalance.forward_payments_end}
+        </span>
+      )}
+    </td>
+  );
 
   return (
-    <tr
-      className={clsx(
-        "h-[44px]",
-        isSelectedRow && "bg-zinc-500 text-slate-100",
-      )}
-    >
-      <td className="w-fit pr-2 text-right">
-        <input
-          className="h-4 w-4"
-          type="checkbox"
-          name="select-cashflow-item"
-          id="select-cashflow-item"
-          aria-label={`Select ${transactionType}`}
-          onChange={() => handleSelectTransaction(transactionId)}
-          checked={isSelectedRow}
+    <>
+      <tr
+        className={clsx(
+          "h-[44px]",
+          isSelectedRow && "bg-zinc-500 text-slate-100",
+        )}
+      >
+        <td className="w-fit pr-2 text-right">
+          <input
+            className="h-4 w-4"
+            type="checkbox"
+            name="select-cashflow-item"
+            id="select-cashflow-item"
+            aria-label={`Select ${transactionType}`}
+            onChange={() => handleSelectTransaction(transactionId)}
+            checked={isSelectedRow}
+          />
+        </td>
+        <TransactionsTableTitleCell
+          title={title}
+          transactionId={transactionId}
         />
-      </td>
-      <TransactionsTableTitleCell title={title} transactionId={transactionId} />
-      <TransactionsTableAmountCell
-        amount={amount}
-        transactionId={transactionId}
-      />
-      <TransactionsTableTypeCell
-        type={transactionType}
-        transactionId={transactionId}
-      />
-      <TransactionsTableDateCell transactionId={transactionId} date={date} />
-      {endBalance}
-    </tr>
+        <TransactionsTableAmountCell
+          amount={amount}
+          transactionId={transactionId}
+        />
+        <TransactionsTableTypeCell
+          type={transactionType}
+          transactionId={transactionId}
+        />
+        <TransactionsTableDateCell transactionId={transactionId} date={date} />
+        {endBalance}
+      </tr>
+    </>
   );
 }
 

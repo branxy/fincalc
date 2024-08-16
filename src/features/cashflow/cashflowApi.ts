@@ -2,7 +2,10 @@ import { supabase } from "@/db/supabaseClient";
 import { Transaction, Transactions } from "@/features/types";
 
 export async function fetchCashflow() {
-  const { data, error } = await supabase.from("cashflow").select();
+  const { data, error } = await supabase
+    .from("cashflow")
+    .select()
+    .order("date", { ascending: true });
 
   if (error) throw new Error(error.message);
 
@@ -13,7 +16,8 @@ export async function uploadTransaction(payment: Omit<Transaction, "id">) {
   const { data, error } = await supabase
     .from("cashflow")
     .insert(payment)
-    .select();
+    .select()
+    .order("date", { ascending: true });
 
   if (error?.message) {
     console.error({ error });
@@ -26,7 +30,7 @@ export async function uploadTransaction(payment: Omit<Transaction, "id">) {
 export async function updateTransaction(
   transactionId: Transaction["id"],
   newValueType: "title" | "type" | "amount" | "date",
-  newValue: string | number
+  newValue: string | number,
 ) {
   switch (newValueType) {
     case "title": {

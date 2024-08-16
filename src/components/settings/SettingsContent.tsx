@@ -20,7 +20,7 @@ function SettingsContent({ orientation, setOpen }: SettingsContentProps) {
       >
         <TabsList className="flex w-fit justify-start rounded-none bg-transparent px-4 md:h-full md:flex-col md:border-r-2">
           {settingsTabs.map((t) => (
-            <SettingsTabTrigger value={t} />
+            <SettingsTabTrigger key={t} value={t} />
           ))}
         </TabsList>
         <TabsContent value="balance">
