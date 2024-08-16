@@ -55,65 +55,76 @@ function StartBalance({ setOpen }: StartBalanceProps) {
     setOpen(false);
   };
 
+  const startBalanceExists = [newStartBalance, newStock, newFP].every(
+    (p) => !isNaN(p),
+  );
+
+  const noStartBalance = !startBalanceExists && <p>Add a transaction first.</p>;
+
   return (
-    <form
-      className="flex h-full flex-col justify-between"
-      onSubmit={onFormSubmit}
-    >
-      <div>
-        {!isNaN(balance_start) && (
-          <>
-            <Label htmlFor="start-balance" className="shrink-0">
-              Start balance
-            </Label>
-            <Input
-              type="number"
-              value={newStartBalance}
-              name="start-balance"
-              id="start-balance"
-              max={1000000000000}
-              className="min-w-24 max-w-48"
-              onChange={(e) => setNewStartBalance(Number(e.target.value))}
-            />
-          </>
+    <>
+      {noStartBalance}
+      <form
+        className="flex h-full flex-col justify-between"
+        onSubmit={onFormSubmit}
+      >
+        <div>
+          {!isNaN(balance_start) && (
+            <>
+              <Label htmlFor="start-balance" className="shrink-0">
+                Start balance
+              </Label>
+              <Input
+                type="number"
+                value={newStartBalance}
+                name="start-balance"
+                id="start-balance"
+                max={1000000000000}
+                className="min-w-24 max-w-48"
+                onChange={(e) => setNewStartBalance(Number(e.target.value))}
+              />
+            </>
+          )}
+          {!isNaN(stock_start) && (
+            <>
+              <Label htmlFor="stock_start" className="shrink-0">
+                Stock
+              </Label>
+              <Input
+                type="number"
+                value={newStock}
+                name="stock_start"
+                id="stock_start"
+                max={1000000000000}
+                className="min-w-24 max-w-48"
+                onChange={(e) => setNewStock(Number(e.target.value))}
+              />
+            </>
+          )}
+          {!isNaN(forward_payments_start) && (
+            <>
+              <Label htmlFor="forward-payments" className="shrink-0">
+                Forward payments
+              </Label>
+              <Input
+                type="number"
+                value={newFP}
+                name="forward-payments"
+                id="forward-payments"
+                max={1000000000000}
+                className="min-w-24 max-w-48"
+                onChange={(e) => setNewFP(Number(e.target.value))}
+              />
+            </>
+          )}
+        </div>
+        {startBalanceExists && (
+          <Button type="submit" className="mb-1 mt-12 w-full">
+            Apply
+          </Button>
         )}
-        {!isNaN(stock_start) && (
-          <>
-            <Label htmlFor="stock_start" className="shrink-0">
-              Stock
-            </Label>
-            <Input
-              type="number"
-              value={newStock}
-              name="stock_start"
-              id="stock_start"
-              max={1000000000000}
-              className="min-w-24 max-w-48"
-              onChange={(e) => setNewStock(Number(e.target.value))}
-            />
-          </>
-        )}
-        {!isNaN(forward_payments_start) && (
-          <>
-            <Label htmlFor="forward-payments" className="shrink-0">
-              Forward payments
-            </Label>
-            <Input
-              type="number"
-              value={newFP}
-              name="forward-payments"
-              id="forward-payments"
-              max={1000000000000}
-              className="min-w-24 max-w-48"
-              onChange={(e) => setNewFP(Number(e.target.value))}
-            />
-          </>
-        )}
-      </div>
-      <Button type="submit" className="mb-1 mt-12 w-full">
-        Apply
-      </Button>
-    </form>
+      </form>
+    </>
   );
 }
 
