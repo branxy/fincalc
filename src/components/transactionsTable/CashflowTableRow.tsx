@@ -7,6 +7,7 @@ import EndBalance from "@/components/transactionsTable/EndBalance";
 import { useAppSelector } from "@/lib/hooks";
 
 import { FinancePeriod, Transaction } from "@/features/types";
+import { MarkedCashflow } from "@/lib/utils";
 import clsx from "clsx";
 
 interface CashflowTableRowProps {
@@ -16,10 +17,9 @@ interface CashflowTableRowProps {
   amount: Transaction["amount"];
   date: Transaction["date"];
   selectedTransactions: Transaction["id"][];
-  periodEndBalance: Pick<
-    FinancePeriod,
-    "balance_end" | "stock_end" | "forward_payments_end"
-  > | null;
+  periodEndBalance:
+    | MarkedCashflow[FinancePeriod["id"]]["periodEndBalance"]
+    | null;
   handleSelectTransaction: (periodId: Transaction["id"]) => void;
 }
 

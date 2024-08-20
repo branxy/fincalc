@@ -4,13 +4,12 @@ import { useContext } from "react";
 import { CurrencyContext } from "@/components/providers";
 
 import { FinancePeriod } from "@/features/types";
-import { cn } from "@/lib/utils";
+import { cn, MarkedCashflow } from "@/lib/utils";
 
 interface EndBalanceProps {
-  periodEndBalance: Pick<
-    FinancePeriod,
-    "balance_end" | "stock_end" | "forward_payments_end"
-  >;
+  periodEndBalance:
+    | MarkedCashflow[FinancePeriod["id"]]["periodEndBalance"]
+    | null;
   isLoading: boolean;
 }
 
@@ -28,7 +27,7 @@ function EndBalance({ periodEndBalance, isLoading }: EndBalanceProps) {
   ) : (
     <td>
       <span className="block">
-        End balance:&nbsp;
+        End&nbsp;balance:&nbsp;
         <span
           className={cn("rounded-sm px-1.5", {
             "bg-red-400": balanceIsNegative,
@@ -37,10 +36,14 @@ function EndBalance({ periodEndBalance, isLoading }: EndBalanceProps) {
           {currencySign + balance_end}
         </span>
       </span>
-      <span className="block">Stock: {currencySign + stock_end}</span>
-      <span className="block">
-        Forward payments: {currencySign + forward_payments_end}
-      </span>
+      {typeof stock_end !== "undefined" && (
+        <span className="block">Stock:&nbsp;{currencySign + stock_end}</span>
+      )}
+      {typeof forward_payments_end !== "undefined" && (
+        <span className="block">
+          Forward&nbsp;payments:&nbsp;{currencySign + forward_payments_end}
+        </span>
+      )}
     </td>
   );
 }

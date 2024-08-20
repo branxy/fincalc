@@ -54,16 +54,17 @@ export function generateTestCashflow(
   return arr;
 }
 
-interface MarkedCashflow {
+export interface MarkedCashflow {
   [key: FinancePeriod["id"]]: {
     firstTransactionIndex: number;
     lastTransactionIndex: number;
     monthName: MonthNames;
     weekNumber: number;
-    periodEndBalance: Pick<
-      FinancePeriod,
-      "balance_end" | "stock_end" | "forward_payments_end"
-    >;
+    periodEndBalance: {
+      balance_end: FinancePeriod["balance_end"];
+      stock_end?: FinancePeriod["stock_end"];
+      forward_payments_end?: FinancePeriod["forward_payments_end"];
+    };
   };
 }
 
@@ -115,10 +116,18 @@ export function getMarkedCashflow(
       if (!stats.periodEndBalance) {
         stats.periodEndBalance = {
           balance_end: p.balance_end,
-          stock_end: p.stock_end,
-          forward_payments_end: p.forward_payments_end,
         };
       }
+      const transactionIsStock =
+        t.type === "income/stock" || t.type === "compensation/stock";
+      const transactionIsFP =
+        t.type === "income/forward-payment" ||
+        t.type === "compensation/forward-payment";
+
+      if (transactionIsStock && !stats.periodEndBalance.stock_end)
+        stats.periodEndBalance.stock_end = p.stock_end;
+      if (transactionIsFP && !stats.periodEndBalance.forward_payments_end)
+        stats.periodEndBalance.forward_payments_end = p.forward_payments_end;
     }
   }
 
