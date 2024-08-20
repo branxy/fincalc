@@ -2,15 +2,13 @@ import TransactionsTableDateCell from "@/components/transactionsTable//cells/Tra
 import TransactionsTableTypeCell from "@/components/transactionsTable//cells/TransactionsTableTypeCell";
 import TransactionsTableAmountCell from "@/components/transactionsTable/cells/TransactionsTableAmountCell";
 import TransactionsTableTitleCell from "@/components/transactionsTable/cells/TransactionsTableTitleCell";
+import EndBalance from "@/components/transactionsTable/EndBalance";
 
 import { useAppSelector } from "@/lib/hooks";
 
 import { FinancePeriod, Transaction } from "@/features/types";
+import { MarkedCashflow } from "@/lib/utils";
 import clsx from "clsx";
-import { LoaderCircle } from "lucide-react";
-
-import { useContext } from "react";
-import { CurrencyContext } from "@/components/providers";
 
 interface CashflowTableRowProps {
   transactionType: Transaction["type"];
@@ -19,10 +17,9 @@ interface CashflowTableRowProps {
   amount: Transaction["amount"];
   date: Transaction["date"];
   selectedTransactions: Transaction["id"][];
-  periodEndBalance: Pick<
-    FinancePeriod,
-    "balance_end" | "stock_end" | "forward_payments_end"
-  > | null;
+  periodEndBalance:
+    | MarkedCashflow[FinancePeriod["id"]]["periodEndBalance"]
+    | null;
   handleSelectTransaction: (periodId: Transaction["id"]) => void;
 }
 
@@ -37,36 +34,10 @@ function CashflowTableRow({
   handleSelectTransaction,
 }: CashflowTableRowProps) {
   const periodsStatus = useAppSelector((state) => state.periods.status);
-  const [currencySign] = useContext(CurrencyContext)!;
   const isSelectedRow = Boolean(
       selectedTransactions?.find((id) => id === transactionId),
     ),
     isLoading = periodsStatus === "loading";
-
-  const endBalance = isLoading ? (
-    <td>
-      <LoaderCircle className="animate-spin" />
-    </td>
-  ) : (
-    <td>
-      {typeof periodEndBalance?.balance_end === "number" && (
-        <span className="block">
-          End balance: {currencySign + periodEndBalance.balance_end}
-        </span>
-      )}
-      {typeof periodEndBalance?.stock_end === "number" && (
-        <span className="block">
-          Stock: {currencySign + periodEndBalance.stock_end}
-        </span>
-      )}
-      {typeof periodEndBalance?.forward_payments_end === "number" && (
-        <span className="block">
-          Forward payments:{" "}
-          {currencySign + periodEndBalance.forward_payments_end}
-        </span>
-      )}
-    </td>
-  );
 
   return (
     <>
@@ -100,7 +71,12 @@ function CashflowTableRow({
           transactionId={transactionId}
         />
         <TransactionsTableDateCell transactionId={transactionId} date={date} />
-        {endBalance}
+        {periodEndBalance && (
+          <EndBalance
+            periodEndBalance={periodEndBalance}
+            isLoading={isLoading}
+          />
+        )}
       </tr>
     </>
   );
