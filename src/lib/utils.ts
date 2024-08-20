@@ -12,6 +12,7 @@ import { MonthNames } from "@/features/periods/periodsCalculator";
 import { addDays, format } from "date-fns";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
+import { User } from "@supabase/supabase-js";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -343,4 +344,22 @@ export function getMonths() {
     "December",
   ];
   return months;
+}
+
+export function createTransaction(
+  currentPeriodId: FinancePeriod["id"],
+  userId: User["id"],
+  transactionType?: Transaction["type"],
+) {
+  const newTransaction: Omit<Transaction, "id"> = {
+    period_id: currentPeriodId,
+    user_id: userId,
+    type: transactionType ?? "payment/fixed",
+    title: "New transaction",
+    amount: 0,
+    date: getTodayDate(),
+    date_created: new Date().toISOString(),
+  };
+
+  return newTransaction;
 }

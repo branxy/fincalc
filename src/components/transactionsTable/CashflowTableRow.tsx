@@ -2,7 +2,7 @@ import TransactionsTableDateCell from "@/components/transactionsTable//cells/Tra
 import TransactionsTableTypeCell from "@/components/transactionsTable//cells/TransactionsTableTypeCell";
 import TransactionsTableAmountCell from "@/components/transactionsTable/cells/TransactionsTableAmountCell";
 import TransactionsTableTitleCell from "@/components/transactionsTable/cells/TransactionsTableTitleCell";
-import EndBalance from "@/components/transactionsTable/EndBalance";
+import EndBalance from "@/components/transactionsTable/cells/EndBalance";
 
 import { useAppSelector } from "@/lib/hooks";
 

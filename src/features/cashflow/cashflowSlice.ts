@@ -20,7 +20,7 @@ import { periodAdded, periodsRecalculated } from "@periods/periodsSlice";
 
 import { supabase } from "@/db/supabaseClient";
 import { FinancePeriod, PeriodBalance, Transaction } from "@/features/types";
-import { getTodayDate } from "@/lib/utils";
+import { createTransaction, getCurrentPeriodId } from "@/lib/utils";
 import { toast } from "sonner";
 
 const casfhlowAdapter = createEntityAdapter<Transaction>({
@@ -65,11 +65,11 @@ export const cashflowSlice = createAppSlice({
     transactionAdded: create.asyncThunk(
       async (
         {
-          currentWeekPeriodId,
+          newTransactionType,
         }: {
-          currentWeekPeriodId?: FinancePeriod["id"];
+          newTransactionType?: Transaction["type"];
         },
-        { dispatch },
+        { dispatch, getState },
       ) => {
         const {
           data: { user },
@@ -77,21 +77,24 @@ export const cashflowSlice = createAppSlice({
 
         if (!user) throw new Error("Unauthorized");
 
-        if (!currentWeekPeriodId) {
+        const {
+          periods: { entities: periodsEntities },
+        } = getState() as RootState;
+
+        let currentPeriodId = getCurrentPeriodId(
+          Object.values(periodsEntities),
+        );
+        if (!currentPeriodId) {
           // If a period with dates correlating with a transaction date doesn't exist yet, create it
           const currentPeriod = await dispatch(periodAdded()).unwrap();
-          currentWeekPeriodId = currentPeriod.id;
+          currentPeriodId = currentPeriod.id;
         }
 
-        const newTransaction: Omit<Transaction, "id"> = {
-          period_id: currentWeekPeriodId,
-          user_id: user.id,
-          type: "payment/fixed",
-          title: "New transaction",
-          amount: 0,
-          date: getTodayDate(),
-          date_created: new Date().toISOString(),
-        };
+        const newTransaction = createTransaction(
+          currentPeriodId,
+          user.id,
+          newTransactionType,
+        );
 
         const uploadedTransaction = await uploadTransaction(newTransaction);
 

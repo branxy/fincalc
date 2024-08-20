@@ -1,4 +1,4 @@
-import CashflowTableActionButtons from "@/components/transactionsTable/CashflowTableActionButtons";
+import CashflowTableActionButtons from "@/components/transactionsTable/actions/CashflowTableActionButtons";
 import CashflowTableRow from "@/components/transactionsTable/CashflowTableRow";
 
 import { FinancePeriod, Transactions } from "@/features/types";

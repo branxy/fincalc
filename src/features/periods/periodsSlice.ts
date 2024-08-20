@@ -8,7 +8,6 @@ import { RootState } from "@/features/store";
 import { FinancePeriod, PeriodBalance } from "@/features/types";
 import { createAppSelector } from "@/lib/hooks";
 import {
-  getCurrentPeriodId,
   getYearAndMonthNumber,
   getDBStartDate,
   getPreviousPeriodAndCurrentWeek,
@@ -320,11 +319,6 @@ export const selectPeriodsIdsAndEndBalance = createAppSelector(
       stock_end: p.stock_end,
       forward_payments_end: p.forward_payments_end,
     })),
-);
-
-export const selectCurrentWeekPeriodId = createAppSelector(
-  selectAllPeriods,
-  (state) => getCurrentPeriodId(state),
 );
 
 export const selectFirstPeriod = createAppSelector(
