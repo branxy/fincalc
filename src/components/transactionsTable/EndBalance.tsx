@@ -4,6 +4,7 @@ import { useContext } from "react";
 import { CurrencyContext } from "@/components/providers";
 
 import { FinancePeriod } from "@/features/types";
+import { cn } from "@/lib/utils";
 
 interface EndBalanceProps {
   periodEndBalance: Pick<
@@ -15,6 +16,10 @@ interface EndBalanceProps {
 
 function EndBalance({ periodEndBalance, isLoading }: EndBalanceProps) {
   const [currencySign] = useContext(CurrencyContext)!;
+  if (!periodEndBalance) return;
+
+  const { balance_end, stock_end, forward_payments_end } = periodEndBalance,
+    balanceIsNegative = balance_end < 0;
 
   return isLoading ? (
     <td>
@@ -24,15 +29,22 @@ function EndBalance({ periodEndBalance, isLoading }: EndBalanceProps) {
     <td>
       {typeof periodEndBalance?.balance_end === "number" && (
         <span className="block">
-          End balance: {currencySign + periodEndBalance.balance_end}
+          End balance:&nbsp;
+          <span
+            className={cn("rounded-sm px-1.5", {
+              "bg-red-400": balanceIsNegative,
+            })}
+          >
+            {currencySign + periodEndBalance.balance_end}
+          </span>
         </span>
       )}
-      {typeof periodEndBalance?.stock_end === "number" && (
+      {typeof stock_end === "number" && (
         <span className="block">
           Stock: {currencySign + periodEndBalance.stock_end}
         </span>
       )}
-      {typeof periodEndBalance?.forward_payments_end === "number" && (
+      {typeof forward_payments_end === "number" && (
         <span className="block">
           Forward payments:{" "}
           {currencySign + periodEndBalance.forward_payments_end}
