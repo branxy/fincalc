@@ -8,10 +8,10 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 import { supabase } from "@/db/supabaseClient";
-import { format } from "date-fns";
+import { MonthNames } from "@/features/periods/periodsCalculator";
+import { addDays, format } from "date-fns";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
-import { MonthNames } from "@/features/periods/periodsCalculator";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -54,31 +54,72 @@ export function generateTestCashflow(
   return arr;
 }
 
+interface MarkedCashflow {
+  [key: FinancePeriod["id"]]: {
+    firstTransactionIndex: number;
+    lastTransactionIndex: number;
+    monthName: MonthNames;
+    weekNumber: number;
+    periodEndBalance: Pick<
+      FinancePeriod,
+      "balance_end" | "stock_end" | "forward_payments_end"
+    >;
+  };
+}
+
 export function getMarkedCashflow(
   periods: Pick<
     FinancePeriod,
     "id" | "balance_end" | "stock_end" | "forward_payments_end"
   >[],
-  cashflow: Transactions,
-) {
-  // Returns an object with indexes of every last transaction in a period and that period's end_balance
-  const returnObject: {
-    [key: number]: Pick<
-      FinancePeriod,
-      "balance_end" | "stock_end" | "forward_payments_end"
-    >;
-  } = {};
+  transactions: Transactions,
+): MarkedCashflow {
+  // For every period, create an object with period statistics
+
+  const returnObject: MarkedCashflow = {};
 
   for (const p of periods) {
-    const lastCashflowIndex = cashflow.findLastIndex(
-      (c) => c.period_id === p.id,
-    );
+    let firstTransaction = 0;
+    for (let i = 0; i < transactions.length; i++) {
+      const t = transactions[i];
+      if (t.period_id !== p.id) continue;
 
-    returnObject[lastCashflowIndex] = {
-      balance_end: p.balance_end,
-      stock_end: p.stock_end,
-      forward_payments_end: p.forward_payments_end,
-    };
+      if (!firstTransaction) {
+        firstTransaction = 1;
+
+        const months = getMonths(),
+          monthNumber = new Date(t.date).getMonth(),
+          monthName = months[monthNumber];
+
+        Object.defineProperty(returnObject, p.id, {
+          value: {
+            firstTransactionIndex: i,
+          },
+        });
+
+        Object.defineProperties(returnObject[p.id], {
+          monthName: {
+            value: monthName,
+          },
+          weekNumber: {
+            value: getWeekNumber(t.date),
+          },
+        });
+      }
+
+      const stats = returnObject[p.id];
+      Object.defineProperties(stats, {
+        lastTransactionIndex: { value: i, writable: true },
+      });
+
+      if (!stats.periodEndBalance) {
+        stats.periodEndBalance = {
+          balance_end: p.balance_end,
+          stock_end: p.stock_end,
+          forward_payments_end: p.forward_payments_end,
+        };
+      }
+    }
   }
 
   return returnObject;
@@ -143,8 +184,10 @@ export function getCurrentYearNumber() {
   return new Date().getFullYear();
 }
 
-export function getCurrentYearAndMonthNumber() {
-  const rawDate = new Date(),
+export function getYearAndMonthNumber(
+  date: Transaction["date"] = getDBDateFromObject(new Date()),
+) {
+  const rawDate = new Date(date),
     year = rawDate.getFullYear(),
     month = rawDate.getMonth();
 
@@ -167,8 +210,10 @@ export function getNumberOfDaysInMonthByDate(date: Transaction["date"]) {
   return numberOfDaysInAMonth;
 }
 
-export function getNumberOfDaysInCurrentMonth() {
-  const [year, month] = getCurrentYearAndMonthNumber(),
+export function getNumberOfDaysInMonth(
+  date: Transaction["date"] = getDBDateFromObject(new Date()),
+) {
+  const [year, month] = getYearAndMonthNumber(date),
     daysInAMonth = new Date(year, month, 0).getDate();
 
   return daysInAMonth;
@@ -184,7 +229,7 @@ export function getDBStartDate(year: number, month: number, day: number) {
 }
 
 export function getCurrentWeek() {
-  const daysInAMonth = getNumberOfDaysInCurrentMonth(),
+  const daysInAMonth = getNumberOfDaysInMonth(),
     weeks = getWeeksByDaysInAMonth(daysInAMonth),
     today = getCurrentDayOfMonthNumber(),
     currentWeek = weeks.find(
@@ -217,6 +262,22 @@ export function getWeeksByDaysInAMonth(daysInAMonth: number) {
   return weeks;
 }
 
+export function getWeekNumber(
+  date: Transaction["date"] = getDBDateFromObject(new Date()),
+) {
+  const daysInAMonth = getNumberOfDaysInMonth(date),
+    weeks = getWeeksByDaysInAMonth(daysInAMonth),
+    dayNumber = new Date(date).getDate();
+
+  const weekNumber = weeks.findIndex(
+    (w) => w.startDate <= dayNumber && w.endDate >= dayNumber,
+  );
+
+  if (weekNumber === -1) throw new Error("Couldn't find a week number");
+
+  return weekNumber + 1;
+}
+
 export function getPeriodWeekByDate(date: Transaction["date"]) {
   const numberOfDaysInAMonth = getNumberOfDaysInMonthByDate(date),
     weeks = getWeeksByDaysInAMonth(numberOfDaysInAMonth),
@@ -230,6 +291,16 @@ export function getPeriodWeekByDate(date: Transaction["date"]) {
     periodStartDate: `${year}-${month}-${week.startDate}`,
     periodEndDate: `${year}-${month}-${week.endDate}`,
   };
+}
+
+export function getPeriodEndDate(periodStartDate: FinancePeriod["start_date"]) {
+  const numberOfDaysInAMonth = getNumberOfDaysInMonthByDate(periodStartDate),
+    [year, month, startDateNumber] = periodStartDate.split("-"),
+    smallStartDate = format(addDays(periodStartDate, 6), "yyyy-MM-dd");
+
+  return Number(startDateNumber) < 22
+    ? smallStartDate
+    : `${year}-${month}-${numberOfDaysInAMonth}`;
 }
 
 export function getPreviousPeriodAndCurrentWeek(periods: Periods) {

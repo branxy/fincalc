@@ -19,7 +19,7 @@ function List() {
   return (
     <>
       <h1 className="text-2xl font-semibold">All transactions</h1>
-      <CashflowTable periods={periods} cashflow={cashflow} />
+      <CashflowTable periods={periods} transactions={cashflow} />
     </>
   );
 }

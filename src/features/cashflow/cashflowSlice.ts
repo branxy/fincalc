@@ -1,19 +1,13 @@
-import { supabase } from "@/db/supabaseClient";
 import { createAppSlice } from "@/features/createAppSlice";
-import { RootState } from "@/features/store";
-import { FinancePeriod, PeriodBalance, Transaction } from "@/features/types";
-import { createAppSelector } from "@/lib/hooks";
-import { getPeriodWeekByDate, getTodayDate } from "@/lib/utils";
-import {
-  getEarliestPeriodIdByTransactions,
-  getStartBalance,
-} from "@periods/periodsCalculator";
-import {
-  periodAdded,
-  periodAddedWithDate,
-  periodsRecalculated,
-} from "@periods/periodsSlice";
 import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
+import { createAppSelector } from "@/lib/hooks";
+import { RootState } from "@/features/store";
+
+import {
+  addNewPeriodByDateAndReturnId,
+  findPeriodByTransactionDate,
+  prepareDataOnTransactionDateChanged,
+} from "@/lib/redux-utils";
 import {
   deleteCashflowItems,
   fetchCashflow,
@@ -21,7 +15,12 @@ import {
   uploadTransaction,
   upsertTransaction,
 } from "@transactions/cashflowApi";
-import { differenceInCalendarDays } from "date-fns";
+import { getEarliestPeriodIdByTransactions } from "@periods/periodsCalculator";
+import { periodAdded, periodsRecalculated } from "@periods/periodsSlice";
+
+import { supabase } from "@/db/supabaseClient";
+import { FinancePeriod, PeriodBalance, Transaction } from "@/features/types";
+import { getTodayDate } from "@/lib/utils";
 import { toast } from "sonner";
 
 const casfhlowAdapter = createEntityAdapter<Transaction>({
@@ -181,9 +180,6 @@ export const cashflowSlice = createAppSlice({
         },
         fulfilled: (state) => {
           state.status = "succeeded";
-          toast.success(
-            "Transaction amount and its corresponding period are updated",
-          );
         },
       },
     ),
@@ -251,9 +247,6 @@ export const cashflowSlice = createAppSlice({
         },
         fulfilled: (state) => {
           state.status = "succeeded";
-          toast.success(
-            "Transaction type and its corresponding period are updated",
-          );
         },
       },
     ),
@@ -361,9 +354,6 @@ export const cashflowSlice = createAppSlice({
         },
         fulfilled: (state) => {
           state.status = "succeeded";
-          toast.success(
-            "Transaction type and its corresponding period are updated",
-          );
         },
       },
     ),
@@ -378,92 +368,77 @@ export const cashflowSlice = createAppSlice({
         },
         { dispatch, getState },
       ) => {
-        // if the new date is outside of scope of the new period, assign the transaction to a new period
+        // if the new date is outside of scope of its current period, assign the transaction to a new period
         const {
-          periods: { entities: periodEntities },
-          cashflow: { entities: transactionEntities },
-        } = getState() as RootState;
+          periods,
+          pendingTransaction,
+          calculatedStartBalance,
+          newDateIsWithinTheSamePeriod,
+        } = prepareDataOnTransactionDateChanged(
+          transactionId,
+          newDate,
+          getState,
+        );
 
-        const pendingTransaction = transactionEntities[transactionId],
-          pendingPeriod = periodEntities[pendingTransaction.period_id],
-          periods = Object.values(periodEntities),
-          {
+        const {
+          balance_start: startBalance,
+          balance_end,
+          stock_start,
+          stock_end,
+          forward_payments_start,
+          forward_payments_end,
+        } = calculatedStartBalance;
+
+        if (newDateIsWithinTheSamePeriod) {
+          const updatedTransaction = await updateTransaction(
+            transactionId,
+            "date",
+            newDate,
+          );
+
+          return { newTransaction: updatedTransaction };
+        }
+
+        // attempt to find an existing period with appropriate dates range
+        const existingPeriodForNewDate = findPeriodByTransactionDate(
+          newDate,
+          periods,
+        );
+
+        if (existingPeriodForNewDate) {
+          const upsertedTransaction = await upsertTransaction({
+            ...pendingTransaction,
+            period_id: existingPeriodForNewDate.id,
+            date: newDate,
+          });
+
+          return { newTransaction: upsertedTransaction };
+        } else {
+          // if appropriate period doesn't already exist, create it
+          const newPeriodId = await addNewPeriodByDateAndReturnId(
+            newDate,
+            dispatch,
+          );
+
+          const upsertedTransaction = await upsertTransaction({
+            ...pendingTransaction,
+            period_id: newPeriodId,
+            date: newDate,
+          });
+
+          const initialStartBalance: PeriodBalance = {
             balance_start: startBalance,
             balance_end,
             stock_start,
             stock_end,
             forward_payments_start,
             forward_payments_end,
-          } = getStartBalance(periods),
-          newDateIsWithinTheSamePeriod =
-            newDate >= pendingPeriod.start_date &&
-            newDate <
-              getPeriodWeekByDate(pendingPeriod.start_date).periodEndDate;
+          };
 
-        switch (true) {
-          case newDateIsWithinTheSamePeriod: {
-            const updatedTransaction = await updateTransaction(
-              transactionId,
-              "date",
-              newDate,
-            );
-
-            return { newTransaction: updatedTransaction };
-          }
-          case !newDateIsWithinTheSamePeriod: {
-            // attempt to find an existing period with appropriate dates range
-            const existingPeriodForNewDate = periods.findLast(
-              (p) =>
-                p.start_date <= newDate &&
-                differenceInCalendarDays(newDate, p.start_date) < 7,
-            );
-
-            if (existingPeriodForNewDate?.start_date) {
-              const newTransaction: Transaction = {
-                ...pendingTransaction,
-                period_id: existingPeriodForNewDate.id,
-                date: newDate,
-              };
-
-              const upsertedTransaction =
-                await upsertTransaction(newTransaction);
-
-              return { newTransaction: upsertedTransaction };
-            } else {
-              // if appropriate period doesn't already exist, create it
-              const { periodStartDate: newPeriodStartDate } =
-                getPeriodWeekByDate(newDate);
-              const { id } = await dispatch(
-                periodAddedWithDate({ newPeriodStartDate }),
-              ).unwrap();
-
-              const newTransaction: Transaction = {
-                ...pendingTransaction,
-                period_id: id,
-                date: newDate,
-              };
-
-              const upsertedTransaction =
-                await upsertTransaction(newTransaction);
-
-              const initialStartBalance: PeriodBalance = {
-                balance_start: startBalance,
-                balance_end,
-                stock_start,
-                stock_end,
-                forward_payments_start,
-                forward_payments_end,
-              };
-
-              return {
-                newTransaction: upsertedTransaction,
-                initialStartBalance,
-              };
-            }
-          }
-
-          default:
-            throw new Error("Unexpected relation between new date and periods");
+          return {
+            newTransaction: upsertedTransaction,
+            initialStartBalance,
+          };
         }
       },
       {

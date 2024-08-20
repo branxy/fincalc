@@ -9,7 +9,7 @@ import { FinancePeriod, PeriodBalance } from "@/features/types";
 import { createAppSelector } from "@/lib/hooks";
 import {
   getCurrentPeriodId,
-  getCurrentYearAndMonthNumber,
+  getYearAndMonthNumber,
   getDBStartDate,
   getPreviousPeriodAndCurrentWeek,
   getPreviousPeriodByDate,
@@ -78,7 +78,7 @@ export const periodsSlice = createAppSlice({
           getPreviousPeriodAndCurrentWeek(periods);
 
         let newPeriod: Omit<FinancePeriod, "id">;
-        const [year, month] = getCurrentYearAndMonthNumber(),
+        const [year, month] = getYearAndMonthNumber(),
           currentWeekStartDate = getDBStartDate(
             year,
             month,
