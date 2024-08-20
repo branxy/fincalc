@@ -8,10 +8,10 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 import { supabase } from "@/db/supabaseClient";
-import { format } from "date-fns";
+import { MonthNames } from "@/features/periods/periodsCalculator";
+import { addDays, format } from "date-fns";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
-import { MonthNames } from "@/features/periods/periodsCalculator";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -72,61 +72,52 @@ export function getMarkedCashflow(
     FinancePeriod,
     "id" | "balance_end" | "stock_end" | "forward_payments_end"
   >[],
-  cashflow: Transactions,
+  transactions: Transactions,
 ): MarkedCashflow {
-  // Returns an object of type:
-  // {
-  //    periodId: {
-  //        firstTransactionIndex: number;
-  //        lastTransactionIndex: number;
-  //        monthName: MonthNames;
-  //        weekNumber: number;
-  //        periodEndBalance: {
-  //          balance_end: number;
-  //          stock_end: number;
-  //          forward_payments_end: number;
-  //          }
-  //      }
-  // }
+  // For every period, create an object with period statistics
+
   const returnObject: MarkedCashflow = {};
 
   for (const p of periods) {
     let firstTransaction = 0;
-    for (let i = 0; i < cashflow.length; i++) {
-      const t = cashflow[i];
-      if (t.period_id === p.id) {
-        if (!firstTransaction) {
-          firstTransaction = 1;
-          const months = getMonths(),
-            monthNumber = new Date(t.date).getMonth(),
-            monthName = months[monthNumber];
-          Object.defineProperty(returnObject, p.id, {
-            value: {
-              firstTransactionIndex: i,
-            },
-          });
+    for (let i = 0; i < transactions.length; i++) {
+      const t = transactions[i];
+      if (t.period_id !== p.id) continue;
 
-          Object.defineProperties(returnObject[p.id], {
-            monthName: {
-              value: monthName,
-            },
-            weekNumber: {
-              value: getWeekNumber(t.date),
-            },
-          });
-        }
+      if (!firstTransaction) {
+        firstTransaction = 1;
 
-        Object.defineProperties(returnObject[p.id], {
-          lastTransactionIndex: { value: i, writable: true },
-          periodEndBalance: {
-            value: {
-              balance_end: p.balance_end,
-              stock_end: p.stock_end,
-              forward_payments_end: p.forward_payments_end,
-            },
-            writable: true,
+        const months = getMonths(),
+          monthNumber = new Date(t.date).getMonth(),
+          monthName = months[monthNumber];
+
+        Object.defineProperty(returnObject, p.id, {
+          value: {
+            firstTransactionIndex: i,
           },
         });
+
+        Object.defineProperties(returnObject[p.id], {
+          monthName: {
+            value: monthName,
+          },
+          weekNumber: {
+            value: getWeekNumber(t.date),
+          },
+        });
+      }
+
+      const stats = returnObject[p.id];
+      Object.defineProperties(stats, {
+        lastTransactionIndex: { value: i, writable: true },
+      });
+
+      if (!stats.periodEndBalance) {
+        stats.periodEndBalance = {
+          balance_end: p.balance_end,
+          stock_end: p.stock_end,
+          forward_payments_end: p.forward_payments_end,
+        };
       }
     }
   }
@@ -300,6 +291,16 @@ export function getPeriodWeekByDate(date: Transaction["date"]) {
     periodStartDate: `${year}-${month}-${week.startDate}`,
     periodEndDate: `${year}-${month}-${week.endDate}`,
   };
+}
+
+export function getPeriodEndDate(periodStartDate: FinancePeriod["start_date"]) {
+  const numberOfDaysInAMonth = getNumberOfDaysInMonthByDate(periodStartDate),
+    [year, month, startDateNumber] = periodStartDate.split("-"),
+    smallStartDate = format(addDays(periodStartDate, 6), "yyyy-MM-dd");
+
+  return Number(startDateNumber) < 22
+    ? smallStartDate
+    : `${year}-${month}-${numberOfDaysInAMonth}`;
 }
 
 export function getPreviousPeriodAndCurrentWeek(periods: Periods) {
