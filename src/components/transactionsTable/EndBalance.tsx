@@ -10,7 +10,7 @@ interface EndBalanceProps {
   periodEndBalance: Pick<
     FinancePeriod,
     "balance_end" | "stock_end" | "forward_payments_end"
-  > | null;
+  >;
   isLoading: boolean;
 }
 
@@ -27,29 +27,20 @@ function EndBalance({ periodEndBalance, isLoading }: EndBalanceProps) {
     </td>
   ) : (
     <td>
-      {typeof periodEndBalance?.balance_end === "number" && (
-        <span className="block">
-          End balance:&nbsp;
-          <span
-            className={cn("rounded-sm px-1.5", {
-              "bg-red-400": balanceIsNegative,
-            })}
-          >
-            {currencySign + periodEndBalance.balance_end}
-          </span>
+      <span className="block">
+        End balance:&nbsp;
+        <span
+          className={cn("rounded-sm px-1.5", {
+            "bg-red-400": balanceIsNegative,
+          })}
+        >
+          {currencySign + balance_end}
         </span>
-      )}
-      {typeof stock_end === "number" && (
-        <span className="block">
-          Stock: {currencySign + periodEndBalance.stock_end}
-        </span>
-      )}
-      {typeof forward_payments_end === "number" && (
-        <span className="block">
-          Forward payments:{" "}
-          {currencySign + periodEndBalance.forward_payments_end}
-        </span>
-      )}
+      </span>
+      <span className="block">Stock: {currencySign + stock_end}</span>
+      <span className="block">
+        Forward payments: {currencySign + forward_payments_end}
+      </span>
     </td>
   );
 }

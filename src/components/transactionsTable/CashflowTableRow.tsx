@@ -71,7 +71,12 @@ function CashflowTableRow({
           transactionId={transactionId}
         />
         <TransactionsTableDateCell transactionId={transactionId} date={date} />
-        <EndBalance periodEndBalance={periodEndBalance} isLoading={isLoading} />
+        {periodEndBalance && (
+          <EndBalance
+            periodEndBalance={periodEndBalance}
+            isLoading={isLoading}
+          />
+        )}
       </tr>
     </>
   );
