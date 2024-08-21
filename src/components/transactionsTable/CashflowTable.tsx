@@ -1,10 +1,10 @@
 import CashflowTableActionButtons from "@/components/transactionsTable/actions/CashflowTableActionButtons";
 import CashflowTableRow from "@/components/transactionsTable/CashflowTableRow";
+import WeekNumber from "@/components/transactionsTable/WeekNumber";
 
 import { FinancePeriod, Transactions } from "@/features/types";
 import { useTableCheckbox } from "@/lib/hooks";
 import { getMarkedCashflow } from "@/lib/utils";
-import WeekNumber from "./WeekNumber";
 import { Fragment } from "react/jsx-runtime";
 
 interface CashflowTableProps {
@@ -27,6 +27,8 @@ function CashflowTable({ transactions, periods }: CashflowTableProps) {
   const periodsStats = getMarkedCashflow(periods, transactions);
 
   const tableContent = transactions.map((t, i) => {
+    if (!periodsStats[t.period_id]) return;
+
     const {
         firstTransactionIndex,
         lastTransactionIndex,

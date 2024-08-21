@@ -20,7 +20,7 @@ interface TransactionsTableTypeCellProps {
   type: Transaction["type"];
 }
 
-const transactionTypes: Transaction["type"][][] = [
+export const transactionTypes: Transaction["type"][][] = [
   ["payment/fixed", "payment/variable"],
   ["income/profit", "income/stock", "income/forward-payment"],
   ["compensation/stock", "compensation/forward-payment"],
@@ -43,7 +43,10 @@ function TransactionsTableTypeCell({
     finishEditing();
     if (type !== newType) {
       dispatch(
-        transactionTypeChangedAndPeriodsRecalculated({ transactionId, newType })
+        transactionTypeChangedAndPeriodsRecalculated({
+          transactionId,
+          newType,
+        }),
       );
     }
   }
