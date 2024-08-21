@@ -13,7 +13,8 @@ import { transactionAdded } from "@/features/cashflow/cashflowSlice";
 import { useAppDispatch } from "@/lib/hooks";
 import { Transaction } from "@/features/types";
 
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { CurrencyContext } from "@/components/providers";
 
 export type TransactionTemplate = Pick<
   Transaction,
@@ -32,15 +33,37 @@ function CashflowTableAddTransactionBtn({
   const [selectedTransactionType, setSelectedTransactionType] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const [currencySign] = useContext(CurrencyContext)!;
   const dispatch = useAppDispatch();
 
-  const handleAddTransactionByType = (type: Transaction["type"]) => {
-    switch (type) {
+  const handleAddTransactionFromTemplate = (
+    selectedTemplate: Transaction["type"] | Transaction["id"],
+  ) => {
+    switch (selectedTemplate) {
       case "payment/fixed":
-        dispatch(transactionAdded({ newTransactionType: "payment/fixed" }));
+        dispatch(transactionAdded({ transactionType: "payment/fixed" }));
         break;
       case "income/profit":
-        dispatch(transactionAdded({ newTransactionType: "income/profit" }));
+        dispatch(transactionAdded({ transactionType: "income/profit" }));
+        break;
+      default:
+        {
+          const template = transactionTemplates.find(
+            (templ) => templ.id === selectedTemplate,
+          );
+
+          if (!template) return;
+
+          const { title, amount, date, type } = template;
+          dispatch(
+            transactionAdded({
+              transactionTitle: title,
+              transactionAmount: amount,
+              transactionDate: date,
+              transactionType: type,
+            }),
+          );
+        }
         break;
     }
 
@@ -59,13 +82,13 @@ function CashflowTableAddTransactionBtn({
       </Button>
       <Select
         value={selectedTransactionType}
-        onValueChange={handleAddTransactionByType}
+        onValueChange={handleAddTransactionFromTemplate}
       >
         <SelectTrigger className="w-fit rounded-bl-none rounded-tl-none border-none border-l-slate-300 bg-primary text-background hover:bg-primary/90"></SelectTrigger>
         <SelectContent position="popper" align="center">
           {transactionTemplates.map((t) => (
-            <SelectItem key={t.id} value={t.title + "-" + t.id}>
-              {t.title}
+            <SelectItem key={t.id} value={t.id}>
+              {t.title} ({currencySign + t.amount})
             </SelectItem>
           ))}
           <SelectItem value="payment/fixed">Payment</SelectItem>

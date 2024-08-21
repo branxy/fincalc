@@ -349,15 +349,27 @@ export function getMonths() {
 export function createTransaction(
   currentPeriodId: FinancePeriod["id"],
   userId: User["id"],
-  transactionType?: Transaction["type"],
+  properties: {
+    transactionTitle?: Transaction["title"];
+    transactionAmount?: Transaction["amount"];
+    transactionDate?: Transaction["date"];
+    transactionType?: Transaction["type"];
+  },
 ) {
+  const {
+    transactionTitle,
+    transactionAmount,
+    transactionDate,
+    transactionType,
+  } = properties;
+
   const newTransaction: Omit<Transaction, "id"> = {
     period_id: currentPeriodId,
     user_id: userId,
     type: transactionType ?? "payment/fixed",
-    title: "New transaction",
-    amount: 0,
-    date: getTodayDate(),
+    title: transactionTitle ?? "New transaction",
+    amount: transactionAmount ?? 0,
+    date: transactionDate ?? getTodayDate(),
     date_created: new Date().toISOString(),
   };
 

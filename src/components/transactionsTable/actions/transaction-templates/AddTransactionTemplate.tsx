@@ -29,7 +29,7 @@ function AddTransactionTemplate({
     <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
       <SheetTrigger asChild>
         <Button className="rounded-none" onClick={() => setDrawerOpen(true)}>
-          + add template
+          + Add template
         </Button>
       </SheetTrigger>
       <SheetContent aria-describedby={undefined}>

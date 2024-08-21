@@ -65,9 +65,15 @@ export const cashflowSlice = createAppSlice({
     transactionAdded: create.asyncThunk(
       async (
         {
-          newTransactionType,
+          transactionTitle,
+          transactionAmount,
+          transactionDate,
+          transactionType,
         }: {
-          newTransactionType?: Transaction["type"];
+          transactionTitle?: Transaction["title"];
+          transactionAmount?: Transaction["amount"];
+          transactionDate?: Transaction["date"];
+          transactionType?: Transaction["type"];
         },
         { dispatch, getState },
       ) => {
@@ -90,11 +96,12 @@ export const cashflowSlice = createAppSlice({
           currentPeriodId = currentPeriod.id;
         }
 
-        const newTransaction = createTransaction(
-          currentPeriodId,
-          user.id,
-          newTransactionType,
-        );
+        const newTransaction = createTransaction(currentPeriodId, user.id, {
+          transactionTitle,
+          transactionAmount,
+          transactionDate,
+          transactionType,
+        });
 
         const uploadedTransaction = await uploadTransaction(newTransaction);
 
