@@ -6,8 +6,13 @@ import {
   configureStore,
   ThunkAction,
 } from "@reduxjs/toolkit";
+import { transactionTemplateSlice } from "./transaction-templates/transactionTemplateSlice";
 
-const rootReducer = combineSlices(periodsSlice, cashflowSlice);
+const rootReducer = combineSlices(
+  periodsSlice,
+  cashflowSlice,
+  transactionTemplateSlice,
+);
 
 export type RootState = ReturnType<typeof rootReducer>;
 

@@ -45,6 +45,11 @@ export interface Transaction {
 
 export type Transactions = Transaction[];
 
+export type TransactionTemplate = Pick<
+  Transaction,
+  "id" | "user_id" | "title" | "amount" | "type" | "date"
+>;
+
 export interface CashFlowTable {
   cashflow: Transactions;
   status: "idle" | "loading" | "succeeded" | "failed";

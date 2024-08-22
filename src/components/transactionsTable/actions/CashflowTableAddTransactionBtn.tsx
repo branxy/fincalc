@@ -1,25 +1,23 @@
+import TransactionTemplate from "@/components/transactionsTable/actions/transaction-templates/TransactionTemplate";
 import AddTransactionTemplate from "@/components/transactionsTable/actions/transaction-templates/AddTransactionTemplate";
 import Spinner from "@/components/ui/spinner";
 
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { selectAllTransactionTemplates } from "@/features/transaction-templates/transactionTemplateSlice";
 import { transactionAdded } from "@/features/cashflow/cashflowSlice";
-import { useAppDispatch } from "@/lib/hooks";
-import { Transaction } from "@/features/types";
 
-import { useContext, useState } from "react";
-import { CurrencyContext } from "@/components/providers";
+import { useState } from "react";
 
-export type TransactionTemplate = Pick<
-  Transaction,
-  "id" | "title" | "amount" | "type" | "date"
->;
 interface CashflowTableAddTransactionBtnProps {
   isLoading: boolean;
 }
@@ -27,48 +25,11 @@ interface CashflowTableAddTransactionBtnProps {
 function CashflowTableAddTransactionBtn({
   isLoading,
 }: CashflowTableAddTransactionBtnProps) {
-  const [transactionTemplates, setTransactionTemplates] = useState<
-    TransactionTemplate[]
-  >([]);
-  const [selectedTransactionType, setSelectedTransactionType] = useState("");
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  const [currencySign] = useContext(CurrencyContext)!;
+  const transactionTemplates = useAppSelector((state) =>
+    selectAllTransactionTemplates(state),
+  );
   const dispatch = useAppDispatch();
-
-  const handleAddTransactionFromTemplate = (
-    selectedTemplate: Transaction["type"] | Transaction["id"],
-  ) => {
-    switch (selectedTemplate) {
-      case "payment/fixed":
-        dispatch(transactionAdded({ transactionType: "payment/fixed" }));
-        break;
-      case "income/profit":
-        dispatch(transactionAdded({ transactionType: "income/profit" }));
-        break;
-      default:
-        {
-          const template = transactionTemplates.find(
-            (templ) => templ.id === selectedTemplate,
-          );
-
-          if (!template) return;
-
-          const { title, amount, date, type } = template;
-          dispatch(
-            transactionAdded({
-              transactionTitle: title,
-              transactionAmount: amount,
-              transactionDate: date,
-              transactionType: type,
-            }),
-          );
-        }
-        break;
-    }
-
-    setSelectedTransactionType("");
-  };
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <div className="flex">
@@ -80,26 +41,25 @@ function CashflowTableAddTransactionBtn({
         <Spinner isLoading={isLoading} />
         Add transaction
       </Button>
-      <Select
-        value={selectedTransactionType}
-        onValueChange={handleAddTransactionFromTemplate}
-      >
-        <SelectTrigger className="w-fit rounded-bl-none rounded-tl-none border-none border-l-slate-300 bg-primary text-background hover:bg-primary/90"></SelectTrigger>
-        <SelectContent position="popper" align="center">
+      <DropdownMenu>
+        <DropdownMenuTrigger className="w-fit rounded-bl-none rounded-br-md rounded-tl-none rounded-tr-md border-none border-l-slate-300 bg-primary px-1.5 text-background hover:bg-primary/90">
+          <ChevronDown />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="max-w-48">
+          <DropdownMenuItem asChild>
+            <AddTransactionTemplate
+              drawerOpen={drawerOpen}
+              setDrawerOpen={setDrawerOpen}
+            />
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           {transactionTemplates.map((t) => (
-            <SelectItem key={t.id} value={t.id}>
-              {t.title} ({currencySign + t.amount})
-            </SelectItem>
+            <DropdownMenuItem key={t.id} asChild>
+              <TransactionTemplate id={t.id} />
+            </DropdownMenuItem>
           ))}
-          <SelectItem value="payment/fixed">Payment</SelectItem>
-          <SelectItem value="income/profit">Income</SelectItem>
-          <AddTransactionTemplate
-            drawerOpen={drawerOpen}
-            setDrawerOpen={setDrawerOpen}
-            setTransactionTemplates={setTransactionTemplates}
-          />
-        </SelectContent>
-      </Select>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

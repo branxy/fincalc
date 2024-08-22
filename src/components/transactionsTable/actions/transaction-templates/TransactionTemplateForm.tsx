@@ -1,4 +1,5 @@
-import TransactionTemplateDatepicker from "./TransactionTemplateDatepicker";
+import TransactionTemplateDatepicker from "@/components/transactionsTable/actions/transaction-templates/TransactionTemplateDatepicker";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,29 +14,28 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { type TransactionTemplate } from "@/components/transactionsTable/actions/CashflowTableAddTransactionBtn";
+import { type TransactionTemplate } from "@/features/types";
 
-import React, { Fragment, useState } from "react";
-import { transactionTypes } from "../../cells/TransactionsTableTypeCell";
+import { Fragment, useState } from "react";
+import { transactionTypes } from "@/components/transactionsTable/cells/TransactionsTableTypeCell";
 import { Transaction } from "@/features/types";
 import { getDBDateFromObject } from "@/lib/utils";
-import { nanoid } from "@reduxjs/toolkit";
+
+import { useAppDispatch } from "@/lib/hooks";
+import { transactionTemplateAdded } from "@/features/transaction-templates/transactionTemplateSlice";
 
 interface TransactionTemplateFormProps {
-  setTransactionTemplates: React.Dispatch<
-    React.SetStateAction<TransactionTemplate[]>
-  >;
   setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode;
 }
 
 function TransactionTemplateForm({
-  setTransactionTemplates,
   setDrawerOpen,
   children,
 }: TransactionTemplateFormProps) {
   const [type, setType] = useState<Transaction["type"]>("payment/fixed");
   const [date, setDate] = useState(new Date());
+  const dispatch = useAppDispatch();
 
   const handleAddTemplate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -45,16 +45,15 @@ function TransactionTemplateForm({
       amount = formData.get("template-transaction-amount") ?? 0;
 
     e.currentTarget.reset();
-    setTransactionTemplates((prev) => [
-      ...prev,
-      {
-        id: nanoid(),
-        title,
-        amount: Number(amount),
-        type,
-        date: getDBDateFromObject(date),
-      },
-    ]);
+
+    const newTemplate: Omit<TransactionTemplate, "id" | "user_id"> = {
+      title,
+      amount: Number(amount),
+      type,
+      date: getDBDateFromObject(date),
+    };
+
+    dispatch(transactionTemplateAdded(newTemplate));
 
     setDrawerOpen(false);
     clearInputs();

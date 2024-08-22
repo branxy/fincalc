@@ -1,3 +1,5 @@
+import TransactionTemplateForm from "./TransactionTemplateForm";
+
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -9,46 +11,58 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 
-import { type TransactionTemplate } from "../CashflowTableAddTransactionBtn";
-import TransactionTemplateForm from "./TransactionTemplateForm";
+import { ComponentPropsWithoutRef, forwardRef } from "react";
 
 interface AddTransactionTemplateProps {
   drawerOpen: boolean;
   setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setTransactionTemplates: React.Dispatch<
-    React.SetStateAction<TransactionTemplate[]>
-  >;
 }
 
-function AddTransactionTemplate({
-  drawerOpen,
-  setDrawerOpen,
-  setTransactionTemplates,
-}: AddTransactionTemplateProps) {
+const AddTransactionTemplate = forwardRef<
+  HTMLDivElement,
+  AddTransactionTemplateProps
+>((props, ref) => {
+  const { drawerOpen, setDrawerOpen, ...rest } = props;
+
   return (
-    <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-      <SheetTrigger asChild>
-        <Button className="rounded-none" onClick={() => setDrawerOpen(true)}>
-          + Add template
-        </Button>
-      </SheetTrigger>
-      <SheetContent aria-describedby={undefined}>
-        <SheetHeader>
-          <SheetTitle>Set the transaction template</SheetTitle>
-        </SheetHeader>
-        <TransactionTemplateForm
-          setDrawerOpen={setDrawerOpen}
-          setTransactionTemplates={setTransactionTemplates}
-        >
-          <SheetFooter>
-            <SheetClose asChild>
-              <Button variant="secondary">Close</Button>
-            </SheetClose>
-          </SheetFooter>
-        </TransactionTemplateForm>
-      </SheetContent>
-    </Sheet>
+    <div>
+      <Sheet
+        {...rest}
+        open={drawerOpen}
+        onOpenChange={() => setDrawerOpen((open) => !open)}
+      >
+        <SheetTrigger asChild>
+          <SheetTriggerButton />
+        </SheetTrigger>
+        <SheetContent ref={ref} aria-describedby={undefined}>
+          <SheetHeader>
+            <SheetTitle>Set the transaction template</SheetTitle>
+          </SheetHeader>
+          <TransactionTemplateForm setDrawerOpen={setDrawerOpen}>
+            <SheetFooter>
+              <SheetClose asChild>
+                <Button variant="secondary">Close</Button>
+              </SheetClose>
+            </SheetFooter>
+          </TransactionTemplateForm>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
-}
+});
 
 export default AddTransactionTemplate;
+
+const SheetTriggerButton = forwardRef<
+  HTMLButtonElement,
+  ComponentPropsWithoutRef<"button">
+>((props, ref) => (
+  <Button
+    ref={ref}
+    variant="secondary"
+    className="w-full rounded-sm"
+    {...props}
+  >
+    + Add template
+  </Button>
+));
