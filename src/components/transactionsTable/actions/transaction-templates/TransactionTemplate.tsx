@@ -1,5 +1,7 @@
+import EditTransactionTemplate from "@/components/transactionsTable/actions/transaction-templates/EditTransactionTemplate";
+
 import { Button } from "@/components/ui/button";
-import { Edit2, X } from "lucide-react";
+import { X } from "lucide-react";
 
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { transactionAdded } from "@/features/cashflow/cashflowSlice";
@@ -38,11 +40,7 @@ const TransactionTemplate = forwardRef<
   };
 
   return (
-    <div
-      className="flex items-center justify-between gap-2 rounded-sm px-0 hover:bg-foreground/20"
-      {...rest}
-      ref={ref}
-    >
+    <div className="flex items-center justify-between gap-2 rounded-sm px-0 hover:bg-foreground/20">
       <Button
         variant="ghost"
         className="max-w-28 grow justify-start pl-2 hover:bg-transparent"
@@ -51,12 +49,7 @@ const TransactionTemplate = forwardRef<
         {transactionTitle} ({currencySign + t.amount})
       </Button>
       <div className="shrink-0">
-        <Button
-          variant="ghost"
-          className="group h-min px-1.5 py-1 hover:bg-transparent"
-        >
-          <Edit2 size={14} className="group-hover:text-foreground/40" />
-        </Button>
+        <EditTransactionTemplate {...rest} template={t} ref={ref} />
         <Button
           variant="ghost"
           className="group h-min px-1.5 py-1 hover:bg-transparent"

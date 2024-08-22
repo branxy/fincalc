@@ -1,4 +1,5 @@
 import { Database } from "@/db/types_supabase";
+import { z } from "zod";
 
 type PeriodsTableRow = Database["public"]["Tables"]["periods"]["Row"];
 export interface FinancePeriod {
@@ -49,6 +50,20 @@ export type TransactionTemplate = Pick<
   Transaction,
   "id" | "user_id" | "title" | "amount" | "type" | "date"
 >;
+
+export const zTransactionTemplate = z.object({
+  title: z.string().trim().min(1).max(80),
+  amount: z.coerce.number().nonnegative().max(999999999),
+  type: z.enum([
+    "payment/fixed",
+    "payment/variable",
+    "income/profit",
+    "income/stock",
+    "income/forward-payment",
+    "compensation/stock",
+    "compensation/forward-payment",
+  ]),
+});
 
 export interface CashFlowTable {
   cashflow: Transactions;

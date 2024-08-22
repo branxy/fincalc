@@ -1,5 +1,3 @@
-import TransactionTemplateDatepicker from "@/components/transactionsTable/actions/transaction-templates/TransactionTemplateDatepicker";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,54 +12,64 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { type TransactionTemplate } from "@/features/types";
+import {
+  zTransactionTemplate,
+  type TransactionTemplate,
+} from "@/features/types";
 
 import { Fragment, useState } from "react";
 import { transactionTypes } from "@/components/transactionsTable/cells/TransactionsTableTypeCell";
 import { Transaction } from "@/features/types";
-import { getDBDateFromObject } from "@/lib/utils";
+import { getTodayDate } from "@/lib/utils";
 
 import { useAppDispatch } from "@/lib/hooks";
 import { transactionTemplateAdded } from "@/features/transaction-templates/transactionTemplateSlice";
 
-interface TransactionTemplateFormProps {
+interface AddTransactionTemplateFormProps {
   setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode;
 }
 
-function TransactionTemplateForm({
+function AddTransactionTemplateForm({
   setDrawerOpen,
   children,
-}: TransactionTemplateFormProps) {
+}: AddTransactionTemplateFormProps) {
   const [type, setType] = useState<Transaction["type"]>("payment/fixed");
-  const [date, setDate] = useState(new Date());
   const dispatch = useAppDispatch();
 
   const handleAddTemplate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     const formData = new FormData(e.currentTarget),
-      title = (formData.get("template-transaction-title") as string) ?? "",
-      amount = formData.get("template-transaction-amount") ?? 0;
+      title = formData.get("template-transaction-title"),
+      amount = formData.get("template-transaction-amount");
 
-    e.currentTarget.reset();
-
-    const newTemplate: Omit<TransactionTemplate, "id" | "user_id"> = {
+    const { success, error, data } = zTransactionTemplate.safeParse({
       title,
-      amount: Number(amount),
+      amount,
       type,
-      date: getDBDateFromObject(date),
-    };
+    });
 
-    dispatch(transactionTemplateAdded(newTemplate));
+    if (!success) {
+      console.error(error.format());
+    } else {
+      e.currentTarget.reset();
 
-    setDrawerOpen(false);
+      const newTemplate: Omit<TransactionTemplate, "id" | "user_id"> = {
+        title: data.title,
+        amount: Number(data.amount),
+        type: data.type,
+        date: getTodayDate(),
+      };
+
+      dispatch(transactionTemplateAdded(newTemplate));
+
+      setDrawerOpen(false);
+    }
     clearInputs();
   };
 
   const clearInputs = () => {
     setType("payment/fixed");
-    setDate(new Date());
   };
 
   return (
@@ -129,12 +137,6 @@ function TransactionTemplateForm({
           </SelectContent>
         </Select>
       </fieldset>
-      <fieldset className="mt-3">
-        <Label>
-          <span className="mb-1.5 block">Date</span>
-          <TransactionTemplateDatepicker date={date} setDate={setDate} />
-        </Label>
-      </fieldset>
       <div className="mt-6 flex justify-between gap-6">
         <Button type="submit">Add template</Button>
         {children}
@@ -143,4 +145,4 @@ function TransactionTemplateForm({
   );
 }
 
-export default TransactionTemplateForm;
+export default AddTransactionTemplateForm;

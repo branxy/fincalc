@@ -1,12 +1,15 @@
-import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
-import { TransactionTemplate } from "../types";
-import { createAppSlice } from "../createAppSlice";
-import { RootState } from "../store";
+import { createEntityAdapter, EntityState, Update } from "@reduxjs/toolkit";
+import { createAppSlice } from "@/features/createAppSlice";
+import { RootState } from "@/features/store";
+
 import {
   fetchTransactionTemplatesFromDB,
   insertTransactionTemplate,
+  updateTransactionTemplate,
 } from "./transactionTemplateApi";
+
 import { performAuthCheck } from "@/lib/utils";
+import { TransactionTemplate } from "@/features/types";
 import { toast } from "sonner";
 
 const transactionTemplateAdapter = createEntityAdapter<TransactionTemplate>({
@@ -75,13 +78,59 @@ export const transactionTemplateSlice = createAppSlice({
         },
       },
     ),
+    transactionTemplateUpdated: create.asyncThunk(
+      async ({ id, changes }: UpdateTransactionTemplate) => {
+        const received = await updateTransactionTemplate(id, changes);
+
+        const toRedux: Update<
+          Pick<TransactionTemplate, "title" | "amount" | "type">,
+          TransactionTemplate["id"]
+        > = {
+          id: received.id,
+          changes: {
+            title: received.title,
+            amount: received.amount,
+            type: received.type,
+          },
+        };
+
+        return toRedux;
+      },
+      {
+        pending: (state) => {
+          state.status === "loading";
+        },
+        rejected: (state) => {
+          state.status === "failed";
+          toast.error("Failed to add a template");
+        },
+        fulfilled: (state, action) => {
+          state.status === "succeeded";
+          transactionTemplateAdapter.updateOne(state, action.payload);
+        },
+      },
+    ),
   }),
 });
 
-export const { fetchTransactionTemplates, transactionTemplateAdded } =
-  transactionTemplateSlice.actions;
+export const {
+  fetchTransactionTemplates,
+  transactionTemplateAdded,
+  transactionTemplateUpdated,
+} = transactionTemplateSlice.actions;
 
-export const { selectAll: selectAllTransactionTemplates, selectById: selectTransactionTemplateById } =
-  transactionTemplateAdapter.getSelectors(
-    (state: RootState) => state.transactionTemplates,
-  );
+export const {
+  selectAll: selectAllTransactionTemplates,
+  selectById: selectTransactionTemplateById,
+} = transactionTemplateAdapter.getSelectors(
+  (state: RootState) => state.transactionTemplates,
+);
+
+export type UpdateTransactionTemplate = {
+  id: TransactionTemplate["id"];
+  changes: {
+    title: TransactionTemplate["title"];
+    amount: TransactionTemplate["amount"];
+    type: TransactionTemplate["type"];
+  };
+};
