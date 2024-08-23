@@ -12,12 +12,13 @@ export async function fetchCashflow() {
   return data as Transactions;
 }
 
-export async function uploadTransaction(payment: Omit<Transaction, "id">) {
+export async function uploadTransaction(
+  payment: Omit<Transaction, "id" | "date_created">,
+) {
   const { data, error } = await supabase
     .from("cashflow")
     .insert(payment)
-    .select()
-    .order("date", { ascending: true });
+    .select();
 
   if (error?.message) {
     console.error({ error });
