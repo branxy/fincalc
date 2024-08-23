@@ -1,5 +1,7 @@
 import EditCellButton from "@/components/transactionsTable/cells/EditCellButton";
+
 import { Input } from "@/components/ui/input";
+
 import { transactionTitleChanged } from "@/features/cashflow/cashflowSlice";
 import { Transaction } from "@/features/types";
 import { ReturnWithCellState, useEditTableCell } from "@/lib/hooks";
@@ -51,10 +53,9 @@ function TransactionsTableTitleCell({
               type="text"
               value={titleState}
               name="cell-value-input"
-              autoFocus={isEditing}
-              onFocus={(e) => e.target.select()}
               onChange={(e) => setTitleState(e.target.value)}
-              onBlur={finishEditingAndSave}
+              onBlur={finishEditing}
+              autoFocus={isEditing}
             />
           </form>
         </td>

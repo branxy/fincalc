@@ -1,7 +1,6 @@
 import { createAppSlice } from "@/features/createAppSlice";
 import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
 import { createAppSelector } from "@/lib/hooks";
-import { RootState } from "@/features/store";
 
 import {
   addNewPeriodByDateAndReturnId,
@@ -19,9 +18,11 @@ import { getEarliestPeriodIdByTransactions } from "@periods/periodsCalculator";
 import { periodAdded, periodsRecalculated } from "@periods/periodsSlice";
 
 import { supabase } from "@/db/supabaseClient";
-import { FinancePeriod, PeriodBalance, Transaction } from "@/features/types";
-import { getTodayDate } from "@/lib/utils";
+import { createTransaction, getCurrentPeriodId } from "@/lib/utils";
 import { toast } from "sonner";
+
+import { FinancePeriod, PeriodBalance, Transaction } from "@/features/types";
+import { RootState } from "@/features/store";
 
 const casfhlowAdapter = createEntityAdapter<Transaction>({
   sortComparer: (a, b) => a.date.localeCompare(b.date),
@@ -65,11 +66,17 @@ export const cashflowSlice = createAppSlice({
     transactionAdded: create.asyncThunk(
       async (
         {
-          currentWeekPeriodId,
+          transactionTitle,
+          transactionAmount,
+          transactionDate,
+          transactionType,
         }: {
-          currentWeekPeriodId?: FinancePeriod["id"];
+          transactionTitle?: Transaction["title"];
+          transactionAmount?: Transaction["amount"];
+          transactionDate?: Transaction["date"];
+          transactionType?: Transaction["type"];
         },
-        { dispatch },
+        { dispatch, getState },
       ) => {
         const {
           data: { user },
@@ -77,21 +84,25 @@ export const cashflowSlice = createAppSlice({
 
         if (!user) throw new Error("Unauthorized");
 
-        if (!currentWeekPeriodId) {
+        const {
+          periods: { entities: periodsEntities },
+        } = getState() as RootState;
+
+        let currentPeriodId = getCurrentPeriodId(
+          Object.values(periodsEntities),
+        );
+        if (!currentPeriodId) {
           // If a period with dates correlating with a transaction date doesn't exist yet, create it
           const currentPeriod = await dispatch(periodAdded()).unwrap();
-          currentWeekPeriodId = currentPeriod.id;
+          currentPeriodId = currentPeriod.id;
         }
 
-        const newTransaction: Omit<Transaction, "id"> = {
-          period_id: currentWeekPeriodId,
-          user_id: user.id,
-          type: "payment/fixed",
-          title: "New transaction",
-          amount: 0,
-          date: getTodayDate(),
-          date_created: new Date().toISOString(),
-        };
+        const newTransaction = createTransaction(currentPeriodId, user.id, {
+          transactionTitle,
+          transactionAmount,
+          transactionDate,
+          transactionType,
+        });
 
         const uploadedTransaction = await uploadTransaction(newTransaction);
 
@@ -527,13 +538,17 @@ export const cashflowSlice = createAppSlice({
       },
     ),
   }),
-  selectors: {},
+  selectors: {
+    selectTransactionsStatus: (state) => state.status,
+  },
 });
 
 export const {
   selectAll: selectAllTransactions,
   selectIds: selectCashflowIds,
 } = casfhlowAdapter.getSelectors((state: RootState) => state.cashflow);
+
+export const { selectTransactionsStatus } = cashflowSlice.selectors;
 
 const returnId = (_state: RootState, id: FinancePeriod["id"]) => id;
 

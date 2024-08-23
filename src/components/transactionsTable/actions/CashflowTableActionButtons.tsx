@@ -1,15 +1,13 @@
-import { Transaction } from "@/features/types";
+import CashflowTableAddTransactionBtn from "@/components/transactionsTable/actions/CashflowTableAddTransactionBtn";
+import TableInfo from "@/components/transactionsTable/TableInfo";
+
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { deletedTransactionsAndPeriodsRecalculated } from "@/features/cashflow/cashflowSlice";
 
 import { Button } from "@/components/ui/button";
 
-import {
-  deletedTransactionsAndPeriodsRecalculated,
-  transactionAdded,
-} from "@/features/cashflow/cashflowSlice";
-import { LoaderCircle } from "lucide-react";
-import { selectCurrentWeekPeriodId } from "@/features/periods/periodsSlice";
-import TableInfo from "./TableInfo";
+import { Transaction } from "@/features/types";
+import Spinner from "@/components/ui/spinner";
 
 interface CashflowTableActionButtonsProps {
   selectedTransactions: Transaction["id"][];
@@ -20,9 +18,6 @@ function CashflowTableActionButtons({
   selectedTransactions,
   setSelectedTransactions,
 }: CashflowTableActionButtonsProps) {
-  const currentWeekPeriodId = useAppSelector((state) =>
-    selectCurrentWeekPeriodId(state),
-  );
   const transactionsStatus = useAppSelector((state) => state.cashflow.status);
   const isLoading = transactionsStatus === "loading";
   const dispatch = useAppDispatch();
@@ -35,18 +30,9 @@ function CashflowTableActionButtons({
     setSelectedTransactions([]);
   }
 
-  const spinner = isLoading && <LoaderCircle className="animate-spin" />;
-
   return (
     <div className="flex items-center gap-4">
-      <Button
-        className="gap-2"
-        disabled={isLoading}
-        onClick={() => dispatch(transactionAdded({ currentWeekPeriodId }))}
-      >
-        {spinner}
-        Add transaction
-      </Button>
+      <CashflowTableAddTransactionBtn isLoading={isLoading} />
       {hasSelectedTransactions && (
         <Button
           variant="destructive"
@@ -54,7 +40,7 @@ function CashflowTableActionButtons({
           disabled={isLoading}
           onClick={handleDeleteCashflowItems}
         >
-          {spinner}
+          <Spinner isLoading={isLoading} />
           <span className="material-symbols-outlined">delete</span>
         </Button>
       )}

@@ -1,6 +1,3 @@
-import { useState } from "react";
-import type { Transactions, Transaction } from "@/features/types";
-
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/features/store";
@@ -10,6 +7,13 @@ import {
   ThunkDispatch,
   UnknownAction,
 } from "@reduxjs/toolkit";
+
+import { useState } from "react";
+import type {
+  Transactions,
+  Transaction,
+  zTTransactionTemplate,
+} from "@/features/types";
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();
@@ -31,7 +35,7 @@ export function useTableCheckbox(tableItems: Transactions) {
       setSelectedTransactions((prev) => [...prev, cashflowItemId]);
     } else {
       setSelectedTransactions((prev) =>
-        prev.filter((id) => id !== cashflowItemId)
+        prev.filter((id) => id !== cashflowItemId),
       );
     }
   }
@@ -72,7 +76,7 @@ export type ReturnWithoutCellState = [
 ];
 
 export function useEditTableCell<T>(
-  value?: T
+  value?: T,
 ): ReturnWithCellState<T> | ReturnWithoutCellState {
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -105,3 +109,15 @@ export function useEditTableCell<T>(
       dispatch,
     ] as ReturnWithCellState<T>;
 }
+
+export type TransactionTemplateFormError<T> = {
+  [K in keyof T]?: string[];
+};
+
+export const useTransactionTemplateFormError = () => {
+  const [formError, setFormError] = useState<
+    TransactionTemplateFormError<zTTransactionTemplate>
+  >({});
+
+  return [formError, setFormError] as const;
+};

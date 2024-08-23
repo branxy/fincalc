@@ -5,7 +5,8 @@
       "@/*": ["./src/*"],
       "@periods": ["./src/features/periods/*"]
     },
-    "lib": ["es2023"]
+    "lib": ["es2023"],
+    "strict": true
   },
   "files": [],
   "references": [
