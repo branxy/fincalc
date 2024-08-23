@@ -125,6 +125,50 @@ export const cashflowSlice = createAppSlice({
         },
       },
     ),
+    transactionDuplicated: create.asyncThunk(
+      async (
+        {
+          transactionId,
+        }: {
+          transactionId: Transaction["id"];
+        },
+        { getState },
+      ) => {
+        const {
+          cashflow: { entities },
+        } = getState() as RootState;
+
+        const { user_id, period_id, title, amount, type, date } =
+          entities[transactionId];
+        const newTransaction: Omit<Transaction, "id" | "date_created"> = {
+          user_id,
+          period_id,
+          title: title + " copy",
+          amount,
+          type,
+          date,
+        };
+
+        const uploadedTransaction = await uploadTransaction(newTransaction);
+
+        return uploadedTransaction;
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state, action) => {
+          state.status = "failed";
+          if (action.error.message) state.error = action.error.message;
+          toast.error("Failed to add a transaction");
+        },
+        fulfilled: (state, action) => {
+          state.status = "succeeded";
+
+          casfhlowAdapter.addOne(state, action.payload);
+        },
+      },
+    ),
     transactionTitleChanged: create.asyncThunk(
       async ({
         transactionId,
@@ -560,6 +604,7 @@ export const selectTransactionsByPeriodId = createAppSelector(
 export const {
   fetchTransactions,
   transactionAdded,
+  transactionDuplicated,
   transactionTitleChanged,
   transactionAmountChangedAndPeriodsRecalculated,
   transactionAmountChanged,

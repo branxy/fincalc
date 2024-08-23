@@ -355,7 +355,7 @@ export function createTransaction(
     transactionDate?: Transaction["date"];
     transactionType?: Transaction["type"];
   },
-) {
+): Omit<Transaction, "id" | "date_created"> {
   const {
     transactionTitle,
     transactionAmount,
@@ -363,14 +363,13 @@ export function createTransaction(
     transactionType,
   } = properties;
 
-  const newTransaction: Omit<Transaction, "id"> = {
+  const newTransaction: Omit<Transaction, "id" | "date_created"> = {
     period_id: currentPeriodId,
     user_id: userId,
     type: transactionType ?? "payment/fixed",
     title: transactionTitle ?? "New transaction",
     amount: transactionAmount ?? 0,
     date: transactionDate ?? getTodayDate(),
-    date_created: new Date().toISOString(),
   };
 
   return newTransaction;
