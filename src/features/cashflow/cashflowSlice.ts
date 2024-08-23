@@ -1,7 +1,6 @@
 import { createAppSlice } from "@/features/createAppSlice";
 import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
 import { createAppSelector } from "@/lib/hooks";
-import { RootState } from "@/features/store";
 
 import {
   addNewPeriodByDateAndReturnId,
@@ -19,9 +18,11 @@ import { getEarliestPeriodIdByTransactions } from "@periods/periodsCalculator";
 import { periodAdded, periodsRecalculated } from "@periods/periodsSlice";
 
 import { supabase } from "@/db/supabaseClient";
-import { FinancePeriod, PeriodBalance, Transaction } from "@/features/types";
 import { createTransaction, getCurrentPeriodId } from "@/lib/utils";
 import { toast } from "sonner";
+
+import { FinancePeriod, PeriodBalance, Transaction } from "@/features/types";
+import { RootState } from "@/features/store";
 
 const casfhlowAdapter = createEntityAdapter<Transaction>({
   sortComparer: (a, b) => a.date.localeCompare(b.date),
@@ -537,13 +538,17 @@ export const cashflowSlice = createAppSlice({
       },
     ),
   }),
-  selectors: {},
+  selectors: {
+    selectTransactionsStatus: (state) => state.status,
+  },
 });
 
 export const {
   selectAll: selectAllTransactions,
   selectIds: selectCashflowIds,
 } = casfhlowAdapter.getSelectors((state: RootState) => state.cashflow);
+
+export const { selectTransactionsStatus } = cashflowSlice.selectors;
 
 const returnId = (_state: RootState, id: FinancePeriod["id"]) => id;
 

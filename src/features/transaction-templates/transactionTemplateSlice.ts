@@ -1,22 +1,24 @@
 import { createEntityAdapter, EntityState, Update } from "@reduxjs/toolkit";
 import { createAppSlice } from "@/features/createAppSlice";
-import { RootState } from "@/features/store";
 
 import {
+  deleteTransactionTemplate,
   fetchTransactionTemplatesFromDB,
   insertTransactionTemplate,
   updateTransactionTemplate,
-} from "./transactionTemplateApi";
+} from "@/features/transaction-templates/transactionTemplateApi";
 
-import { performAuthCheck } from "@/lib/utils";
-import { TransactionTemplate } from "@/features/types";
+import { getTodayDate, performAuthCheck } from "@/lib/utils";
 import { toast } from "sonner";
 
-const transactionTemplateAdapter = createEntityAdapter<TransactionTemplate>({
+import { TTransactionTemplate, zTTransactionTemplate } from "@/features/types";
+import { RootState } from "@/features/store";
+
+const transactionTemplateAdapter = createEntityAdapter<TTransactionTemplate>({
   sortComparer: (a, b) => a.date.localeCompare(b.date),
 });
 
-type InitialState = EntityState<TransactionTemplate, string> & {
+type InitialState = EntityState<TTransactionTemplate, string> & {
   status: "idle" | "loading" | "failed" | "succeeded";
   error: string | null;
 };
@@ -51,15 +53,16 @@ export const transactionTemplateSlice = createAppSlice({
       },
     ),
     transactionTemplateAdded: create.asyncThunk(
-      async (template: Omit<TransactionTemplate, "id" | "user_id">) => {
+      async (template: zTTransactionTemplate) => {
         const userId = await performAuthCheck();
 
-        const newTemplate: Omit<TransactionTemplate, "id"> = {
+        const newTemplate: Omit<TTransactionTemplate, "id"> = {
           ...template,
           user_id: userId,
+          date: getTodayDate(),
         };
 
-        const receivedTemplate: TransactionTemplate =
+        const receivedTemplate: TTransactionTemplate =
           await insertTransactionTemplate(newTemplate);
 
         return receivedTemplate;
@@ -83,8 +86,8 @@ export const transactionTemplateSlice = createAppSlice({
         const received = await updateTransactionTemplate(id, changes);
 
         const toRedux: Update<
-          Pick<TransactionTemplate, "title" | "amount" | "type">,
-          TransactionTemplate["id"]
+          Pick<TTransactionTemplate, "title" | "amount" | "type">,
+          TTransactionTemplate["id"]
         > = {
           id: received.id,
           changes: {
@@ -102,7 +105,7 @@ export const transactionTemplateSlice = createAppSlice({
         },
         rejected: (state) => {
           state.status === "failed";
-          toast.error("Failed to add a template");
+          toast.error("Failed to update a template");
         },
         fulfilled: (state, action) => {
           state.status === "succeeded";
@@ -110,13 +113,37 @@ export const transactionTemplateSlice = createAppSlice({
         },
       },
     ),
+    transactionTemplateDeleted: create.asyncThunk(
+      async (transactionId: TTransactionTemplate["id"]) => {
+        await deleteTransactionTemplate(transactionId);
+
+        return transactionId;
+      },
+      {
+        pending: (state) => {
+          state.status === "loading";
+        },
+        rejected: (state) => {
+          state.status === "failed";
+          toast.error("Failed to delete a template");
+        },
+        fulfilled: (state, action) => {
+          state.status === "succeeded";
+          transactionTemplateAdapter.removeOne(state, action.payload);
+        },
+      },
+    ),
   }),
+  selectors: {
+    selectTransactionTemplatesStatus: (state) => state.status,
+  },
 });
 
 export const {
   fetchTransactionTemplates,
   transactionTemplateAdded,
   transactionTemplateUpdated,
+  transactionTemplateDeleted,
 } = transactionTemplateSlice.actions;
 
 export const {
@@ -126,11 +153,10 @@ export const {
   (state: RootState) => state.transactionTemplates,
 );
 
+export const { selectTransactionTemplatesStatus } =
+  transactionTemplateSlice.selectors;
+
 export type UpdateTransactionTemplate = {
-  id: TransactionTemplate["id"];
-  changes: {
-    title: TransactionTemplate["title"];
-    amount: TransactionTemplate["amount"];
-    type: TransactionTemplate["type"];
-  };
+  id: TTransactionTemplate["id"];
+  changes: zTTransactionTemplate;
 };

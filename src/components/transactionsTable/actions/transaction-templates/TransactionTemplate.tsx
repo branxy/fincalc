@@ -4,15 +4,21 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { transactionAdded } from "@/features/cashflow/cashflowSlice";
-import { selectTransactionTemplateById } from "@/features/transaction-templates/transactionTemplateSlice";
+import {
+  selectTransactionsStatus,
+  transactionAdded,
+} from "@/features/cashflow/cashflowSlice";
+import {
+  selectTransactionTemplateById,
+  transactionTemplateDeleted,
+} from "@/features/transaction-templates/transactionTemplateSlice";
 
-import { type TransactionTemplate } from "@/features/types";
+import { type TTransactionTemplate } from "@/features/types";
 import { forwardRef, useContext } from "react";
 import { CurrencyContext } from "@/components/providers";
 
 interface TransactionTemplateProps {
-  id: TransactionTemplate["id"];
+  id: TTransactionTemplate["id"];
 }
 
 const TransactionTemplate = forwardRef<
@@ -21,11 +27,13 @@ const TransactionTemplate = forwardRef<
 >((props, ref) => {
   const { id, ...rest } = props;
   const t = useAppSelector((state) => selectTransactionTemplateById(state, id));
+  const status = useAppSelector(selectTransactionsStatus);
   const [currencySign] = useContext(CurrencyContext)!;
   const dispatch = useAppDispatch();
 
-  const transactionTitle =
-    t.title.length >= 11 ? t.title.slice(0, 8) + "..." : t.title;
+  const isLoading = status === "loading",
+    transactionTitle =
+      t.title.length >= 11 ? t.title.slice(0, 8) + "..." : t.title;
 
   const handleAddTransactionFromTemplate = () => {
     const { title, amount, date, type } = t;
@@ -44,6 +52,7 @@ const TransactionTemplate = forwardRef<
       <Button
         variant="ghost"
         className="max-w-28 grow justify-start pl-2 hover:bg-transparent"
+        disabled={isLoading}
         onClick={handleAddTransactionFromTemplate}
       >
         {transactionTitle} ({currencySign + t.amount})
@@ -53,6 +62,8 @@ const TransactionTemplate = forwardRef<
         <Button
           variant="ghost"
           className="group h-min px-1.5 py-1 hover:bg-transparent"
+          disabled={isLoading}
+          onClick={() => dispatch(transactionTemplateDeleted(id))}
         >
           <X size={16} className="group-hover:text-red-400" />
         </Button>

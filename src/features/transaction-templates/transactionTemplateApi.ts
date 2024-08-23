@@ -1,8 +1,8 @@
 import { supabase } from "@/db/supabaseClient";
-import { TransactionTemplate } from "@/features/types";
+import { TTransactionTemplate } from "@/features/types";
 
 export const fetchTransactionTemplatesFromDB = async (): Promise<
-  TransactionTemplate[]
+  TTransactionTemplate[]
 > => {
   const { data, error } = await supabase.from("transactionTemplates").select();
 
@@ -15,7 +15,7 @@ export const fetchTransactionTemplatesFromDB = async (): Promise<
 };
 
 export const insertTransactionTemplate = async (
-  template: Omit<TransactionTemplate, "id">,
+  template: Omit<TTransactionTemplate, "id">,
 ) => {
   const { data, error } = await supabase
     .from("transactionTemplates")
@@ -31,8 +31,8 @@ export const insertTransactionTemplate = async (
 };
 
 export const updateTransactionTemplate = async (
-  transactionId: TransactionTemplate["id"],
-  changes: Partial<Omit<TransactionTemplate, "id" | "user_id">>,
+  transactionId: TTransactionTemplate["id"],
+  changes: Partial<Omit<TTransactionTemplate, "id" | "user_id">>,
 ) => {
   const { error, data } = await supabase
     .from("transactionTemplates")
@@ -46,4 +46,18 @@ export const updateTransactionTemplate = async (
   }
 
   return data[0];
+};
+
+export const deleteTransactionTemplate = async (
+  transactionId: TTransactionTemplate["id"],
+) => {
+  const { error } = await supabase
+    .from("transactionTemplates")
+    .delete()
+    .eq("id", transactionId);
+
+  if (error) {
+    console.error(error.message);
+    throw new Error("Failed to delete a template", { cause: error.message });
+  }
 };

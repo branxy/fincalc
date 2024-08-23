@@ -12,11 +12,11 @@ import {
 } from "@/components/ui/sheet";
 import { Edit2 } from "lucide-react";
 
-import { TransactionTemplate } from "@/features/types";
+import { TTransactionTemplate } from "@/features/types";
 import { ComponentPropsWithoutRef, forwardRef, useState } from "react";
 
 interface EditTransactionTemplateProps {
-  template: TransactionTemplate;
+  template: TTransactionTemplate;
 }
 
 const EditTransactionTemplate = forwardRef<

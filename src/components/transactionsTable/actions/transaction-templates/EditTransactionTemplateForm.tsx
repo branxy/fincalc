@@ -1,3 +1,5 @@
+import FormError from "@/components/form-error";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { useAppDispatch } from "@/lib/hooks";
+import { useAppDispatch, useTransactionTemplateFormError } from "@/lib/hooks";
 import {
   transactionTemplateUpdated,
   UpdateTransactionTemplate,
@@ -20,14 +22,14 @@ import {
 
 import {
   Transaction,
-  TransactionTemplate,
+  TTransactionTemplate,
   zTransactionTemplate,
 } from "@/features/types";
 import { Fragment, useState } from "react";
-import { transactionTypes } from "../../cells/TransactionsTableTypeCell";
+import { transactionTypes } from "@/components/transactionsTable/cells/TransactionsTableTypeCell";
 
 export interface EditTransactionTemplateFormProps {
-  template: TransactionTemplate;
+  template: TTransactionTemplate;
   setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode;
 }
@@ -37,6 +39,8 @@ function EditTransactionTemplateForm({
   setDrawerOpen,
   children,
 }: EditTransactionTemplateFormProps) {
+  const [formError, setFormError] = useTransactionTemplateFormError();
+
   const [type, setType] = useState<Transaction["type"]>(
     template?.type ?? "payment/fixed",
   );
@@ -57,7 +61,7 @@ function EditTransactionTemplateForm({
     });
 
     if (!success) {
-      console.error(error.format());
+      setFormError(error.flatten().fieldErrors);
     } else {
       const changes: UpdateTransactionTemplate = {
         id: template.id,
@@ -87,6 +91,7 @@ function EditTransactionTemplateForm({
           maxLength={80}
           className="mt-1"
         />
+        {!!formError?.title?.length && <FormError errors={formError.title} />}
       </fieldset>
       <fieldset className="mt-2">
         <Label htmlFor="template-transaction-amount">Amount</Label>
@@ -95,9 +100,11 @@ function EditTransactionTemplateForm({
           name="template-transaction-amount"
           id="template-transaction-amount"
           defaultValue={template.amount}
+          min={0}
           max={1000000000}
           onFocus={(e) => e.target.select()}
         />
+        {!!formError?.amount?.length && <FormError errors={formError.amount} />}
       </fieldset>
       <fieldset className="mt-2">
         <Label htmlFor="template-transaction-type">Type</Label>
@@ -141,6 +148,7 @@ function EditTransactionTemplateForm({
             })}
           </SelectContent>
         </Select>
+        {!!formError?.type?.length && <FormError errors={formError.type} />}
       </fieldset>
       <div className="mt-6 flex justify-between gap-6">
         <Button type="submit">Update template</Button>

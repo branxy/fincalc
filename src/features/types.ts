@@ -46,14 +46,27 @@ export interface Transaction {
 
 export type Transactions = Transaction[];
 
-export type TransactionTemplate = Pick<
+export type TTransactionTemplate = Pick<
   Transaction,
   "id" | "user_id" | "title" | "amount" | "type" | "date"
 >;
 
 export const zTransactionTemplate = z.object({
-  title: z.string().trim().min(1).max(80),
-  amount: z.coerce.number().nonnegative().max(999999999),
+  title: z
+    .string({
+      message: "Title must be of text format",
+    })
+    .trim()
+    .min(1, {
+      message: "Title must contain at least 1 character",
+    })
+    .max(80, {
+      message: "Title couldn't be longer than 80 characters",
+    }),
+  amount: z.coerce
+    .number()
+    .nonnegative({ message: "Amount must be greater than or equal to 0" })
+    .max(999999999),
   type: z.enum([
     "payment/fixed",
     "payment/variable",
@@ -64,6 +77,8 @@ export const zTransactionTemplate = z.object({
     "compensation/forward-payment",
   ]),
 });
+
+export type zTTransactionTemplate = z.infer<typeof zTransactionTemplate>;
 
 export interface CashFlowTable {
   cashflow: Transactions;

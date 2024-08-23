@@ -1,3 +1,5 @@
+import FormError from "@/components/form-error";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,18 +14,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { useAppDispatch, useTransactionTemplateFormError } from "@/lib/hooks";
+import { transactionTemplateAdded } from "@/features/transaction-templates/transactionTemplateSlice";
+
 import {
+  Transaction,
   zTransactionTemplate,
-  type TransactionTemplate,
+  zTTransactionTemplate,
 } from "@/features/types";
 
 import { Fragment, useState } from "react";
 import { transactionTypes } from "@/components/transactionsTable/cells/TransactionsTableTypeCell";
-import { Transaction } from "@/features/types";
-import { getTodayDate } from "@/lib/utils";
-
-import { useAppDispatch } from "@/lib/hooks";
-import { transactionTemplateAdded } from "@/features/transaction-templates/transactionTemplateSlice";
 
 interface AddTransactionTemplateFormProps {
   setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -34,6 +35,7 @@ function AddTransactionTemplateForm({
   setDrawerOpen,
   children,
 }: AddTransactionTemplateFormProps) {
+  const [formError, setFormError] = useTransactionTemplateFormError();
   const [type, setType] = useState<Transaction["type"]>("payment/fixed");
   const dispatch = useAppDispatch();
 
@@ -50,15 +52,14 @@ function AddTransactionTemplateForm({
     });
 
     if (!success) {
-      console.error(error.format());
+      setFormError(error.flatten().fieldErrors);
     } else {
       e.currentTarget.reset();
 
-      const newTemplate: Omit<TransactionTemplate, "id" | "user_id"> = {
+      const newTemplate: zTTransactionTemplate = {
         title: data.title,
         amount: Number(data.amount),
         type: data.type,
-        date: getTodayDate(),
       };
 
       dispatch(transactionTemplateAdded(newTemplate));
@@ -83,6 +84,7 @@ function AddTransactionTemplateForm({
           maxLength={80}
           className="mt-1"
         />
+        {!!formError?.title?.length && <FormError errors={formError.title} />}
       </fieldset>
       <fieldset className="mt-2">
         <Label htmlFor="template-transaction-amount">Amount</Label>
@@ -90,9 +92,11 @@ function AddTransactionTemplateForm({
           type="number"
           name="template-transaction-amount"
           id="template-transaction-amount"
+          min={0}
           max={1000000000}
           onFocus={(e) => e.target.select()}
         />
+        {!!formError?.amount?.length && <FormError errors={formError.amount} />}
       </fieldset>
       <fieldset className="mt-2">
         <Label htmlFor="template-transaction-type">Type</Label>
@@ -136,6 +140,7 @@ function AddTransactionTemplateForm({
             })}
           </SelectContent>
         </Select>
+        {!!formError?.type?.length && <FormError errors={formError.type} />}
       </fieldset>
       <div className="mt-6 flex justify-between gap-6">
         <Button type="submit">Add template</Button>
