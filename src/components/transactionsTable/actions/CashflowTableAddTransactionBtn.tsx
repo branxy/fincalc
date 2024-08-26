@@ -52,7 +52,7 @@ function CashflowTableAddTransactionBtn({
               setDrawerOpen={setDrawerOpen}
             />
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
+          {!!transactionTemplates.length && <DropdownMenuSeparator />}
           {transactionTemplates.map((t) => (
             <DropdownMenuItem key={t.id} asChild>
               <TransactionTemplate id={t.id} />
