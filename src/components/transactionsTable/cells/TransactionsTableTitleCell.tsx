@@ -56,6 +56,7 @@ function TransactionsTableTitleCell({
               onChange={(e) => setTitleState(e.target.value)}
               onBlur={finishEditing}
               autoFocus={isEditing}
+              className="focus-within:bg-background focus-within:text-foreground"
             />
           </form>
         </td>

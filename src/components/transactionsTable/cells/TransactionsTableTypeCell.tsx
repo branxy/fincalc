@@ -62,7 +62,10 @@ function TransactionsTableTypeCell({
             name="transaction-type"
             onValueChange={finishEditingAndSave}
           >
-            <SelectTrigger aria-label="Transaction type">
+            <SelectTrigger
+              aria-label="Transaction type"
+              className="text-foreground"
+            >
               <SelectValue placeholder={type} />
             </SelectTrigger>
             <SelectContent>
