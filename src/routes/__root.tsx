@@ -30,7 +30,7 @@ function Root() {
               },
             },
           }}
-          providers={[]}
+          providers={["google"]}
         />
       </div>
     );
