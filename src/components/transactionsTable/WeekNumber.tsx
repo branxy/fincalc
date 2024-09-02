@@ -10,7 +10,13 @@ function WeekNumber({ weekNumber, monthName }: WeekNumberProps) {
     <tr>
       <td colSpan={6} className="text-center">
         <h2 className="text-xl">
-          Week №{weekNumber} of {monthName}
+          {weekNumber === 1 ? (
+            <>
+              Week №{weekNumber}: {monthName}
+            </>
+          ) : (
+            <>Week №{weekNumber}</>
+          )}
         </h2>
       </td>
     </tr>
