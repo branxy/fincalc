@@ -15,14 +15,15 @@ import type {
   zTTransactionTemplate,
 } from "@/features/types";
 
+export type TSelectedTransactions = Transaction["id"][];
+
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();
 export const createAppSelector = createSelector.withTypes<RootState>();
 
 export function useTableCheckbox(tableItems: Transactions) {
-  const [selectedTransactions, setSelectedTransactions] = useState<
-    Transaction["id"][]
-  >([]);
+  const [selectedTransactions, setSelectedTransactions] =
+    useState<TSelectedTransactions>([]);
 
   const isCheckedCheckbox =
     selectedTransactions.length === tableItems.length &&

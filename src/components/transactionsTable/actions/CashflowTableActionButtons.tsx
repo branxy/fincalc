@@ -3,18 +3,18 @@ import TableInfo from "@/components/transactionsTable/TableInfo";
 import Spinner from "@/components/ui/spinner";
 
 import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
 
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
-  deletedTransactionsAndPeriodsRecalculated,
-  transactionDuplicated,
-} from "@/features/cashflow/cashflowSlice";
+  TSelectedTransactions,
+  useAppDispatch,
+  useAppSelector,
+} from "@/lib/hooks";
+import { deletedTransactionsAndPeriodsRecalculated } from "@/features/cashflow/cashflowSlice";
 
-import { type Transaction } from "@/features/types";
+import TransactionsTableDuplicateButton from "./TransactionsTableDuplicateButton";
 
 interface CashflowTableActionButtonsProps {
-  selectedTransactions: Transaction["id"][];
+  selectedTransactions: TSelectedTransactions;
   setSelectedTransactions: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
@@ -35,10 +35,6 @@ function CashflowTableActionButtons({
     setSelectedTransactions([]);
   };
 
-  const duplicateTransaction = () => {
-    dispatch(transactionDuplicated({ transactionId: selectedTransactions[0] }));
-  };
-
   return (
     <div className="flex items-center gap-4">
       <CashflowTableAddTransactionBtn isLoading={isLoading} />
@@ -54,9 +50,9 @@ function CashflowTableActionButtons({
         </Button>
       )}
       {singleTransactionSelected && (
-        <Button onClick={duplicateTransaction} disabled={isLoading}>
-          <Copy size={18} />
-        </Button>
+        <TransactionsTableDuplicateButton
+          selectedTransactions={selectedTransactions}
+        />
       )}
       <TableInfo />
     </div>

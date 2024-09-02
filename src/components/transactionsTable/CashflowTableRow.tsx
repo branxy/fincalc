@@ -4,7 +4,7 @@ import TransactionsTableAmountCell from "@/components/transactionsTable/cells/Tr
 import TransactionsTableTitleCell from "@/components/transactionsTable/cells/TransactionsTableTitleCell";
 import EndBalance from "@/components/transactionsTable/cells/EndBalance";
 
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { TSelectedTransactions, useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { transactionDuplicated } from "@/features/cashflow/cashflowSlice";
 
 import { FinancePeriod, Transaction } from "@/features/types";
@@ -17,7 +17,7 @@ interface CashflowTableRowProps {
   title: Transaction["title"];
   amount: Transaction["amount"];
   date: Transaction["date"];
-  selectedTransactions: Transaction["id"][];
+  selectedTransactions: TSelectedTransactions;
   periodEndBalance:
     | MarkedCashflow[FinancePeriod["id"]]["periodEndBalance"]
     | null;

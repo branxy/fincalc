@@ -1,6 +1,6 @@
 import { createAppSlice } from "@/features/createAppSlice";
 import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
-import { createAppSelector } from "@/lib/hooks";
+import { createAppSelector, TSelectedTransactions } from "@/lib/hooks";
 
 import {
   addNewPeriodByDateAndReturnId,
@@ -519,7 +519,7 @@ export const cashflowSlice = createAppSlice({
       async ({
         selectedTransactions,
       }: {
-        selectedTransactions: Transaction["id"][];
+        selectedTransactions: TSelectedTransactions;
       }) => {
         const deletedTransactionsIds =
           await deleteCashflowItems(selectedTransactions);
@@ -545,7 +545,7 @@ export const cashflowSlice = createAppSlice({
         {
           selectedTransactions,
         }: {
-          selectedTransactions: Transaction["id"][];
+          selectedTransactions: TSelectedTransactions;
         },
         { dispatch, getState },
       ) => {
