@@ -14,7 +14,7 @@ import {
   SelectScrollUpButton,
   SelectScrollDownButton,
 } from "@/components/ui/select";
-import { transactionTypeChangedAndPeriodsRecalculated } from "@/features/cashflow/cashflowSlice";
+import { transactionTypeChangedAndPeriodsRecalculated } from "@/features/transactions/transactionsSlice";
 import { Fragment } from "react/jsx-runtime";
 
 interface TransactionsTableTypeCellProps {

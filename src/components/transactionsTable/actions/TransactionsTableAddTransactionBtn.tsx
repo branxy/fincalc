@@ -14,17 +14,17 @@ import { ChevronDown } from "lucide-react";
 
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { selectAllTransactionTemplates } from "@/features/transaction-templates/transactionTemplateSlice";
-import { transactionAdded } from "@/features/cashflow/cashflowSlice";
+import { transactionAdded } from "@/features/transactions/transactionsSlice";
 
 import { useState } from "react";
 
-interface CashflowTableAddTransactionBtnProps {
+interface TransactionsTableAddTransactionBtnProps {
   isLoading: boolean;
 }
 
-function CashflowTableAddTransactionBtn({
+function TransactionsTableAddTransactionBtn({
   isLoading,
-}: CashflowTableAddTransactionBtnProps) {
+}: TransactionsTableAddTransactionBtnProps) {
   const transactionTemplates = useAppSelector((state) =>
     selectAllTransactionTemplates(state),
   );
@@ -64,4 +64,4 @@ function CashflowTableAddTransactionBtn({
   );
 }
 
-export default CashflowTableAddTransactionBtn;
+export default TransactionsTableAddTransactionBtn;

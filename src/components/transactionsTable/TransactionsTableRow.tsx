@@ -9,13 +9,13 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "@/lib/hooks";
-import { transactionDuplicated } from "@/features/cashflow/cashflowSlice";
+import { transactionDuplicated } from "@/features/transactions/transactionsSlice";
 
 import { FinancePeriod, Transaction } from "@/features/types";
 import { MarkedCashflow } from "@/lib/utils";
 import clsx from "clsx";
 
-export interface CashflowTableRowProps {
+export interface TransactionsTableRowProps {
   transactionType: Transaction["type"];
   transactionId: Transaction["id"];
   title: Transaction["title"];
@@ -28,7 +28,7 @@ export interface CashflowTableRowProps {
   handleSelectTransaction: (periodId: Transaction["id"]) => void;
 }
 
-function CashflowTableRow({
+function TransactionsTableRow({
   transactionType,
   transactionId,
   title,
@@ -37,7 +37,7 @@ function CashflowTableRow({
   selectedTransactions,
   periodEndBalance,
   handleSelectTransaction,
-}: CashflowTableRowProps) {
+}: TransactionsTableRowProps) {
   const periodsStatus = useAppSelector((state) => state.periods.status);
   const dispatch = useAppDispatch();
   const isSelectedRow = Boolean(
@@ -99,4 +99,4 @@ function CashflowTableRow({
   );
 }
 
-export default CashflowTableRow;
+export default TransactionsTableRow;

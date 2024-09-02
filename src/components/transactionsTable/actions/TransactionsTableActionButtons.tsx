@@ -1,4 +1,4 @@
-import CashflowTableAddTransactionBtn from "@/components/transactionsTable/actions/CashflowTableAddTransactionBtn";
+import CashflowTableAddTransactionBtn from "@/components/transactionsTable/actions/TransactionsTableAddTransactionBtn";
 import TableInfo from "@/components/transactionsTable/TableInfo";
 import Spinner from "@/components/ui/spinner";
 
@@ -9,19 +9,19 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "@/lib/hooks";
-import { deletedTransactionsAndPeriodsRecalculated } from "@/features/cashflow/cashflowSlice";
+import { deletedTransactionsAndPeriodsRecalculated } from "@/features/transactions/transactionsSlice";
 
 import TransactionsTableDuplicateButton from "./TransactionsTableDuplicateButton";
 
-interface CashflowTableActionButtonsProps {
+interface TransactionsTableActionButtonsProps {
   selectedTransactions: TSelectedTransactions;
   setSelectedTransactions: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-function CashflowTableActionButtons({
+function TransactionsTableActionButtons({
   selectedTransactions,
   setSelectedTransactions,
-}: CashflowTableActionButtonsProps) {
+}: TransactionsTableActionButtonsProps) {
   const transactionsStatus = useAppSelector((state) => state.cashflow.status);
   const isLoading = transactionsStatus === "loading";
   const dispatch = useAppDispatch();
@@ -59,4 +59,4 @@ function CashflowTableActionButtons({
   );
 }
 
-export default CashflowTableActionButtons;
+export default TransactionsTableActionButtons;

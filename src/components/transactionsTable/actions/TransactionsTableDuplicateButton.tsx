@@ -12,7 +12,7 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "@/lib/hooks";
-import { transactionDuplicated } from "@/features/cashflow/cashflowSlice";
+import { transactionDuplicated } from "@/features/transactions/transactionsSlice";
 
 export interface TransactionsTableDuplicateButtonProps {
   selectedTransactions: TSelectedTransactions;

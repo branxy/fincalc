@@ -15,16 +15,16 @@ import {
   useEditTableCell,
 } from "@/lib/hooks";
 
-import { transactionDateChangedAndPeriodsRecalculated } from "@/features/cashflow/cashflowSlice";
+import { transactionDateChangedAndPeriodsRecalculated } from "@/features/transactions/transactionsSlice";
 import { cn, getDBDateFromObject } from "@/lib/utils";
 import { Transaction } from "@/features/types";
 import { useState } from "react";
-import { CashflowTableRowProps } from "@/components/transactionsTable/CashflowTableRow";
+import { TransactionsTableRowProps } from "@/components/transactionsTable/TransactionsTableRow";
 
 interface TransactionsTableDateCellProps {
   transactionId: Transaction["id"];
   date: Transaction["date"];
-  periodEndBalance: CashflowTableRowProps["periodEndBalance"];
+  periodEndBalance: TransactionsTableRowProps["periodEndBalance"];
 }
 
 function TransactionsTableDateCell({

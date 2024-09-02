@@ -1,5 +1,5 @@
-import CashflowTableActionButtons from "@/components/transactionsTable/actions/CashflowTableActionButtons";
-import CashflowTableRow from "@/components/transactionsTable/CashflowTableRow";
+import CashflowTableActionButtons from "@/components/transactionsTable/actions/TransactionsTableActionButtons";
+import CashflowTableRow from "@/components/transactionsTable/TransactionsTableRow";
 import WeekNumber from "@/components/transactionsTable/WeekNumber";
 
 import { FinancePeriod, Transactions } from "@/features/types";
@@ -7,14 +7,14 @@ import { useTableCheckbox } from "@/lib/hooks";
 import { getMarkedCashflow } from "@/lib/utils";
 import { Fragment } from "react/jsx-runtime";
 
-interface CashflowTableProps {
+interface TransactionsTableProps {
   transactions: Transactions;
   periods: Pick<
     FinancePeriod,
     "id" | "balance_end" | "stock_end" | "forward_payments_end"
   >[];
 }
-function CashflowTable({ transactions, periods }: CashflowTableProps) {
+function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
   const [
     selectedTransactions,
     setSelectedTransactions,
@@ -104,4 +104,4 @@ function CashflowTable({ transactions, periods }: CashflowTableProps) {
   );
 }
 
-export default CashflowTable;
+export default TransactionsTable;

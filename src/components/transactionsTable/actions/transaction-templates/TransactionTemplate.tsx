@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
   selectTransactionsStatus,
   transactionAdded,
-} from "@/features/cashflow/cashflowSlice";
+} from "@/features/transactions/transactionsSlice";
 import {
   selectTransactionTemplateById,
   transactionTemplateDeleted,

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 import { useAppSelector } from "@/lib/hooks";
-import { selectAllTransactions } from "@/features/cashflow/cashflowSlice";
+import { selectAllTransactions } from "@/features/transactions/transactionsSlice";
 import { selectAllPeriods } from "@/features/periods/periodsSlice";
 
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
