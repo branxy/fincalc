@@ -4,7 +4,11 @@ import TransactionsTableAmountCell from "@/components/transactionsTable/cells/Tr
 import TransactionsTableTitleCell from "@/components/transactionsTable/cells/TransactionsTableTitleCell";
 import EndBalance from "@/components/transactionsTable/cells/EndBalance";
 
-import { TSelectedTransactions, useAppDispatch, useAppSelector } from "@/lib/hooks";
+import {
+  TSelectedTransactions,
+  useAppDispatch,
+  useAppSelector,
+} from "@/lib/hooks";
 import { transactionDuplicated } from "@/features/cashflow/cashflowSlice";
 
 import { FinancePeriod, Transaction } from "@/features/types";
@@ -59,7 +63,7 @@ function CashflowTableRow({
     <tr
       onKeyDown={handleDuplicateTransaction}
       className={clsx(
-        "h-[44px]",
+        "h-[48px]",
         isSelectedRow && "bg-zinc-500 text-slate-100",
       )}
     >
