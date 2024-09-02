@@ -15,7 +15,7 @@ import { FinancePeriod, Transaction } from "@/features/types";
 import { MarkedCashflow } from "@/lib/utils";
 import clsx from "clsx";
 
-interface CashflowTableRowProps {
+export interface CashflowTableRowProps {
   transactionType: Transaction["type"];
   transactionId: Transaction["id"];
   title: Transaction["title"];
@@ -87,7 +87,11 @@ function CashflowTableRow({
         type={transactionType}
         transactionId={transactionId}
       />
-      <TransactionsTableDateCell transactionId={transactionId} date={date} />
+      <TransactionsTableDateCell
+        transactionId={transactionId}
+        date={date}
+        periodEndBalance={periodEndBalance}
+      />
       {periodEndBalance && (
         <EndBalance periodEndBalance={periodEndBalance} isLoading={isLoading} />
       )}

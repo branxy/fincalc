@@ -19,23 +19,27 @@ import { transactionDateChangedAndPeriodsRecalculated } from "@/features/cashflo
 import { cn, getDBDateFromObject } from "@/lib/utils";
 import { Transaction } from "@/features/types";
 import { useState } from "react";
+import { CashflowTableRowProps } from "@/components/transactionsTable/CashflowTableRow";
 
 interface TransactionsTableDateCellProps {
   transactionId: Transaction["id"];
   date: Transaction["date"];
+  periodEndBalance: CashflowTableRowProps["periodEndBalance"];
 }
 
 function TransactionsTableDateCell({
   transactionId,
   date,
+  periodEndBalance,
 }: TransactionsTableDateCellProps) {
   const [isEditing, setIsEditing, isHovered, setIsHovered, finishEditing] =
     useEditTableCell() as ReturnWithoutCellState;
+  const cellColSpan = periodEndBalance ? 1 : 2;
 
   return (
     <>
       {isEditing ? (
-        <td>
+        <td colSpan={cellColSpan}>
           <TransactionsTableDateCellDatepicker
             transactionId={transactionId}
             transactionDate={date}
@@ -44,6 +48,7 @@ function TransactionsTableDateCell({
         </td>
       ) : (
         <td
+          colSpan={cellColSpan}
           className="editable relative h-full"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
