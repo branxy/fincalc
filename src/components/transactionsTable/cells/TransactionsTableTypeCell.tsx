@@ -11,6 +11,8 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
 } from "@/components/ui/select";
 import { transactionTypeChangedAndPeriodsRecalculated } from "@/features/cashflow/cashflowSlice";
 import { Fragment } from "react/jsx-runtime";
@@ -68,7 +70,8 @@ function TransactionsTableTypeCell({
             >
               <SelectValue placeholder={type} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-60">
+              <SelectScrollUpButton />
               {transactionTypes.map((tgroup, i) => {
                 const label = tgroup[0].split("/")[0],
                   uppercaseLabel =
@@ -95,6 +98,7 @@ function TransactionsTableTypeCell({
                   </Fragment>
                 );
               })}
+              <SelectScrollDownButton />
             </SelectContent>
           </Select>
         </td>
