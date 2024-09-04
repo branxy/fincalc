@@ -14,6 +14,7 @@ import { transactionDuplicated } from "@/features/transactions/transactionsSlice
 import { FinancePeriod, Transaction } from "@/features/types";
 import { MarkedCashflow } from "@/lib/utils";
 import clsx from "clsx";
+import { useRef } from "react";
 
 export interface TransactionsTableRowProps {
   transactionType: Transaction["type"];
@@ -26,6 +27,9 @@ export interface TransactionsTableRowProps {
     | MarkedCashflow[FinancePeriod["id"]]["periodEndBalance"]
     | null;
   handleSelectTransaction: (periodId: Transaction["id"]) => void;
+  handleUpdateLastSelectedTransactionRef: (
+    rowRef: React.MutableRefObject<HTMLTableRowElement>,
+  ) => void;
 }
 
 function TransactionsTableRow({
@@ -37,9 +41,11 @@ function TransactionsTableRow({
   selectedTransactions,
   periodEndBalance,
   handleSelectTransaction,
+  handleUpdateLastSelectedTransactionRef,
 }: TransactionsTableRowProps) {
   const periodsStatus = useAppSelector((state) => state.periods.status);
   const dispatch = useAppDispatch();
+  const rowRef = useRef<HTMLTableRowElement>(null!);
   const isSelectedRow = Boolean(
       selectedTransactions?.find((id) => id === transactionId),
     ),
@@ -61,11 +67,13 @@ function TransactionsTableRow({
 
   return (
     <tr
+      ref={rowRef}
       onKeyDown={handleDuplicateTransaction}
       className={clsx(
         "h-[48px]",
         isSelectedRow && "bg-zinc-500 text-slate-100",
       )}
+      onClick={() => handleUpdateLastSelectedTransactionRef(rowRef)}
     >
       <td className="w-fit pr-2 text-right">
         <input

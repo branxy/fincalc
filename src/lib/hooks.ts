@@ -8,7 +8,7 @@ import {
   UnknownAction,
 } from "@reduxjs/toolkit";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   Transactions,
   Transaction,
@@ -24,12 +24,30 @@ export const createAppSelector = createSelector.withTypes<RootState>();
 export function useTableCheckbox(tableItems: Transactions) {
   const [selectedTransactions, setSelectedTransactions] =
     useState<TSelectedTransactions>([]);
+  const lastSelectedTransactionRef = useRef<HTMLTableRowElement>(null!);
+  const singleTransactionSelected = selectedTransactions.length === 1;
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (
+        singleTransactionSelected &&
+        lastSelectedTransactionRef.current &&
+        !lastSelectedTransactionRef.current.contains(e.target as Node)
+      ) {
+        setSelectedTransactions([]);
+      }
+    };
+
+    document.addEventListener("click", handleOutsideClick);
+
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [singleTransactionSelected, selectedTransactions]);
 
   const isCheckedCheckbox =
     selectedTransactions.length === tableItems.length &&
     selectedTransactions.length > 0;
 
-  function handleSelectTransaction(cashflowItemId: Transaction["id"]) {
+  const handleSelectTransaction = (cashflowItemId: Transaction["id"]) => {
     if (!selectedTransactions.length) {
       setSelectedTransactions([cashflowItemId]);
     } else if (!selectedTransactions.includes(cashflowItemId)) {
@@ -39,20 +57,28 @@ export function useTableCheckbox(tableItems: Transactions) {
         prev.filter((id) => id !== cashflowItemId),
       );
     }
-  }
+  };
 
-  function handleSelectAllTransactions() {
+  const handleSelectAllTransactions = () => {
     if (selectedTransactions.length < tableItems.length) {
       const allTransactionsIds = tableItems.map((i) => i.id);
       setSelectedTransactions(allTransactionsIds);
     } else setSelectedTransactions([]);
-  }
+  };
+
+  const handleUpdateLastSelectedTransactionRef = (
+    rowRef: React.MutableRefObject<HTMLTableRowElement>,
+  ) => {
+    lastSelectedTransactionRef.current = rowRef.current;
+  };
+
   return [
     selectedTransactions,
     setSelectedTransactions,
     isCheckedCheckbox,
     handleSelectTransaction,
     handleSelectAllTransactions,
+    handleUpdateLastSelectedTransactionRef,
   ] as const;
 }
 

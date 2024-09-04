@@ -21,6 +21,7 @@ function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
     isCheckedCheckbox,
     handleSelectTransaction,
     handleSelectAllTransactions,
+    handleUpdateLastSelectedTransactionRef,
   ] = useTableCheckbox(transactions);
 
   // For each period, create a `stats` object. Needed to display week numbers and end-balance on last transactions
@@ -52,6 +53,9 @@ function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
           selectedTransactions={selectedTransactions}
           periodEndBalance={periodStats}
           handleSelectTransaction={handleSelectTransaction}
+          handleUpdateLastSelectedTransactionRef={
+            handleUpdateLastSelectedTransactionRef
+          }
         />
       </Fragment>
     );
