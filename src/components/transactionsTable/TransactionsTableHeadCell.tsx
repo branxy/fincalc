@@ -53,7 +53,7 @@ function TransactionsTableHeadCell({
     <Button variant="ghost" className="group" asChild>
       <Link
         search={() => updateSorting(columnName)}
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 text-base font-bold"
       >
         <span>{formattedCellName}</span>
         <SortingIcon
