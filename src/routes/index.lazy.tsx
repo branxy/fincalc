@@ -1,4 +1,5 @@
 import PeriodCard from "@/features/periods/PeriodCard";
+import LinkToTransactionsPage from "@/components/links/LinkToTransactionsPage";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
@@ -6,7 +7,7 @@ import { useAppSelector } from "@/lib/hooks";
 import { selectAllTransactions } from "@/features/transactions/transactionsSlice";
 import { selectAllPeriods } from "@/features/periods/periodsSlice";
 
-import { createLazyFileRoute, Link } from "@tanstack/react-router";
+import { createLazyFileRoute } from "@tanstack/react-router";
 
 import {
   getPeriodsByMonth,
@@ -27,10 +28,10 @@ function PeriodsGrid() {
       <h1 className="text-2xl font-semibold">Periods</h1>
       {periods.length === 0 ? (
         <Button variant="link" className="mt-6">
-          <Link to="/transactions" className="flex items-center">
+          <LinkToTransactionsPage>
             Go to transactions
             <ArrowRight size={18} className="ml-2" />
-          </Link>
+          </LinkToTransactionsPage>
         </Button>
       ) : (
         <ul className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">

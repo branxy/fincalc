@@ -1,11 +1,16 @@
 import CashflowTableActionButtons from "@/components/transactionsTable/actions/TransactionsTableActionButtons";
 import CashflowTableRow from "@/components/transactionsTable/TransactionsTableRow";
 import WeekNumber from "@/components/transactionsTable/WeekNumber";
+import TransactionsTableHead from "@/components/transactionsTable/TransactionsTableHead";
+
+import { useTableCheckbox } from "@/lib/hooks";
+import { Fragment } from "react/jsx-runtime";
+import { useMemo } from "react";
+
+import { getRouteApi } from "@tanstack/react-router";
 
 import { FinancePeriod, Transactions } from "@/features/types";
-import { useTableCheckbox } from "@/lib/hooks";
-import { getMarkedCashflow } from "@/lib/utils";
-import { Fragment } from "react/jsx-runtime";
+import { getMarkedCashflow, sortTransactions } from "@/lib/utils";
 
 interface TransactionsTableProps {
   transactions: Transactions;
@@ -14,7 +19,11 @@ interface TransactionsTableProps {
     "id" | "balance_end" | "stock_end" | "forward_payments_end"
   >[];
 }
+
+const { useSearch } = getRouteApi("/transactions");
+
 function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
+  const searchParams = useSearch();
   const [
     selectedTransactions,
     setSelectedTransactions,
@@ -26,6 +35,10 @@ function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
 
   // For each period, create a `stats` object. Needed to display week numbers and end-balance on last transactions
   const periodsStats = getMarkedCashflow(periods, transactions);
+  transactions = useMemo(
+    () => sortTransactions(transactions, searchParams),
+    [transactions, searchParams],
+  );
 
   const tableContent = transactions.map((t, i) => {
     if (!periodsStats[t.period_id]) return;
@@ -76,29 +89,16 @@ function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
             <colgroup>
               <col className="" />
               <col className="w-36 md:w-40" />
-              <col className="w-16 md:w-20" />
-              <col className="w-32" />
               <col className="w-28" />
+              <col className="w-44" />
+              <col className="w-32" />
               <col className="w-36" />
             </colgroup>
             <thead>
-              <tr>
-                <th className="w-6 pr-2 text-right">
-                  <input
-                    className="h-4 w-4"
-                    type="checkbox"
-                    name="select-all"
-                    id="select-all"
-                    onChange={handleSelectAllTransactions}
-                    checked={isCheckedCheckbox}
-                  />
-                </th>
-                <th className="text-left">Name</th>
-                <th className="text-left">Amount</th>
-                <th className="text-left">Type</th>
-                <th className="text-left">Date</th>
-                <th className="text-left">Balance</th>
-              </tr>
+              <TransactionsTableHead
+                isCheckedCheckbox={isCheckedCheckbox}
+                handleSelectAllTransactions={handleSelectAllTransactions}
+              />
             </thead>
             <tbody>{tableContent}</tbody>
           </table>
