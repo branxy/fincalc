@@ -67,7 +67,7 @@ function TransactionsTableAmountCell({
         </td>
       ) : (
         <td
-          className="editable relative h-full"
+          className="editable relative h-full pl-4"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
