@@ -49,12 +49,14 @@ function TransactionsTableDateCell({
       ) : (
         <td
           colSpan={cellColSpan}
-          className="editable relative h-full"
+          className="editable h-full"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <span>{date}</span>
-          <EditCellButton isHovered={isHovered} setIsEditing={setIsEditing} />
+          <div className="relative w-fit pr-11">
+            <span>{date}</span>
+            <EditCellButton isHovered={isHovered} setIsEditing={setIsEditing} />
+          </div>
         </td>
       )}
     </>

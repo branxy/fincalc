@@ -104,7 +104,7 @@ function TransactionsTableTypeCell({
         </td>
       ) : (
         <td
-          className="editable relative h-full"
+          className="editable relative h-full overflow-x-auto"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
