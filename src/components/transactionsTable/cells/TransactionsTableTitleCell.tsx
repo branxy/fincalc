@@ -2,7 +2,7 @@ import EditCellButton from "@/components/transactionsTable/cells/EditCellButton"
 
 import { Input } from "@/components/ui/input";
 
-import { transactionTitleChanged } from "@/features/cashflow/cashflowSlice";
+import { transactionTitleChanged } from "@/features/transactions/transactionsSlice";
 import { Transaction } from "@/features/types";
 import { ReturnWithCellState, useEditTableCell } from "@/lib/hooks";
 
@@ -56,6 +56,7 @@ function TransactionsTableTitleCell({
               onChange={(e) => setTitleState(e.target.value)}
               onBlur={finishEditing}
               autoFocus={isEditing}
+              className="focus-within:bg-background focus-within:text-foreground"
             />
           </form>
         </td>

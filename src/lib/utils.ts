@@ -1,18 +1,22 @@
-import {
+import { toast } from "sonner";
+
+import { supabase } from "@/db/supabaseClient";
+import { User } from "@supabase/supabase-js";
+
+import type {
   FinancePeriod,
   Periods,
   Transaction,
   Transactions,
 } from "@/features/types";
+import { type MonthNames } from "@/features/periods/periodsCalculator";
+
+import { v4 as uuidv4 } from "uuid";
+import { addDays, format } from "date-fns";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-import { supabase } from "@/db/supabaseClient";
-import { MonthNames } from "@/features/periods/periodsCalculator";
-import { addDays, format } from "date-fns";
-import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
-import { User } from "@supabase/supabase-js";
+import { TransactionsSearchParams } from "@/routes/transactions";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -67,6 +71,30 @@ export interface MarkedCashflow {
       forward_payments_end?: FinancePeriod["forward_payments_end"];
     };
   };
+}
+
+export function sortTransactions(
+  transactions: Transactions,
+  searchParams: TransactionsSearchParams,
+) {
+  const { sortBy, asc } = searchParams;
+
+  switch (sortBy) {
+    case "amount":
+      return transactions.sort((a, b) =>
+        asc ? a.amount - b.amount : b.amount - a.amount,
+      );
+    case "type":
+      return transactions.sort((a, b) =>
+        asc ? a.type.localeCompare(b.type) : b.type.localeCompare(a.type),
+      );
+    case "date":
+      return transactions.sort((a, b) =>
+        asc ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date),
+      );
+    default:
+      throw new Error("Failed to sort transactions: unexpected column");
+  }
 }
 
 export function getMarkedCashflow(

@@ -11,8 +11,10 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
 } from "@/components/ui/select";
-import { transactionTypeChangedAndPeriodsRecalculated } from "@/features/cashflow/cashflowSlice";
+import { transactionTypeChangedAndPeriodsRecalculated } from "@/features/transactions/transactionsSlice";
 import { Fragment } from "react/jsx-runtime";
 
 interface TransactionsTableTypeCellProps {
@@ -62,10 +64,14 @@ function TransactionsTableTypeCell({
             name="transaction-type"
             onValueChange={finishEditingAndSave}
           >
-            <SelectTrigger aria-label="Transaction type">
+            <SelectTrigger
+              aria-label="Transaction type"
+              className="text-foreground"
+            >
               <SelectValue placeholder={type} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-60">
+              <SelectScrollUpButton />
               {transactionTypes.map((tgroup, i) => {
                 const label = tgroup[0].split("/")[0],
                   uppercaseLabel =
@@ -92,12 +98,13 @@ function TransactionsTableTypeCell({
                   </Fragment>
                 );
               })}
+              <SelectScrollDownButton />
             </SelectContent>
           </Select>
         </td>
       ) : (
         <td
-          className="editable relative h-full"
+          className="editable relative h-full overflow-x-auto"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >

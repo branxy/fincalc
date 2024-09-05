@@ -15,27 +15,31 @@ import {
   useEditTableCell,
 } from "@/lib/hooks";
 
-import { transactionDateChangedAndPeriodsRecalculated } from "@/features/cashflow/cashflowSlice";
+import { transactionDateChangedAndPeriodsRecalculated } from "@/features/transactions/transactionsSlice";
 import { cn, getDBDateFromObject } from "@/lib/utils";
 import { Transaction } from "@/features/types";
 import { useState } from "react";
+import { TransactionsTableRowProps } from "@/components/transactionsTable/TransactionsTableRow";
 
 interface TransactionsTableDateCellProps {
   transactionId: Transaction["id"];
   date: Transaction["date"];
+  periodEndBalance: TransactionsTableRowProps["periodEndBalance"];
 }
 
 function TransactionsTableDateCell({
   transactionId,
   date,
+  periodEndBalance,
 }: TransactionsTableDateCellProps) {
   const [isEditing, setIsEditing, isHovered, setIsHovered, finishEditing] =
     useEditTableCell() as ReturnWithoutCellState;
+  const cellColSpan = periodEndBalance ? 1 : 2;
 
   return (
     <>
       {isEditing ? (
-        <td>
+        <td colSpan={cellColSpan}>
           <TransactionsTableDateCellDatepicker
             transactionId={transactionId}
             transactionDate={date}
@@ -44,12 +48,15 @@ function TransactionsTableDateCell({
         </td>
       ) : (
         <td
-          className="editable relative h-full"
+          colSpan={cellColSpan}
+          className="editable h-full"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <span>{date}</span>
-          <EditCellButton isHovered={isHovered} setIsEditing={setIsEditing} />
+          <div className="relative w-fit pr-11">
+            <span>{date}</span>
+            <EditCellButton isHovered={isHovered} setIsEditing={setIsEditing} />
+          </div>
         </td>
       )}
     </>

@@ -7,6 +7,7 @@ import {
 } from "@/features/types";
 import { BalanceDifference } from "./periodsSlice";
 import { getMonths } from "@/lib/utils";
+import { TSelectedTransactions } from "@/lib/hooks";
 
 interface ValueToUpdate {
   id: FinancePeriod["id"];
@@ -378,7 +379,7 @@ export function sumTransactionsByCategory(transactions: Transactions) {
 export function getEarliestPeriodIdByTransactions(
   periods: Periods,
   transactions: Transactions,
-  selectedTransactions: Transaction["id"][],
+  selectedTransactions: TSelectedTransactions,
 ) {
   const pendingTransactions = transactions.filter((t) =>
       selectedTransactions.includes(t.id),

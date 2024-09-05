@@ -1,27 +1,27 @@
-import CashflowTableAddTransactionBtn from "@/components/transactionsTable/actions/CashflowTableAddTransactionBtn";
+import CashflowTableAddTransactionBtn from "@/components/transactionsTable/actions/TransactionsTableAddTransactionBtn";
 import TableInfo from "@/components/transactionsTable/TableInfo";
 import Spinner from "@/components/ui/spinner";
 
 import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
 
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
-  deletedTransactionsAndPeriodsRecalculated,
-  transactionDuplicated,
-} from "@/features/cashflow/cashflowSlice";
+  TSelectedTransactions,
+  useAppDispatch,
+  useAppSelector,
+} from "@/lib/hooks";
+import { deletedTransactionsAndPeriodsRecalculated } from "@/features/transactions/transactionsSlice";
 
-import { type Transaction } from "@/features/types";
+import TransactionsTableDuplicateButton from "./TransactionsTableDuplicateButton";
 
-interface CashflowTableActionButtonsProps {
-  selectedTransactions: Transaction["id"][];
+interface TransactionsTableActionButtonsProps {
+  selectedTransactions: TSelectedTransactions;
   setSelectedTransactions: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-function CashflowTableActionButtons({
+function TransactionsTableActionButtons({
   selectedTransactions,
   setSelectedTransactions,
-}: CashflowTableActionButtonsProps) {
+}: TransactionsTableActionButtonsProps) {
   const transactionsStatus = useAppSelector((state) => state.cashflow.status);
   const isLoading = transactionsStatus === "loading";
   const dispatch = useAppDispatch();
@@ -33,10 +33,6 @@ function CashflowTableActionButtons({
       deletedTransactionsAndPeriodsRecalculated({ selectedTransactions }),
     );
     setSelectedTransactions([]);
-  };
-
-  const duplicateTransaction = () => {
-    dispatch(transactionDuplicated({ transactionId: selectedTransactions[0] }));
   };
 
   return (
@@ -54,13 +50,13 @@ function CashflowTableActionButtons({
         </Button>
       )}
       {singleTransactionSelected && (
-        <Button onClick={duplicateTransaction} disabled={isLoading}>
-          <Copy size={18} />
-        </Button>
+        <TransactionsTableDuplicateButton
+          selectedTransactions={selectedTransactions}
+        />
       )}
       <TableInfo />
     </div>
   );
 }
 
-export default CashflowTableActionButtons;
+export default TransactionsTableActionButtons;

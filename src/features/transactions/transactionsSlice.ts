@@ -1,6 +1,6 @@
 import { createAppSlice } from "@/features/createAppSlice";
 import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
-import { createAppSelector } from "@/lib/hooks";
+import { createAppSelector, TSelectedTransactions } from "@/lib/hooks";
 
 import {
   addNewPeriodByDateAndReturnId,
@@ -13,7 +13,7 @@ import {
   updateTransaction,
   uploadTransaction,
   upsertTransaction,
-} from "@transactions/cashflowApi";
+} from "@/features/transactions/transactionsApi";
 import { getEarliestPeriodIdByTransactions } from "@periods/periodsCalculator";
 import { periodAdded, periodsRecalculated } from "@periods/periodsSlice";
 
@@ -38,7 +38,7 @@ const initialState: InitialState = casfhlowAdapter.getInitialState({
   error: null,
 });
 
-export const cashflowSlice = createAppSlice({
+export const transactionsSlice = createAppSlice({
   name: "cashflow",
   initialState,
   reducers: (create) => ({
@@ -519,7 +519,7 @@ export const cashflowSlice = createAppSlice({
       async ({
         selectedTransactions,
       }: {
-        selectedTransactions: Transaction["id"][];
+        selectedTransactions: TSelectedTransactions;
       }) => {
         const deletedTransactionsIds =
           await deleteCashflowItems(selectedTransactions);
@@ -545,7 +545,7 @@ export const cashflowSlice = createAppSlice({
         {
           selectedTransactions,
         }: {
-          selectedTransactions: Transaction["id"][];
+          selectedTransactions: TSelectedTransactions;
         },
         { dispatch, getState },
       ) => {
@@ -592,7 +592,7 @@ export const {
   selectIds: selectCashflowIds,
 } = casfhlowAdapter.getSelectors((state: RootState) => state.cashflow);
 
-export const { selectTransactionsStatus } = cashflowSlice.selectors;
+export const { selectTransactionsStatus } = transactionsSlice.selectors;
 
 const returnId = (_state: RootState, id: FinancePeriod["id"]) => id;
 
@@ -614,6 +614,6 @@ export const {
   transactionDateChanged,
   deletedTransactions,
   deletedTransactionsAndPeriodsRecalculated,
-} = cashflowSlice.actions;
+} = transactionsSlice.actions;
 
-export default cashflowSlice.reducer;
+export default transactionsSlice.reducer;

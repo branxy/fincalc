@@ -1,4 +1,4 @@
-import { cashflowSlice } from "@/features/cashflow/cashflowSlice";
+import { transactionsSlice } from "@/features/transactions/transactionsSlice";
 import { periodsSlice } from "@/features/periods/periodsSlice";
 import {
   Action,
@@ -10,7 +10,7 @@ import { transactionTemplateSlice } from "./transaction-templates/transactionTem
 
 const rootReducer = combineSlices(
   periodsSlice,
-  cashflowSlice,
+  transactionsSlice,
   transactionTemplateSlice,
 );
 

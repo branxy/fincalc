@@ -4,27 +4,35 @@ import TransactionsTableAmountCell from "@/components/transactionsTable/cells/Tr
 import TransactionsTableTitleCell from "@/components/transactionsTable/cells/TransactionsTableTitleCell";
 import EndBalance from "@/components/transactionsTable/cells/EndBalance";
 
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { transactionDuplicated } from "@/features/cashflow/cashflowSlice";
+import {
+  TSelectedTransactions,
+  useAppDispatch,
+  useAppSelector,
+} from "@/lib/hooks";
+import { transactionDuplicated } from "@/features/transactions/transactionsSlice";
 
 import { FinancePeriod, Transaction } from "@/features/types";
 import { MarkedCashflow } from "@/lib/utils";
 import clsx from "clsx";
+import { useRef } from "react";
 
-interface CashflowTableRowProps {
+export interface TransactionsTableRowProps {
   transactionType: Transaction["type"];
   transactionId: Transaction["id"];
   title: Transaction["title"];
   amount: Transaction["amount"];
   date: Transaction["date"];
-  selectedTransactions: Transaction["id"][];
+  selectedTransactions: TSelectedTransactions;
   periodEndBalance:
     | MarkedCashflow[FinancePeriod["id"]]["periodEndBalance"]
     | null;
   handleSelectTransaction: (periodId: Transaction["id"]) => void;
+  handleUpdateLastSelectedTransactionRef: (
+    rowRef: React.MutableRefObject<HTMLTableRowElement>,
+  ) => void;
 }
 
-function CashflowTableRow({
+function TransactionsTableRow({
   transactionType,
   transactionId,
   title,
@@ -33,9 +41,11 @@ function CashflowTableRow({
   selectedTransactions,
   periodEndBalance,
   handleSelectTransaction,
-}: CashflowTableRowProps) {
+  handleUpdateLastSelectedTransactionRef,
+}: TransactionsTableRowProps) {
   const periodsStatus = useAppSelector((state) => state.periods.status);
   const dispatch = useAppDispatch();
+  const rowRef = useRef<HTMLTableRowElement>(null!);
   const isSelectedRow = Boolean(
       selectedTransactions?.find((id) => id === transactionId),
     ),
@@ -57,11 +67,13 @@ function CashflowTableRow({
 
   return (
     <tr
+      ref={rowRef}
       onKeyDown={handleDuplicateTransaction}
       className={clsx(
-        "h-[44px]",
+        "h-[48px]",
         isSelectedRow && "bg-zinc-500 text-slate-100",
       )}
+      onClick={() => handleUpdateLastSelectedTransactionRef(rowRef)}
     >
       <td className="w-fit pr-2 text-right">
         <input
@@ -83,7 +95,11 @@ function CashflowTableRow({
         type={transactionType}
         transactionId={transactionId}
       />
-      <TransactionsTableDateCell transactionId={transactionId} date={date} />
+      <TransactionsTableDateCell
+        transactionId={transactionId}
+        date={date}
+        periodEndBalance={periodEndBalance}
+      />
       {periodEndBalance && (
         <EndBalance periodEndBalance={periodEndBalance} isLoading={isLoading} />
       )}
@@ -91,4 +107,4 @@ function CashflowTableRow({
   );
 }
 
-export default CashflowTableRow;
+export default TransactionsTableRow;

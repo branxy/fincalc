@@ -3,7 +3,7 @@ import { Toaster } from "sonner";
 
 import { store } from "@/features/store";
 import { fetchPeriods } from "@/features/periods/periodsSlice";
-import { fetchTransactions } from "@/features/cashflow/cashflowSlice";
+import { fetchTransactions } from "@/features/transactions/transactionsSlice";
 
 import { Outlet } from "@tanstack/react-router";
 import React from "react";
