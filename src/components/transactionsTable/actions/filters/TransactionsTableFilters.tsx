@@ -28,33 +28,31 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { ListFilter } from "lucide-react";
 
-import {
-  ComponentPropsWithoutRef,
-  forwardRef,
-  Fragment,
-  useState,
-} from "react";
+import { ComponentPropsWithoutRef, forwardRef, Fragment } from "react";
 
 import { useNavigate } from "@tanstack/react-router";
 import { Route, TransactionsSearchParams } from "@/routes/transactions";
 
 import { getDBDateFromObject } from "@/lib/utils";
 import { transactionTypes } from "@/components/transactionsTable/cells/TransactionsTableTypeCell";
+import {
+  TransactionFilters,
+  TransactionFilterNames,
+} from "@/components/transactionsTable/actions/TransactionsTableActionButtons";
+import { filterOptions } from "./filterFns";
 
-export interface TransactionsTableFiltersProps {}
+export interface TransactionsTableFiltersProps {
+  selectedFilter: TransactionFilterNames | null;
+  setSelectedFilter: React.Dispatch<
+    React.SetStateAction<TransactionFilterNames | null>
+  >;
+}
 
-const filterOptions = ["title", "amount", "type", "date"] as const;
-
-type TransactionFilterNames = (typeof filterOptions)[number];
-type Filters = {
-  [key in TransactionFilterNames]: React.ReactNode;
-};
-
-function TransactionsTableFilters() {
-  const [selectedFilter, setSelectedFilter] =
-    useState<TransactionFilterNames | null>(null);
-
-  const filters: Filters = {
+function TransactionsTableFilters({
+  selectedFilter,
+  setSelectedFilter,
+}: TransactionsTableFiltersProps) {
+  const filters: TransactionFilters = {
     title: <TransactionTitleFilter />,
     amount: <TransactionAmountFilter />,
     type: <TransactionTypeFilter setSelectedFilter={setSelectedFilter} />,

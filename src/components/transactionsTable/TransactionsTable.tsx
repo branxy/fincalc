@@ -1,7 +1,7 @@
-import CashflowTableActionButtons from "@/components/transactionsTable/actions/TransactionsTableActionButtons";
-import CashflowTableRow from "@/components/transactionsTable/TransactionsTableRow";
-import WeekNumber from "@/components/transactionsTable/WeekNumber";
+import TransactionsTableActionsButtons from "@/components/transactionsTable/actions/TransactionsTableActionButtons";
 import TransactionsTableHead from "@/components/transactionsTable/TransactionsTableHead";
+import TransactionsTableRow from "@/components/transactionsTable/TransactionsTableRow";
+// import WeekNumber from "@/components/transactionsTable/WeekNumber";
 
 import { useTableCheckbox } from "@/lib/hooks";
 import { Fragment } from "react/jsx-runtime";
@@ -40,44 +40,49 @@ function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
     [transactions, searchParams],
   );
 
-  const tableContent = transactions.map((t, i) => {
-    if (!periodsStats[t.period_id]) return;
+  const tableContent = transactions.map(
+    (
+      t,
+      // i
+    ) => {
+      if (!periodsStats[t.period_id]) return;
 
-    const {
-        firstTransactionIndex,
-        lastTransactionIndex,
-        weekNumber,
-        monthName,
+      const {
+        // firstTransactionIndex,
+        // lastTransactionIndex,
+        // weekNumber,
+        // monthName,
         periodEndBalance,
-      } = periodsStats[t.period_id],
-      isFirstTransactionInAPeriod = firstTransactionIndex === i,
-      periodStats = lastTransactionIndex === i ? periodEndBalance : null;
-    return (
-      <Fragment key={`${t.id}-fragment`}>
-        {isFirstTransactionInAPeriod && (
-          <WeekNumber weekNumber={weekNumber} monthName={monthName} />
-        )}
-        <CashflowTableRow
-          transactionType={t.type}
-          transactionId={t.id}
-          title={t.title}
-          amount={t.amount}
-          date={t.date}
-          selectedTransactions={selectedTransactions}
-          periodEndBalance={periodStats}
-          handleSelectTransaction={handleSelectTransaction}
-          handleUpdateLastSelectedTransactionRef={
-            handleUpdateLastSelectedTransactionRef
-          }
-        />
-      </Fragment>
-    );
-  });
+      } = periodsStats[t.period_id];
+      // isFirstTransactionInAPeriod = firstTransactionIndex === i,
+      // periodStats = lastTransactionIndex === i ? periodEndBalance : null;
+      return (
+        <Fragment key={`${t.id}-fragment`}>
+          {/* //   {isFirstTransactionInAPeriod && ( */}
+          {/* //     <WeekNumber weekNumber={weekNumber} monthName={monthName} /> */}
+          {/* //   )} */}
+          <TransactionsTableRow
+            transactionType={t.type}
+            transactionId={t.id}
+            title={t.title}
+            amount={t.amount}
+            date={t.date}
+            selectedTransactions={selectedTransactions}
+            periodEndBalance={periodEndBalance}
+            handleSelectTransaction={handleSelectTransaction}
+            handleUpdateLastSelectedTransactionRef={
+              handleUpdateLastSelectedTransactionRef
+            }
+          />
+        </Fragment>
+      );
+    },
+  );
 
   return (
     <div className="mt-6 overflow-hidden">
       <div className="flex max-w-[720px] flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <CashflowTableActionButtons
+        <TransactionsTableActionsButtons
           selectedTransactions={selectedTransactions}
           setSelectedTransactions={setSelectedTransactions}
         />
