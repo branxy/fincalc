@@ -7,7 +7,7 @@ export interface TransactionsSearchParams {
   filter?: `${keyof Pick<Transaction, "title" | "amount" | "type" | "date">}.${string}`;
 }
 
-export const TransactionsRoute = createFileRoute("/transactions")({
+export const Route = createFileRoute("/transactions")({
   validateSearch: (search): TransactionsSearchParams => {
     return {
       sortBy: (search?.sortBy as TransactionsSearchParams["sortBy"]) || "date",
