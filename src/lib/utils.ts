@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from "uuid";
 import { addDays, format } from "date-fns";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { includesString } from "@/components/transactionsTable/actions/filters/filterFns";
 
 import { TransactionsSearchParams } from "@/routes/transactions";
 
@@ -73,12 +74,25 @@ export interface MarkedCashflow {
   };
 }
 
-export function sortTransactions(
+export function sortAndFilterTransactions(
   transactions: Transactions,
   searchParams: TransactionsSearchParams,
-) {
-  const { sortBy, asc } = searchParams;
+): Transactions {
+  const { sortBy, asc, filter } = searchParams;
+  const sortedTransactions = sortTransactions(transactions, sortBy, asc);
 
+  if (filter) {
+    return filterTransactions(sortedTransactions, filter);
+  } else {
+    return sortedTransactions;
+  }
+}
+
+export function sortTransactions(
+  transactions: Transactions,
+  sortBy: TransactionsSearchParams["sortBy"],
+  asc: TransactionsSearchParams["asc"],
+) {
   switch (sortBy) {
     case "amount":
       return transactions.sort((a, b) =>
@@ -88,12 +102,33 @@ export function sortTransactions(
       return transactions.sort((a, b) =>
         asc ? a.type.localeCompare(b.type) : b.type.localeCompare(a.type),
       );
+
     case "date":
       return transactions.sort((a, b) =>
         asc ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date),
       );
+
     default:
       throw new Error("Failed to sort transactions: unexpected column");
+  }
+}
+
+export function filterTransactions(
+  transactions: Transactions,
+  filter: TransactionsSearchParams["filter"],
+) {
+  const [key, value] = filter!.split(".");
+  switch (key) {
+    case "title":
+      return transactions.filter((row) => includesString(row.title, value));
+    case "amount":
+      return transactions.filter((row) => row.amount === parseInt(value));
+    case "type":
+      return transactions.filter((row) => row.type === value);
+    case "date":
+      return transactions.filter((row) => row.date === value);
+    default:
+      throw new Error("Failed to filter transactions: unexpected column type");
   }
 }
 
