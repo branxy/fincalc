@@ -1,7 +1,7 @@
-import CashflowTableActionButtons from "@/components/transactionsTable/actions/TransactionsTableActionButtons";
-import CashflowTableRow from "@/components/transactionsTable/TransactionsTableRow";
-import WeekNumber from "@/components/transactionsTable/WeekNumber";
+import TransactionsTableActionsButtons from "@/components/transactionsTable/actions/TransactionsTableActionButtons";
 import TransactionsTableHead from "@/components/transactionsTable/TransactionsTableHead";
+import TransactionsTableRow from "@/components/transactionsTable/TransactionsTableRow";
+import WeekNumber from "@/components/transactionsTable/WeekNumber";
 
 import { useTableCheckbox } from "@/lib/hooks";
 import { Fragment } from "react/jsx-runtime";
@@ -57,7 +57,7 @@ function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
         {isFirstTransactionInAPeriod && (
           <WeekNumber weekNumber={weekNumber} monthName={monthName} />
         )}
-        <CashflowTableRow
+        <TransactionsTableRow
           transactionType={t.type}
           transactionId={t.id}
           title={t.title}
@@ -77,7 +77,7 @@ function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
   return (
     <div className="mt-6 overflow-hidden">
       <div className="flex max-w-[720px] flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <CashflowTableActionButtons
+        <TransactionsTableActionsButtons
           selectedTransactions={selectedTransactions}
           setSelectedTransactions={setSelectedTransactions}
         />
