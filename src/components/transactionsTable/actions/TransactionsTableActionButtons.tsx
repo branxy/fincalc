@@ -1,8 +1,9 @@
-import CashflowTableAddTransactionBtn from "@/components/transactionsTable/actions/TransactionsTableAddTransactionBtn";
+import TransactionsTableAddTransactionBtn from "@/components/transactionsTable/actions/TransactionsTableAddTransactionBtn";
+import TransactionsTableDuplicateButton from "@/components/transactionsTable/actions/TransactionsTableDuplicateButton";
+import TransactionsTableFilters from "@/components/transactionsTable/actions/filters/TransactionsTableFilters";
 import TableInfo from "@/components/transactionsTable/TableInfo";
-import Spinner from "@/components/ui/spinner";
-
 import { Button } from "@/components/ui/button";
+import Spinner from "@/components/ui/spinner";
 
 import {
   TSelectedTransactions,
@@ -10,8 +11,6 @@ import {
   useAppSelector,
 } from "@/lib/hooks";
 import { deletedTransactionsAndPeriodsRecalculated } from "@/features/transactions/transactionsSlice";
-
-import TransactionsTableDuplicateButton from "./TransactionsTableDuplicateButton";
 
 interface TransactionsTableActionButtonsProps {
   selectedTransactions: TSelectedTransactions;
@@ -36,25 +35,28 @@ function TransactionsTableActionButtons({
   };
 
   return (
-    <div className="flex items-center gap-4">
-      <CashflowTableAddTransactionBtn isLoading={isLoading} />
-      {hasSelectedTransactions && (
-        <Button
-          variant="destructive"
-          className="gap-1.5"
-          disabled={isLoading}
-          onClick={handleDeleteCashflowItems}
-        >
-          <Spinner isLoading={isLoading} />
-          <span className="material-symbols-outlined">delete</span>
-        </Button>
-      )}
-      {singleTransactionSelected && (
-        <TransactionsTableDuplicateButton
-          selectedTransactions={selectedTransactions}
-        />
-      )}
-      <TableInfo />
+    <div className="flex w-full items-start justify-between">
+      <div className="flex flex-wrap gap-4">
+        <TransactionsTableAddTransactionBtn isLoading={isLoading} />
+        {hasSelectedTransactions && (
+          <Button
+            variant="destructive"
+            className="gap-1.5"
+            disabled={isLoading}
+            onClick={handleDeleteCashflowItems}
+          >
+            <Spinner isLoading={isLoading} />
+            <span className="material-symbols-outlined">delete</span>
+          </Button>
+        )}
+        {singleTransactionSelected && (
+          <TransactionsTableDuplicateButton
+            selectedTransactions={selectedTransactions}
+          />
+        )}
+        <TableInfo />
+      </div>
+      <TransactionsTableFilters />
     </div>
   );
 }

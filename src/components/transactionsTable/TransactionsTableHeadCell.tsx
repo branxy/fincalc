@@ -16,7 +16,7 @@ const { useSearch } = getRouteApi("/transactions");
 function TransactionsTableHeadCell({
   columnName,
 }: TransactionsTableHeadCellProps) {
-  const { sortBy, asc } = useSearch();
+  const { sortBy, asc, ...rest } = useSearch();
 
   const SortingIcon =
     sortBy !== columnName ? ArrowUpDown : asc ? ArrowUp : ArrowDown;
@@ -33,16 +33,19 @@ function TransactionsTableHeadCell({
         return {
           sortBy: "amount",
           asc: currentSortBy === "amount" ? !currentAsc : true,
+          ...rest,
         };
       case "type":
         return {
           sortBy: "type",
           asc: currentSortBy === "type" ? !currentAsc : true,
+          ...rest,
         };
       case "date":
         return {
           sortBy: "date",
           asc: currentSortBy === "date" ? !currentAsc : true,
+          ...rest,
         };
       default:
         throw new Error("Unexpected sorting type");

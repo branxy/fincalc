@@ -10,7 +10,7 @@ import { useMemo } from "react";
 import { getRouteApi } from "@tanstack/react-router";
 
 import { FinancePeriod, Transactions } from "@/features/types";
-import { getMarkedCashflow, sortTransactions } from "@/lib/utils";
+import { getMarkedCashflow, sortAndFilterTransactions } from "@/lib/utils";
 
 interface TransactionsTableProps {
   transactions: Transactions;
@@ -36,7 +36,7 @@ function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
   // For each period, create a `stats` object. Needed to display week numbers and end-balance on last transactions
   const periodsStats = getMarkedCashflow(periods, transactions);
   transactions = useMemo(
-    () => sortTransactions(transactions, searchParams),
+    () => sortAndFilterTransactions(transactions, searchParams),
     [transactions, searchParams],
   );
 
@@ -73,6 +73,7 @@ function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
       </Fragment>
     );
   });
+
   return (
     <div className="mt-6 overflow-hidden">
       <div className="flex max-w-[720px] flex-col justify-between gap-4 sm:flex-row sm:items-end">
