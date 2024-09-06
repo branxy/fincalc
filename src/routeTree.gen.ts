@@ -13,7 +13,7 @@ import { createFileRoute } from "@tanstack/react-router";
 // Import Routes
 
 import { Route as rootRoute } from "./routes/__root";
-import { TransactionsRoute as TransactionsImport } from "./routes/transactions";
+import { Route as TransactionsImport } from "./routes/transactions";
 
 // Create Virtual Routes
 

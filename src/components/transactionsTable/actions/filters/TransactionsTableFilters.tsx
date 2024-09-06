@@ -36,10 +36,7 @@ import {
 } from "react";
 
 import { useNavigate } from "@tanstack/react-router";
-import {
-  TransactionsRoute,
-  TransactionsSearchParams,
-} from "@/routes/transactions";
+import { Route, TransactionsSearchParams } from "@/routes/transactions";
 
 import { getDBDateFromObject } from "@/lib/utils";
 import { transactionTypes } from "@/components/transactionsTable/cells/TransactionsTableTypeCell";
@@ -110,7 +107,7 @@ const FiltersButton = forwardRef<
 ));
 
 const TransactionTitleFilter = () => {
-  const navigate = useNavigate({ from: TransactionsRoute.fullPath });
+  const navigate = useNavigate({ from: Route.fullPath });
 
   return (
     <>
@@ -138,7 +135,7 @@ const TransactionTitleFilter = () => {
 };
 
 const TransactionAmountFilter = () => {
-  const navigate = useNavigate({ from: TransactionsRoute.fullPath });
+  const navigate = useNavigate({ from: Route.fullPath });
 
   return (
     <>
@@ -172,7 +169,7 @@ const TransactionTypeFilter = ({
     React.SetStateAction<(typeof filterOptions)[number] | null>
   >;
 }) => {
-  const navigate = useNavigate({ from: TransactionsRoute.fullPath });
+  const navigate = useNavigate({ from: Route.fullPath });
 
   return (
     <Select
@@ -233,7 +230,7 @@ const TransactionDateFilter = ({
     React.SetStateAction<(typeof filterOptions)[number] | null>
   >;
 }) => {
-  const navigate = useNavigate({ from: TransactionsRoute.fullPath });
+  const navigate = useNavigate({ from: Route.fullPath });
 
   return (
     <Calendar
