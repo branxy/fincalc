@@ -173,7 +173,6 @@ const TransactionTypeFilter = ({
     <Select
       defaultOpen
       onOpenChange={(open) => {
-        console.log("onOpenChange");
         !open && setSelectedFilter(null);
       }}
       onValueChange={(v) => {
