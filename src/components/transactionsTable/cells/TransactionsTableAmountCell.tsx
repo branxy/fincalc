@@ -62,6 +62,7 @@ function TransactionsTableAmountCell({
               onFocus={(e) => e.target.select()}
               onChange={(e) => setAmountState(Number(e.target.value))}
               onBlur={finishEditingAndSave}
+              onKeyDown={(e) => e.key === "Tab" && finishEditingAndSave()}
             />
           </form>
         </td>
