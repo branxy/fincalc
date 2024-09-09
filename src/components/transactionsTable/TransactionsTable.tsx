@@ -40,44 +40,39 @@ function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
     [transactions, searchParams],
   );
 
-  const tableContent = transactions.map(
-    (
-      t,
-      // i
-    ) => {
-      if (!periodsStats[t.period_id]) return;
+  const tableContent = transactions.map((t, i) => {
+    if (!periodsStats[t.period_id]) return;
 
-      const {
-        // firstTransactionIndex,
-        // lastTransactionIndex,
-        // weekNumber,
-        // monthName,
-        periodEndBalance,
-      } = periodsStats[t.period_id];
-      // isFirstTransactionInAPeriod = firstTransactionIndex === i,
-      // periodStats = lastTransactionIndex === i ? periodEndBalance : null;
-      return (
-        <Fragment key={`${t.id}-fragment`}>
-          {/* //   {isFirstTransactionInAPeriod && ( */}
-          {/* //     <WeekNumber weekNumber={weekNumber} monthName={monthName} /> */}
-          {/* //   )} */}
-          <TransactionsTableRow
-            transactionType={t.type}
-            transactionId={t.id}
-            title={t.title}
-            amount={t.amount}
-            date={t.date}
-            selectedTransactions={selectedTransactions}
-            periodEndBalance={periodEndBalance}
-            handleSelectTransaction={handleSelectTransaction}
-            handleUpdateLastSelectedTransactionRef={
-              handleUpdateLastSelectedTransactionRef
-            }
-          />
-        </Fragment>
-      );
-    },
-  );
+    const {
+      // firstTransactionIndex,
+      lastTransactionIndex,
+      // weekNumber,
+      // monthName,
+      periodEndBalance,
+    } = periodsStats[t.period_id];
+    // isFirstTransactionInAPeriod = firstTransactionIndex === i,
+    const periodStats = lastTransactionIndex === i ? periodEndBalance : null;
+    return (
+      <Fragment key={`${t.id}-fragment`}>
+        {/* //   {isFirstTransactionInAPeriod && ( */}
+        {/* //     <WeekNumber weekNumber={weekNumber} monthName={monthName} /> */}
+        {/* //   )} */}
+        <TransactionsTableRow
+          transactionType={t.type}
+          transactionId={t.id}
+          title={t.title}
+          amount={t.amount}
+          date={t.date}
+          selectedTransactions={selectedTransactions}
+          periodEndBalance={periodStats}
+          handleSelectTransaction={handleSelectTransaction}
+          handleUpdateLastSelectedTransactionRef={
+            handleUpdateLastSelectedTransactionRef
+          }
+        />
+      </Fragment>
+    );
+  });
 
   return (
     <div className="mt-6 overflow-hidden">
