@@ -16,7 +16,8 @@ import {
 } from "@/lib/hooks";
 
 import { transactionDateChangedAndPeriodsRecalculated } from "@/features/transactions/transactionsSlice";
-import { cn, getDBDateFromObject } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { getDBDateFromObject } from "@/lib/date-utils";
 import { Transaction } from "@/features/types";
 import { useState } from "react";
 import { TransactionsTableRowProps } from "@/components/transactionsTable/TransactionsTableRow";

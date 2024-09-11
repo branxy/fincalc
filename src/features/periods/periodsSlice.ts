@@ -1,26 +1,34 @@
-import { UpdatedFormFields } from "@/components/transactionsTable/StartBalance";
+import { toast } from "sonner";
+
 import { createAppSlice } from "@/features/createAppSlice";
+import { createAppSelector } from "@/lib/hooks";
+import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
+
 import {
+  getPeriodsFromTransactions,
   getPeriodsOnStartBalanceChange,
   recalculatePeriods,
 } from "@/features/periods/periodsCalculator";
-import { RootState } from "@/features/store";
-import { FinancePeriod, PeriodBalance } from "@/features/types";
-import { createAppSelector } from "@/lib/hooks";
 import {
   getYearAndMonthNumber,
-  getDBStartDate,
-  getPreviousPeriodAndCurrentWeek,
   getPreviousPeriodByDate,
-  performAuthCheck,
-} from "@/lib/utils";
+  getPreviousPeriodAndCurrentWeek,
+  getDBStartDate,
+} from "@/lib/date-utils";
+import { performAuthCheck } from "@/lib/utils";
 import {
   fetchPeriodsFromDB,
   uploadPeriod,
   upsertPeriods,
 } from "@periods/periodsApi";
-import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
-import { toast } from "sonner";
+
+import { type UpdatedFormFields } from "@/components/transactionsTable/StartBalance";
+import { type RootState } from "@/features/store";
+import type {
+  FinancePeriod,
+  PeriodBalance,
+  Transactions,
+} from "@/features/types";
 
 export interface BalanceDifference {
   balance: number;

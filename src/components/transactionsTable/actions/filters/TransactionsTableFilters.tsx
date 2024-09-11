@@ -33,7 +33,7 @@ import { ComponentPropsWithoutRef, forwardRef, Fragment } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Route, TransactionsSearchParams } from "@/routes/transactions";
 
-import { getDBDateFromObject } from "@/lib/utils";
+import { getDBDateFromObject } from "@/lib/date-utils";
 import { transactionTypes } from "@/components/transactionsTable/cells/TransactionsTableTypeCell";
 import {
   TransactionFilters,

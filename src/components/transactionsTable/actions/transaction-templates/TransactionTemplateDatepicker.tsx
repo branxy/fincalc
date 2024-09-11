@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 
 import { useState } from "react";
-import { cn, getDBDateFromObject } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { getDBDateFromObject } from "@/lib/date-utils";
 
 interface TransactionTemplateDatepickerProps {
   date: Date;
