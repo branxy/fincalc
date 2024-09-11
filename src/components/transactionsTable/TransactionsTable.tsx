@@ -9,21 +9,16 @@ import { useMemo } from "react";
 
 import { getRouteApi } from "@tanstack/react-router";
 
-import { FinancePeriod, Transactions } from "@/features/types";
-import { getMarkedCashflow, sortAndFilterTransactions } from "@/lib/utils";
+import { useAppSelector } from "@/lib/hooks";
+import { selectAllTransactions } from "@/features/transactions/transactionsSlice";
 
-interface TransactionsTableProps {
-  transactions: Transactions;
-  periods: Pick<
-    FinancePeriod,
-    "id" | "balance_end" | "stock_end" | "forward_payments_end"
-  >[];
-}
+import { getMarkedCashflow, sortAndFilterTransactions } from "@/lib/utils";
 
 const { useSearch } = getRouteApi("/transactions");
 
-function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
+function TransactionsTable() {
   const searchParams = useSearch();
+  const transactions = useAppSelector(selectAllTransactions);
   const [
     selectedTransactions,
     setSelectedTransactions,

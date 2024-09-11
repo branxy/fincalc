@@ -5,7 +5,6 @@ import { ArrowRight } from "lucide-react";
 
 import { useAppSelector } from "@/lib/hooks";
 import { selectAllTransactions } from "@/features/transactions/transactionsSlice";
-import { selectAllPeriods } from "@/features/periods/periodsSlice";
 
 import { createLazyFileRoute } from "@tanstack/react-router";
 
@@ -19,8 +18,7 @@ export const Route = createLazyFileRoute("/")({
 });
 
 function PeriodsGrid() {
-  const periods = useAppSelector((state) => selectAllPeriods(state));
-  const transactions = useAppSelector((state) => selectAllTransactions(state));
+  const transactions = useAppSelector(selectAllTransactions);
 
   const months = getPeriodsByMonth(periods, transactions);
   return (

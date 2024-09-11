@@ -2,14 +2,12 @@ import Navbar from "@/components/navbar";
 import { Toaster } from "sonner";
 
 import { store } from "@/features/store";
-import { fetchPeriods } from "@/features/periods/periodsSlice";
 import { fetchTransactions } from "@/features/transactions/transactionsSlice";
 
 import { Outlet } from "@tanstack/react-router";
 import React from "react";
 import { fetchTransactionTemplates } from "@/features/transaction-templates/transactionTemplateSlice";
 
-store.dispatch(fetchPeriods());
 store.dispatch(fetchTransactions());
 store.dispatch(fetchTransactionTemplates());
 
