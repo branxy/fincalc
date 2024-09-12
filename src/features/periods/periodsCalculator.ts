@@ -279,7 +279,7 @@ export function recalculatePeriods(
 
   // 2. Establish the index of the earliest affected period.
   // It might be originallyAffectedPeriodId, or, if a new period was created, newAffectedPeriodId.
-  let earliestAffectedPeriodIndex;
+  let earliestAffectedPeriodIndex: number;
 
   if (newAffectedPeriodId) {
     earliestAffectedPeriodIndex = sortedPeriods.findIndex(
@@ -291,6 +291,9 @@ export function recalculatePeriods(
       (p) => p.id === originallyAffectedPeriodId,
     );
   }
+
+  if (earliestAffectedPeriodIndex === -1)
+    throw new Error("Failed to find the index of earliestAffectedPeriod");
 
   // 3. Loop through periods array and recalculate balance fields.
   for (let i = earliestAffectedPeriodIndex; i < sortedPeriods.length; i++) {
