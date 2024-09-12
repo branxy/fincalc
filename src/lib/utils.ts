@@ -31,6 +31,7 @@ export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs));
 };
 
+//
 export interface MarkedCashflow {
   [key: FinancePeriod["id"]]: {
     firstTransactionIndex: number;
