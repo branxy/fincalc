@@ -2,16 +2,13 @@ import Navbar from "@/components/navbar";
 import { Toaster } from "sonner";
 
 import { store } from "@/features/store";
-import { fetchPeriods } from "@/features/periods/periodsSlice";
-import { fetchTransactions } from "@/features/transactions/transactionsSlice";
+import { initApp } from "@/features/periods/periodsSlice";
 
 import { Outlet } from "@tanstack/react-router";
-import React from "react";
-import { fetchTransactionTemplates } from "@/features/transaction-templates/transactionTemplateSlice";
 
-store.dispatch(fetchPeriods());
-store.dispatch(fetchTransactions());
-store.dispatch(fetchTransactionTemplates());
+import React from "react";
+
+store.dispatch(initApp());
 
 const TanStackRouterDevtools =
   import.meta.env.VITE_ENV === "development"

@@ -1,5 +1,7 @@
-import { createEntityAdapter, EntityState, Update } from "@reduxjs/toolkit";
+import { toast } from "sonner";
+
 import { createAppSlice } from "@/features/createAppSlice";
+import { createEntityAdapter, EntityState, Update } from "@reduxjs/toolkit";
 
 import {
   deleteTransactionTemplate,
@@ -7,9 +9,8 @@ import {
   insertTransactionTemplate,
   updateTransactionTemplate,
 } from "@/features/transaction-templates/transactionTemplateApi";
-
-import { getTodayDate, performAuthCheck } from "@/lib/utils";
-import { toast } from "sonner";
+import { performAuthCheck } from "@/lib/utils";
+import { getTodayDate } from "@/lib/date-utils";
 
 import { TTransactionTemplate, zTTransactionTemplate } from "@/features/types";
 import { RootState } from "@/features/store";

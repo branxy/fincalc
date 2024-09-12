@@ -9,21 +9,19 @@ import { useMemo } from "react";
 
 import { getRouteApi } from "@tanstack/react-router";
 
-import { FinancePeriod, Transactions } from "@/features/types";
-import { getMarkedCashflow, sortAndFilterTransactions } from "@/lib/utils";
+import { useAppSelector } from "@/lib/hooks";
+import { selectAllTransactions } from "@/features/transactions/transactionsSlice";
+import { selectAllPeriods } from "@/features/periods/periodsSlice";
 
-interface TransactionsTableProps {
-  transactions: Transactions;
-  periods: Pick<
-    FinancePeriod,
-    "id" | "balance_end" | "stock_end" | "forward_payments_end"
-  >[];
-}
+import { getMarkedCashflow, sortAndFilterTransactions } from "@/lib/utils";
 
 const { useSearch } = getRouteApi("/transactions");
 
-function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
+function TransactionsTable() {
   const searchParams = useSearch();
+  const periods = useAppSelector(selectAllPeriods);
+  const transactions = useAppSelector(selectAllTransactions);
+
   const [
     selectedTransactions,
     setSelectedTransactions,
@@ -33,51 +31,45 @@ function TransactionsTable({ transactions, periods }: TransactionsTableProps) {
     handleUpdateLastSelectedTransactionRef,
   ] = useTableCheckbox(transactions);
 
-  // For each period, create a `stats` object. Needed to display week numbers and end-balance on last transactions
   const periodsStats = getMarkedCashflow(periods, transactions);
-  transactions = useMemo(
+  const sortedFilteredTransactions = useMemo(
     () => sortAndFilterTransactions(transactions, searchParams),
     [transactions, searchParams],
   );
 
-  const tableContent = transactions.map(
-    (
-      t,
-      // i
-    ) => {
-      if (!periodsStats[t.period_id]) return;
+  const tableContent = sortedFilteredTransactions.map((t, i) => {
+    if (!periodsStats[t.period_id]) return;
 
-      const {
-        // firstTransactionIndex,
-        // lastTransactionIndex,
-        // weekNumber,
-        // monthName,
-        periodEndBalance,
-      } = periodsStats[t.period_id];
-      // isFirstTransactionInAPeriod = firstTransactionIndex === i,
-      // periodStats = lastTransactionIndex === i ? periodEndBalance : null;
-      return (
-        <Fragment key={`${t.id}-fragment`}>
-          {/* //   {isFirstTransactionInAPeriod && ( */}
-          {/* //     <WeekNumber weekNumber={weekNumber} monthName={monthName} /> */}
-          {/* //   )} */}
-          <TransactionsTableRow
-            transactionType={t.type}
-            transactionId={t.id}
-            title={t.title}
-            amount={t.amount}
-            date={t.date}
-            selectedTransactions={selectedTransactions}
-            periodEndBalance={periodEndBalance}
-            handleSelectTransaction={handleSelectTransaction}
-            handleUpdateLastSelectedTransactionRef={
-              handleUpdateLastSelectedTransactionRef
-            }
-          />
-        </Fragment>
-      );
-    },
-  );
+    const {
+      // firstTransactionIndex,
+      lastTransactionIndex,
+      // weekNumber,
+      // monthName,
+      periodEndBalance,
+    } = periodsStats[t.period_id];
+    // isFirstTransactionInAPeriod = firstTransactionIndex === i,
+    const periodStats = lastTransactionIndex === i ? periodEndBalance : null;
+    return (
+      <Fragment key={`${t.id}-fragment`}>
+        {/* //   {isFirstTransactionInAPeriod && ( */}
+        {/* //     <WeekNumber weekNumber={weekNumber} monthName={monthName} /> */}
+        {/* //   )} */}
+        <TransactionsTableRow
+          transactionType={t.type}
+          transactionId={t.id}
+          title={t.title}
+          amount={t.amount}
+          date={t.date}
+          selectedTransactions={selectedTransactions}
+          periodEndBalance={periodStats}
+          handleSelectTransaction={handleSelectTransaction}
+          handleUpdateLastSelectedTransactionRef={
+            handleUpdateLastSelectedTransactionRef
+          }
+        />
+      </Fragment>
+    );
+  });
 
   return (
     <div className="mt-6 overflow-hidden">

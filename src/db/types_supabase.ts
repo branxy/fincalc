@@ -9,15 +9,14 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      cashflow: {
+      transactions: {
         Row: {
           amount: number
           date: string
           date_created: string
           id: string
-          period_id: string
           title: string
-          type: string
+          type: Database["public"]["Enums"]["transaction_type"]
           user_id: string
         }
         Insert: {
@@ -25,9 +24,8 @@ export type Database = {
           date: string
           date_created?: string
           id?: string
-          period_id: string
           title?: string
-          type: string
+          type?: Database["public"]["Enums"]["transaction_type"]
           user_id?: string
         }
         Update: {
@@ -35,56 +33,8 @@ export type Database = {
           date?: string
           date_created?: string
           id?: string
-          period_id?: string
           title?: string
-          type?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cashflow_period_id_fkey"
-            columns: ["period_id"]
-            isOneToOne: false
-            referencedRelation: "periods"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      periods: {
-        Row: {
-          balance_end: number
-          balance_start: number
-          created_at: string
-          forward_payments_end: number
-          forward_payments_start: number
-          id: string
-          start_date: string
-          stock_end: number
-          stock_start: number
-          user_id: string
-        }
-        Insert: {
-          balance_end: number
-          balance_start: number
-          created_at?: string
-          forward_payments_end: number
-          forward_payments_start: number
-          id: string
-          start_date: string
-          stock_end: number
-          stock_start: number
-          user_id?: string
-        }
-        Update: {
-          balance_end?: number
-          balance_start?: number
-          created_at?: string
-          forward_payments_end?: number
-          forward_payments_start?: number
-          id?: string
-          start_date?: string
-          stock_end?: number
-          stock_start?: number
+          type?: Database["public"]["Enums"]["transaction_type"]
           user_id?: string
         }
         Relationships: []
