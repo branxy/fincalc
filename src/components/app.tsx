@@ -7,7 +7,9 @@ import { fetchTransactions } from "@/features/transactions/transactionsSlice";
 import { Outlet } from "@tanstack/react-router";
 import React from "react";
 import { fetchTransactionTemplates } from "@/features/transaction-templates/transactionTemplateSlice";
+import { login } from "@/features/auth/authSlice";
 
+await store.dispatch(login()).unwrap();
 store.dispatch(fetchTransactions());
 store.dispatch(fetchTransactionTemplates());
 
