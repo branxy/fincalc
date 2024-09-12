@@ -3,31 +3,28 @@ import { toast } from "sonner";
 import { createAppSlice } from "@/features/createAppSlice";
 import { createAppSelector } from "@/lib/hooks";
 import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
+import { login } from "@/features/auth/authSlice";
+import { fetchTransactions } from "@/features/transactions/transactionsSlice";
+import { fetchTransactionTemplates } from "@/features/transaction-templates/transactionTemplateSlice";
 
 import {
+  getPeriodBalanceDifference,
   getPeriodsFromTransactions,
   getPeriodsOnStartBalanceChange,
   recalculatePeriods,
 } from "@/features/periods/periodsCalculator";
 import {
-  getYearAndMonthNumber,
-  getPreviousPeriodByDate,
-  getPreviousPeriodAndCurrentWeek,
-  getDBStartDate,
-} from "@/lib/date-utils";
-import { performAuthCheck } from "@/lib/utils";
-import {
-  fetchPeriodsFromDB,
-  uploadPeriod,
-  upsertPeriods,
-} from "@periods/periodsApi";
+  createPeriod,
+  createPeriodWithDate,
+  performAuthCheck,
+} from "@/lib/utils";
 
 import { type UpdatedFormFields } from "@/components/transactionsTable/StartBalance";
 import { type RootState } from "@/features/store";
 import type {
   FinancePeriod,
   PeriodBalance,
-  Transactions,
+  Transaction,
 } from "@/features/types";
 
 export interface BalanceDifference {
@@ -54,11 +51,45 @@ export const periodsSlice = createAppSlice({
   name: "periods",
   initialState,
   reducers: (create) => ({
-    fetchPeriods: create.asyncThunk(
-      async () => {
-        const periods = await fetchPeriodsFromDB();
+    initApp: create.asyncThunk(
+      async (_, { dispatch }) => {
+        await dispatch(login()).unwrap();
+        dispatch(fetchTransactions());
+        dispatch(fetchTransactionTemplates());
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        rejected: (state) => {
+          state.status = "failed";
+        },
+        fulfilled: (state) => {
+          state.status = "succeeded";
+        },
+      },
+    ),
+    initializePeriods: create.asyncThunk(
+      async (
+        {
+          transactions,
+        }: {
+          transactions: Omit<Transaction, "period_id">[];
+        },
+        { getState },
+      ) => {
+        const {
+          auth: { userId },
+        } = getState() as RootState;
 
-        return periods;
+        if (!userId) throw new Error("Unauthorized");
+
+        const [periods, updatedTransactions] = getPeriodsFromTransactions(
+          transactions,
+          userId,
+        );
+
+        return { periods, updatedTransactions };
       },
       {
         pending: (state) => {
@@ -68,7 +99,8 @@ export const periodsSlice = createAppSlice({
           state.status = "failed";
         },
         fulfilled: (state, action) => {
-          periodsAdapter.setAll(state, action.payload);
+          const { periods } = action.payload;
+          periodsAdapter.setAll(state, periods);
           state.status = "succeeded";
         },
       },
@@ -77,48 +109,9 @@ export const periodsSlice = createAppSlice({
       async (_, { getState }) => {
         const userId = await performAuthCheck();
 
-        const {
-            periods: { entities },
-          } = getState() as RootState,
-          periods = Object.values(entities);
-        const [prevPeriod, currentWeek] =
-          getPreviousPeriodAndCurrentWeek(periods);
+        const newPeriod = createPeriod(userId, getState);
 
-        let newPeriod: Omit<FinancePeriod, "id">;
-        const [year, month] = getYearAndMonthNumber(),
-          currentWeekStartDate = getDBStartDate(
-            year,
-            month,
-            currentWeek.startDate,
-          );
-
-        if (prevPeriod) {
-          const { balance_end, stock_end, forward_payments_end } = prevPeriod;
-
-          newPeriod = {
-            user_id: userId,
-            start_date: currentWeekStartDate,
-            balance_start: balance_end,
-            balance_end,
-            stock_start: stock_end,
-            stock_end: stock_end,
-            forward_payments_start: forward_payments_end,
-            forward_payments_end: forward_payments_end,
-          };
-        } else {
-          newPeriod = {
-            user_id: userId,
-            start_date: currentWeekStartDate,
-            balance_start: 0,
-            balance_end: 0,
-            stock_start: 0,
-            stock_end: 0,
-            forward_payments_start: 0,
-            forward_payments_end: 0,
-          };
-        }
-        const receivedPeriod: FinancePeriod = await uploadPeriod(newPeriod);
-        return receivedPeriod;
+        return newPeriod;
       },
       {
         pending: (state) => {
@@ -144,42 +137,13 @@ export const periodsSlice = createAppSlice({
       ) => {
         const userId = await performAuthCheck();
 
-        const {
-          periods: { entities },
-        } = getState() as RootState;
+        const newPeriod = createPeriodWithDate(
+          newPeriodStartDate,
+          userId,
+          getState,
+        );
 
-        const periods = Object.values(entities);
-        const prevPeriod = getPreviousPeriodByDate(periods, newPeriodStartDate);
-
-        let newPeriod: Omit<FinancePeriod, "id">;
-
-        if (prevPeriod) {
-          const { balance_end, stock_end, forward_payments_end } = prevPeriod;
-
-          newPeriod = {
-            user_id: userId,
-            start_date: newPeriodStartDate,
-            balance_start: balance_end,
-            balance_end,
-            stock_start: stock_end,
-            stock_end,
-            forward_payments_start: forward_payments_end,
-            forward_payments_end,
-          };
-        } else {
-          newPeriod = {
-            user_id: userId,
-            start_date: newPeriodStartDate,
-            balance_start: 0,
-            balance_end: 0,
-            stock_start: 0,
-            stock_end: 0,
-            forward_payments_start: 0,
-            forward_payments_end: 0,
-          };
-        }
-        const receivedPeriod: FinancePeriod = await uploadPeriod(newPeriod);
-        return receivedPeriod;
+        return newPeriod;
       },
       {
         pending: (state) => {
@@ -224,9 +188,7 @@ export const periodsSlice = createAppSlice({
           originalBalance,
         );
 
-        const receivedPeriods = await upsertPeriods(recalculatedPeriods);
-
-        return receivedPeriods;
+        return recalculatedPeriods;
       },
       {
         pending: (state) => {
@@ -253,33 +215,17 @@ export const periodsSlice = createAppSlice({
         },
         { getState },
       ) => {
-        const {
-          periods: { entities },
-        } = getState() as RootState;
+        const [periods, balanceDifference] = getPeriodBalanceDifference(
+          newBalance,
+          getState,
+        );
 
-        const periods = Object.values(entities),
-          firstPeriod = periods[0],
-          balanceDifference: BalanceDifference = {
-            balance: newBalance.balance_start
-              ? firstPeriod.balance_start - newBalance.balance_start
-              : 0,
-            stock: newBalance.stock_start
-              ? firstPeriod.stock_start - newBalance.stock_start
-              : 0,
-            forward_payments: newBalance.forward_payments_start
-              ? firstPeriod.forward_payments_start -
-                newBalance.forward_payments_start
-              : 0,
-          };
-
-        const periodsToUpdateInDB = getPeriodsOnStartBalanceChange(
+        const updatedPeriods = getPeriodsOnStartBalanceChange(
           periods,
           balanceDifference,
         );
 
-        const receivedPeriods = await upsertPeriods(periodsToUpdateInDB);
-
-        return receivedPeriods;
+        return updatedPeriods;
       },
       {
         pending: (state) => {
@@ -304,7 +250,8 @@ export const periodsSlice = createAppSlice({
 });
 
 export const {
-  fetchPeriods,
+  initApp,
+  initializePeriods,
   periodAdded,
   periodAddedWithDate,
   periodsRecalculated,

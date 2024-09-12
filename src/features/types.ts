@@ -1,17 +1,17 @@
 import { Database } from "@/db/types_supabase";
 import { z } from "zod";
 
-type PeriodsTableRow = Database["public"]["Tables"]["periods"]["Row"];
+type TransactionsTableRow = Database["public"]["Tables"]["transactions"]["Row"];
 export interface FinancePeriod {
-  id: PeriodsTableRow["id"];
-  user_id: PeriodsTableRow["user_id"];
-  start_date: PeriodsTableRow["start_date"];
-  balance_start: PeriodsTableRow["balance_start"];
-  balance_end: PeriodsTableRow["balance_end"];
-  stock_start: PeriodsTableRow["stock_start"];
-  stock_end: PeriodsTableRow["stock_end"];
-  forward_payments_start: PeriodsTableRow["forward_payments_start"];
-  forward_payments_end: PeriodsTableRow["forward_payments_end"];
+  id: string;
+  user_id: string;
+  start_date: string;
+  balance_start: number;
+  balance_end: number;
+  stock_start: number;
+  stock_end: number;
+  forward_payments_start: number;
+  forward_payments_end: number;
 }
 
 export type PeriodBalance = Pick<
@@ -27,21 +27,14 @@ export type PeriodBalance = Pick<
 export type Periods = FinancePeriod[];
 
 export interface Transaction {
-  id: string;
-  period_id: FinancePeriod["id"];
+  id: TransactionsTableRow["id"];
   user_id: FinancePeriod["user_id"];
-  type:
-    | "income/profit"
-    | "income/stock"
-    | "income/forward-payment"
-    | "payment/fixed"
-    | "payment/variable"
-    | "compensation/stock"
-    | "compensation/forward-payment";
-  title: string;
-  amount: number;
-  date: string;
-  date_created: string;
+  period_id: FinancePeriod["id"];
+  type: TransactionsTableRow["type"];
+  title: TransactionsTableRow["title"];
+  amount: TransactionsTableRow["amount"];
+  date: TransactionsTableRow["date"];
+  date_created: TransactionsTableRow["date_created"];
 }
 
 export type Transactions = Transaction[];

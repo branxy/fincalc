@@ -1,17 +1,16 @@
 import { getStartBalance } from "@/features/periods/periodsCalculator";
-import { getPeriodEndDate, getPeriodWeekByDate } from "./utils";
-
-import { RootState } from "@/features/store";
-
-import { Periods, Transaction } from "@/features/types";
-import { ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
 import { periodAddedWithDate } from "@/features/periods/periodsSlice";
+import { getPeriodEndDate, getPeriodWeekByDate } from "@/lib/date-utils";
 
-export function prepareDataOnTransactionDateChanged(
+import { type RootState } from "@/features/store";
+import { type ThunkDispatch, type UnknownAction } from "@reduxjs/toolkit";
+import type { Periods, Transaction } from "@/features/types";
+
+export const prepareDataOnTransactionDateChanged = (
   transactionId: Transaction["id"],
   newDate: Transaction["date"],
   getState: () => unknown,
-) {
+) => {
   const {
     periods: { entities: periodEntities },
     cashflow: { entities: transactionEntities },
@@ -31,12 +30,12 @@ export function prepareDataOnTransactionDateChanged(
     calculatedStartBalance,
     newDateIsWithinTheSamePeriod,
   };
-}
+};
 
-export function findPeriodByTransactionDate(
+export const findPeriodByTransactionDate = (
   transactionDate: Transaction["date"],
   periods: Periods,
-) {
+) => {
   const existingPeriod = periods.findLast((p) => {
     const periodEndDate = getPeriodEndDate(p.start_date);
 
@@ -44,16 +43,16 @@ export function findPeriodByTransactionDate(
   });
 
   return existingPeriod;
-}
+};
 
-export async function addNewPeriodByDateAndReturnId(
+export const addNewPeriodByDateAndReturnId = async (
   newDate: Transaction["date"],
   dispatch: ThunkDispatch<unknown, unknown, UnknownAction>,
-) {
+) => {
   const { periodStartDate: newPeriodStartDate } = getPeriodWeekByDate(newDate);
   const { id } = await dispatch(
     periodAddedWithDate({ newPeriodStartDate }),
   ).unwrap();
 
   return id;
-}
+};

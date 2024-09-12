@@ -11,6 +11,7 @@ import { getRouteApi } from "@tanstack/react-router";
 
 import { useAppSelector } from "@/lib/hooks";
 import { selectAllTransactions } from "@/features/transactions/transactionsSlice";
+import { selectAllPeriods } from "@/features/periods/periodsSlice";
 
 import { getMarkedCashflow, sortAndFilterTransactions } from "@/lib/utils";
 
@@ -18,7 +19,9 @@ const { useSearch } = getRouteApi("/transactions");
 
 function TransactionsTable() {
   const searchParams = useSearch();
+  const periods = useAppSelector(selectAllPeriods);
   const transactions = useAppSelector(selectAllTransactions);
+
   const [
     selectedTransactions,
     setSelectedTransactions,
@@ -28,14 +31,13 @@ function TransactionsTable() {
     handleUpdateLastSelectedTransactionRef,
   ] = useTableCheckbox(transactions);
 
-  // For each period, create a `stats` object. Needed to display week numbers and end-balance on last transactions
   const periodsStats = getMarkedCashflow(periods, transactions);
-  transactions = useMemo(
+  const sortedFilteredTransactions = useMemo(
     () => sortAndFilterTransactions(transactions, searchParams),
     [transactions, searchParams],
   );
 
-  const tableContent = transactions.map((t, i) => {
+  const tableContent = sortedFilteredTransactions.map((t, i) => {
     if (!periodsStats[t.period_id]) return;
 
     const {

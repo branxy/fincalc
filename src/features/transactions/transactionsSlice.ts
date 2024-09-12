@@ -1,6 +1,13 @@
+import { toast } from "sonner";
+
 import { createAppSlice } from "@/features/createAppSlice";
 import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
 import { createAppSelector, TSelectedTransactions } from "@/lib/hooks";
+import {
+  initializePeriods,
+  periodAdded,
+  periodsRecalculated,
+} from "@periods/periodsSlice";
 
 import {
   addNewPeriodByDateAndReturnId,
@@ -15,16 +22,20 @@ import {
   upsertTransaction,
 } from "@/features/transactions/transactionsApi";
 import { getEarliestPeriodIdByTransactions } from "@periods/periodsCalculator";
-import { periodAdded, periodsRecalculated } from "@periods/periodsSlice";
+import {
+  createTransaction,
+  getCurrentPeriodId,
+  performAuthCheck,
+} from "@/lib/utils";
 
-import { supabase } from "@/db/supabaseClient";
-import { createTransaction, getCurrentPeriodId } from "@/lib/utils";
-import { toast } from "sonner";
+import type {
+  FinancePeriod,
+  PeriodBalance,
+  Transaction,
+} from "@/features/types";
+import { type RootState } from "@/features/store";
 
-import { FinancePeriod, PeriodBalance, Transaction } from "@/features/types";
-import { RootState } from "@/features/store";
-
-const casfhlowAdapter = createEntityAdapter<Transaction>({
+const transactionsAdapter = createEntityAdapter<Transaction>({
   sortComparer: (a, b) => a.date.localeCompare(b.date),
 });
 
@@ -33,7 +44,7 @@ type InitialState = EntityState<Transaction, string> & {
   error: string | null;
 };
 
-const initialState: InitialState = casfhlowAdapter.getInitialState({
+const initialState: InitialState = transactionsAdapter.getInitialState({
   status: "idle",
   error: null,
 });
@@ -43,9 +54,14 @@ export const transactionsSlice = createAppSlice({
   initialState,
   reducers: (create) => ({
     fetchTransactions: create.asyncThunk(
-      async () => {
+      async (_, { dispatch }) => {
         const transactions = await fetchCashflow();
-        return transactions;
+
+        // Assign period_ids to transactions
+        const { updatedTransactions } = await dispatch(
+          initializePeriods({ transactions }),
+        ).unwrap();
+        return updatedTransactions;
       },
       {
         pending: (state) => {
@@ -58,8 +74,7 @@ export const transactionsSlice = createAppSlice({
         },
         fulfilled: (state, action) => {
           state.status = "succeeded";
-          casfhlowAdapter.setAll(state, action.payload);
-          toast.success("Fetched transactions");
+          transactionsAdapter.setAll(state, action.payload);
         },
       },
     ),
@@ -78,26 +93,17 @@ export const transactionsSlice = createAppSlice({
         },
         { dispatch, getState },
       ) => {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        const userId = await performAuthCheck();
 
-        if (!user) throw new Error("Unauthorized");
-
-        const {
-          periods: { entities: periodsEntities },
-        } = getState() as RootState;
-
-        let currentPeriodId = getCurrentPeriodId(
-          Object.values(periodsEntities),
-        );
+        let currentPeriodId = getCurrentPeriodId(getState);
         if (!currentPeriodId) {
           // If a period with dates correlating with a transaction date doesn't exist yet, create it
           const currentPeriod = await dispatch(periodAdded()).unwrap();
           currentPeriodId = currentPeriod.id;
         }
-
-        const newTransaction = createTransaction(currentPeriodId, user.id, {
+        const newTransaction = createTransaction({
+          userId,
+          periodId: currentPeriodId,
           transactionTitle,
           transactionAmount,
           transactionDate,
@@ -115,13 +121,12 @@ export const transactionsSlice = createAppSlice({
         rejected: (state, action) => {
           state.status = "failed";
           if (action.error.message) state.error = action.error.message;
-          toast.error("Failed to add a transaction");
+          toast.error("Failed to add a transaction: " + action.error.message);
         },
         fulfilled: (state, action) => {
           state.status = "succeeded";
 
-          casfhlowAdapter.addOne(state, action.payload);
-          toast.success("Added a transaction");
+          transactionsAdapter.addOne(state, action.payload);
         },
       },
     ),
@@ -165,7 +170,7 @@ export const transactionsSlice = createAppSlice({
         fulfilled: (state, action) => {
           state.status = "succeeded";
 
-          casfhlowAdapter.addOne(state, action.payload);
+          transactionsAdapter.addOne(state, action.payload);
         },
       },
     ),
@@ -177,11 +182,11 @@ export const transactionsSlice = createAppSlice({
         transactionId: Transaction["id"];
         newTitle: Transaction["title"];
       }) => {
-        const updatedTransaction = await updateTransaction(
+        const updatedTransaction = await updateTransaction({
           transactionId,
-          "title",
-          newTitle,
-        );
+          newValueType: "title",
+          newValue: newTitle,
+        });
 
         return updatedTransaction;
       },
@@ -194,7 +199,7 @@ export const transactionsSlice = createAppSlice({
           toast.error("Failed to update transaction title");
         },
         fulfilled: (state, action) => {
-          casfhlowAdapter.upsertOne(state, action.payload as Transaction);
+          transactionsAdapter.upsertOne(state, action.payload as Transaction);
           state.status = "succeeded";
         },
       },
@@ -246,11 +251,11 @@ export const transactionsSlice = createAppSlice({
         transactionId: Transaction["id"];
         newAmount: Transaction["amount"];
       }) => {
-        const updatedTransaction = await updateTransaction(
+        const updatedTransaction = await updateTransaction({
           transactionId,
-          "amount",
-          newAmount,
-        );
+          newValueType: "amount",
+          newValue: newAmount,
+        });
 
         return updatedTransaction;
       },
@@ -263,7 +268,7 @@ export const transactionsSlice = createAppSlice({
           toast.error("Failed to update transaction amount");
         },
         fulfilled: (state, action) => {
-          casfhlowAdapter.upsertOne(state, action.payload as Transaction);
+          transactionsAdapter.upsertOne(state, action.payload as Transaction);
           state.status = "succeeded";
         },
       },
@@ -323,11 +328,11 @@ export const transactionsSlice = createAppSlice({
 
         const pendingPeriodId = transactionEntities[transactionId].period_id,
           pendingPeriod = entities[pendingPeriodId],
-          updatedTransaction = await updateTransaction(
+          updatedTransaction = await updateTransaction({
             transactionId,
-            "type",
-            newType,
-          );
+            newValueType: "type",
+            newValue: newType,
+          });
 
         const {
             balance_start,
@@ -360,7 +365,7 @@ export const transactionsSlice = createAppSlice({
           toast.error("Failed to update transaction type");
         },
         fulfilled: (state, action) => {
-          casfhlowAdapter.upsertOne(
+          transactionsAdapter.upsertOne(
             state,
             action.payload.updatedTransaction as Transaction,
           );
@@ -445,11 +450,11 @@ export const transactionsSlice = createAppSlice({
         } = calculatedStartBalance;
 
         if (newDateIsWithinTheSamePeriod) {
-          const updatedTransaction = await updateTransaction(
+          const updatedTransaction = await updateTransaction({
             transactionId,
-            "date",
-            newDate,
-          );
+            newValueType: "date",
+            newValue: newDate,
+          });
 
           return { newTransaction: updatedTransaction };
         }
@@ -506,7 +511,7 @@ export const transactionsSlice = createAppSlice({
         },
         fulfilled: (state, action) => {
           if ("newTransaction" in action.payload) {
-            casfhlowAdapter.upsertOne(
+            transactionsAdapter.upsertOne(
               state,
               action.payload.newTransaction as Transaction,
             );
@@ -535,7 +540,7 @@ export const transactionsSlice = createAppSlice({
           toast.error("Failed to delete transaction(-s)");
         },
         fulfilled: (state, action) => {
-          casfhlowAdapter.removeMany(state, action.payload);
+          transactionsAdapter.removeMany(state, action.payload);
           state.status = "succeeded";
         },
       },
@@ -549,17 +554,10 @@ export const transactionsSlice = createAppSlice({
         },
         { dispatch, getState },
       ) => {
-        const {
-            cashflow: { entities },
-            periods: { entities: periodEntities },
-          } = getState() as RootState,
-          periods = Object.values(periodEntities),
-          transactions = Object.values(entities),
-          earliestAffectedPeriodId = getEarliestPeriodIdByTransactions(
-            periods,
-            transactions,
-            selectedTransactions,
-          );
+        const earliestAffectedPeriodId = getEarliestPeriodIdByTransactions(
+          selectedTransactions,
+          getState,
+        );
 
         await dispatch(deletedTransactions({ selectedTransactions })).unwrap();
 
@@ -590,7 +588,7 @@ export const transactionsSlice = createAppSlice({
 export const {
   selectAll: selectAllTransactions,
   selectIds: selectCashflowIds,
-} = casfhlowAdapter.getSelectors((state: RootState) => state.cashflow);
+} = transactionsAdapter.getSelectors((state: RootState) => state.cashflow);
 
 export const { selectTransactionsStatus } = transactionsSlice.selectors;
 

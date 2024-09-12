@@ -135,9 +135,12 @@ export const getPeriodWeekByDate = (date: Transaction["date"]) => {
     (w) => w.startDate <= Number(day) && w.endDate >= Number(day),
   )!;
 
+  const startDate = week.startDate < 10 ? "0" + week.startDate : week.startDate;
+  const endDate = week.endDate < 10 ? "0" + week.endDate : week.endDate;
+
   return {
-    periodStartDate: `${year}-${month}-${week.startDate}`,
-    periodEndDate: `${year}-${month}-${week.endDate}`,
+    periodStartDate: `${year}-${month}-${startDate}`,
+    periodEndDate: `${year}-${month}-${endDate}`,
   };
 };
 
