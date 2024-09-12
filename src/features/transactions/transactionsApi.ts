@@ -1,22 +1,23 @@
 import { supabase } from "@/db/supabaseClient";
-import { Transaction, Transactions } from "@/features/types";
+
+import { type Transaction } from "@/features/types";
 
 export async function fetchCashflow() {
   const { data, error } = await supabase
-    .from("cashflow")
+    .from("transactions")
     .select()
     .order("date", { ascending: true });
 
   if (error) throw new Error(error.message);
 
-  return data as Transactions;
+  return data as Omit<Transaction, "period_id">[];
 }
 
 export async function uploadTransaction(
-  payment: Omit<Transaction, "id" | "date_created">,
+  payment: Omit<Transaction, "id" | "date_created" | "period_id">,
 ) {
   const { data, error } = await supabase
-    .from("cashflow")
+    .from("transactions")
     .insert(payment)
     .select();
 
@@ -28,16 +29,40 @@ export async function uploadTransaction(
   return data[0] as Transaction;
 }
 
-export async function updateTransaction(
-  transactionId: Transaction["id"],
-  newValueType: "title" | "type" | "amount" | "date",
-  newValue: string | number,
-): Promise<Transaction> {
+interface UpdateTransactionBase {
+  transactionId: Transaction["id"];
+}
+
+type UpdateTransaction = UpdateTransactionBase &
+  (
+    | {
+        newValueType: "title";
+        newValue: Transaction["title"];
+      }
+    | {
+        newValueType: "type";
+        newValue: Transaction["type"];
+      }
+    | {
+        newValueType: "amount";
+        newValue: Transaction["amount"];
+      }
+    | {
+        newValueType: "date";
+        newValue: Transaction["date"];
+      }
+  );
+
+export async function updateTransaction({
+  transactionId,
+  newValueType,
+  newValue,
+}: UpdateTransaction): Promise<Transaction> {
   switch (newValueType) {
     case "title": {
       const { data, error } = await supabase
-        .from("cashflow")
-        .update({ title: newValue as string })
+        .from("transactions")
+        .update({ title: newValue })
         .eq("id", transactionId)
         .select();
 
@@ -46,8 +71,8 @@ export async function updateTransaction(
     }
     case "type": {
       const { data, error } = await supabase
-        .from("cashflow")
-        .update({ type: newValue as string })
+        .from("transactions")
+        .update({ type: newValue })
         .eq("id", transactionId)
         .select();
 
@@ -56,8 +81,8 @@ export async function updateTransaction(
     }
     case "amount": {
       const { data, error } = await supabase
-        .from("cashflow")
-        .update({ amount: newValue as number })
+        .from("transactions")
+        .update({ amount: newValue })
         .eq("id", transactionId)
         .select();
 
@@ -66,8 +91,8 @@ export async function updateTransaction(
     }
     case "date": {
       const { data, error } = await supabase
-        .from("cashflow")
-        .update({ date: newValue as string })
+        .from("transactions")
+        .update({ date: newValue })
         .eq("id", transactionId)
         .select();
 
@@ -81,7 +106,7 @@ export async function upsertTransaction(
   transaction: Transaction,
 ): Promise<Transaction> {
   const { data, error } = await supabase
-    .from("cashflow")
+    .from("transactions")
     .upsert(transaction)
     .select();
 
@@ -91,7 +116,7 @@ export async function upsertTransaction(
 
 export async function deleteCashflowItems(transactionIds: Transaction["id"][]) {
   const { error } = await supabase
-    .from("cashflow")
+    .from("transactions")
     .delete()
     .in("id", transactionIds);
 

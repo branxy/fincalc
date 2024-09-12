@@ -1,13 +1,19 @@
-import {
+import { v4 as uuidv4 } from "uuid";
+import { getMonths } from "@/lib/date-utils";
+import { getPeriodWeekByDate } from "@/lib/date-utils";
+
+import { type TSelectedTransactions } from "@/lib/hooks";
+import { type Auth } from "@/features/auth/authSlice";
+import { type BalanceDifference } from "@/features/periods/periodsSlice";
+import type {
   FinancePeriod,
   PeriodBalance,
   Periods,
   Transaction,
   Transactions,
 } from "@/features/types";
-import { BalanceDifference } from "./periodsSlice";
-import { getMonths } from "@/lib/utils";
-import { TSelectedTransactions } from "@/lib/hooks";
+import { type RootState } from "@/features/store";
+import type { UpdatedFormFields } from "@/components/transactionsTable/StartBalance";
 
 interface ValueToUpdate {
   id: FinancePeriod["id"];
@@ -18,6 +24,116 @@ interface ValueToUpdate {
 }
 
 export type ValuesToUpdate = ValueToUpdate[];
+
+export const getPeriodsFromTransactions = (
+  transactions: Omit<Transaction, "period_id">[],
+  userId: Auth["userId"],
+): [Periods, Transactions] => {
+  const periods: Periods = [];
+  const updatedTransactions: Transactions = [];
+  const sortedTransactions = transactions.toSorted((a, b) =>
+    a.date.localeCompare(b.date),
+  );
+
+  for (const t of sortedTransactions) {
+    const { periodStartDate } = getPeriodWeekByDate(t.date);
+    let existingPeriod = periods.find((p) => p.start_date === periodStartDate);
+
+    let updatedTransaction: Transaction;
+    if (existingPeriod) {
+      existingPeriod = updatePeriodBalanceByTransaction(existingPeriod, t);
+      updatedTransaction = {
+        ...t,
+        period_id: existingPeriod.id,
+      };
+    } else {
+      const prevPeriod = periods[periods.length - 1];
+
+      const newPeriod = createPeriod(t, userId, prevPeriod);
+      updatedTransaction = {
+        ...t,
+        period_id: newPeriod.id,
+      };
+      periods.push(newPeriod);
+    }
+
+    updatedTransactions.push(updatedTransaction);
+  }
+
+  return [periods, updatedTransactions] as const;
+};
+
+const updatePeriodBalanceByTransaction = (
+  p: FinancePeriod,
+  t: Omit<Transaction, "period_id">,
+) => {
+  switch (t.type) {
+    case "payment/fixed":
+    case "payment/variable":
+      p.balance_end -= t.amount;
+      break;
+    case "income/profit":
+      p.balance_end += t.amount;
+      break;
+    case "income/stock":
+      p.stock_end += t.amount;
+      break;
+    case "income/forward-payment":
+      p.forward_payments_end += t.amount;
+      break;
+    case "compensation/stock":
+      p.stock_end -= t.amount;
+      break;
+    case "compensation/forward-payment":
+      p.forward_payments_end -= t.amount;
+      break;
+    default:
+      throw new Error("Unknown transaction type:", t.type);
+  }
+
+  return p;
+};
+
+const createPeriod = (
+  t: Omit<Transaction, "period_id">,
+  userId: Auth["userId"],
+  prevPeriod?: FinancePeriod,
+): FinancePeriod => {
+  let newPeriod: FinancePeriod;
+  const { periodStartDate } = getPeriodWeekByDate(t.date);
+
+  if (prevPeriod) {
+    newPeriod = {
+      id: uuidv4(),
+      user_id: userId!,
+      start_date: periodStartDate,
+      balance_start: prevPeriod.balance_end,
+      balance_end: prevPeriod.balance_end,
+      stock_start: prevPeriod.stock_end,
+      stock_end: prevPeriod.stock_end,
+      forward_payments_start: prevPeriod.forward_payments_end,
+      forward_payments_end: prevPeriod.forward_payments_end,
+    };
+
+    const updatedPeriod = updatePeriodBalanceByTransaction(newPeriod, t);
+
+    return updatedPeriod;
+  } else {
+    newPeriod = {
+      id: uuidv4(),
+      user_id: userId!,
+      start_date: periodStartDate,
+      balance_start: 0,
+      balance_end: 0,
+      stock_start: 0,
+      stock_end: 0,
+      forward_payments_start: 0,
+      forward_payments_end: 0,
+    };
+  }
+
+  return newPeriod;
+};
 
 export function getPeriodsOnStartBalanceChange(
   periods: Periods,
@@ -233,7 +349,7 @@ function getNewStartBalanceValue(
 ) {
   // By default start_balance should be taken from prevRecalculatedPeriod. If the period is first in a loop:
   // try to take the value from originalStartBalance
-  // if there's no originalStartBalance, leave the olv value
+  // if there's no originalStartBalance, leave the old value
   //  If the period IS NOT first in a loop:
   // Try to take from prevUpdatedPeriod
   // Else take from prevSortedPeriod
@@ -377,10 +493,16 @@ export function sumTransactionsByCategory(transactions: Transactions) {
 }
 
 export function getEarliestPeriodIdByTransactions(
-  periods: Periods,
-  transactions: Transactions,
   selectedTransactions: TSelectedTransactions,
+  getState: () => unknown,
 ) {
+  const {
+      cashflow: { entities },
+      periods: { entities: periodEntities },
+    } = getState() as RootState,
+    periods = Object.values(periodEntities),
+    transactions = Object.values(entities);
+
   const pendingTransactions = transactions.filter((t) =>
       selectedTransactions.includes(t.id),
     ),
@@ -450,3 +572,28 @@ export function getPeriodsByMonth(
 
   return months;
 }
+
+export const getPeriodBalanceDifference = (
+  newBalance: UpdatedFormFields,
+  getState: () => unknown,
+) => {
+  const {
+    periods: { entities },
+  } = getState() as RootState;
+
+  const periods = Object.values(entities),
+    firstPeriod = periods[0],
+    balanceDifference: BalanceDifference = {
+      balance: newBalance.balance_start
+        ? firstPeriod.balance_start - newBalance.balance_start
+        : 0,
+      stock: newBalance.stock_start
+        ? firstPeriod.stock_start - newBalance.stock_start
+        : 0,
+      forward_payments: newBalance.forward_payments_start
+        ? firstPeriod.forward_payments_start - newBalance.forward_payments_start
+        : 0,
+    };
+
+  return [periods, balanceDifference] as const;
+};
