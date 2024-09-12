@@ -23,7 +23,6 @@ import {
 } from "@/features/transactions/transactionsApi";
 import { getEarliestPeriodIdByTransactions } from "@periods/periodsCalculator";
 import {
-  assignPeriodId,
   createTransaction,
   getCurrentPeriodId,
   performAuthCheck,
@@ -58,6 +57,7 @@ export const transactionsSlice = createAppSlice({
       async (_, { dispatch }) => {
         const transactions = await fetchCashflow();
 
+        // Assign period_ids to transactions
         const { updatedTransactions } = await dispatch(
           initializePeriods({ transactions }),
         ).unwrap();
@@ -101,7 +101,9 @@ export const transactionsSlice = createAppSlice({
           const currentPeriod = await dispatch(periodAdded()).unwrap();
           currentPeriodId = currentPeriod.id;
         }
-        const newTransaction = createTransaction(userId, {
+        const newTransaction = createTransaction({
+          userId,
+          periodId: currentPeriodId,
           transactionTitle,
           transactionAmount,
           transactionDate,
@@ -109,12 +111,8 @@ export const transactionsSlice = createAppSlice({
         });
 
         const uploadedTransaction = await uploadTransaction(newTransaction);
-        const completeTransaction = assignPeriodId(
-          uploadedTransaction,
-          currentPeriodId,
-        );
 
-        return completeTransaction;
+        return uploadedTransaction;
       },
       {
         pending: (state) => {

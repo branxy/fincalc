@@ -31,6 +31,7 @@ export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs));
 };
 
+//
 export interface MarkedCashflow {
   [key: FinancePeriod["id"]]: {
     firstTransactionIndex: number;
@@ -190,38 +191,31 @@ export const performAuthCheck = async () => {
   return user.id;
 };
 
-export const createTransaction = (
-  userId: User["id"],
-  properties: {
-    transactionTitle?: Transaction["title"];
-    transactionAmount?: Transaction["amount"];
-    transactionDate?: Transaction["date"];
-    transactionType?: Transaction["type"];
-  },
-): Omit<Transaction, "id" | "date_created" | "period_id"> => {
-  const {
-    transactionTitle,
-    transactionAmount,
-    transactionDate,
-    transactionType,
-  } = properties;
+type CreateTransactionProps = {
+  userId: User["id"];
+  periodId: FinancePeriod["id"];
+  transactionTitle?: Transaction["title"];
+  transactionAmount?: Transaction["amount"];
+  transactionDate?: Transaction["date"];
+  transactionType?: Transaction["type"];
+};
 
+export const createTransaction = ({
+  userId,
+  periodId,
+  transactionTitle,
+  transactionAmount,
+  transactionDate,
+  transactionType,
+}: CreateTransactionProps): Omit<Transaction, "id" | "date_created"> => {
   const newTransaction = {
+    period_id: periodId,
     user_id: userId,
     type: transactionType ?? "payment/fixed",
     title: transactionTitle ?? "New transaction",
     amount: transactionAmount ?? 0,
     date: transactionDate ?? getTodayDate(),
   };
-
-  return newTransaction;
-};
-
-export const assignPeriodId = (
-  transaction: Omit<Transaction, "period_id">,
-  periodId: FinancePeriod["id"],
-) => {
-  const newTransaction: Transaction = { ...transaction, period_id: periodId };
 
   return newTransaction;
 };

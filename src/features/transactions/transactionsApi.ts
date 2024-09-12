@@ -14,7 +14,7 @@ export async function fetchCashflow() {
 }
 
 export async function uploadTransaction(
-  payment: Omit<Transaction, "id" | "date_created" | "period_id">,
+  payment: Omit<Transaction, "id" | "date_created">,
 ) {
   const { data, error } = await supabase
     .from("transactions")
