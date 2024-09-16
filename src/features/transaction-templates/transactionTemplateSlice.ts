@@ -41,14 +41,14 @@ export const transactionTemplateSlice = createAppSlice({
       },
       {
         pending: (state) => {
-          state.status === "loading";
+          state.status = "loading";
         },
         rejected: (state) => {
-          state.status === "failed";
+          state.status = "failed";
           toast.error("Failed to add a template");
         },
         fulfilled: (state, action) => {
-          state.status === "succeeded";
+          state.status = "succeeded";
           transactionTemplateAdapter.setAll(state, action.payload);
         },
       },
@@ -70,14 +70,14 @@ export const transactionTemplateSlice = createAppSlice({
       },
       {
         pending: (state) => {
-          state.status === "loading";
+          state.status = "loading";
         },
         rejected: (state) => {
-          state.status === "failed";
+          state.status = "failed";
           toast.error("Failed to add a template");
         },
         fulfilled: (state, action) => {
-          state.status === "succeeded";
+          state.status = "succeeded";
           transactionTemplateAdapter.addOne(state, action.payload);
         },
       },
@@ -102,14 +102,14 @@ export const transactionTemplateSlice = createAppSlice({
       },
       {
         pending: (state) => {
-          state.status === "loading";
+          state.status = "loading";
         },
         rejected: (state) => {
-          state.status === "failed";
+          state.status = "failed";
           toast.error("Failed to update a template");
         },
         fulfilled: (state, action) => {
-          state.status === "succeeded";
+          state.status = "succeeded";
           transactionTemplateAdapter.updateOne(state, action.payload);
         },
       },
@@ -122,14 +122,14 @@ export const transactionTemplateSlice = createAppSlice({
       },
       {
         pending: (state) => {
-          state.status === "loading";
+          state.status = "loading";
         },
         rejected: (state) => {
-          state.status === "failed";
+          state.status = "failed";
           toast.error("Failed to delete a template");
         },
         fulfilled: (state, action) => {
-          state.status === "succeeded";
+          state.status = "succeeded";
           transactionTemplateAdapter.removeOne(state, action.payload);
         },
       },
