@@ -15,7 +15,6 @@ export type Database = {
           date: string
           date_created: string
           id: string
-          period_id: string
           title: string
           type: Database["public"]["Enums"]["transaction_type"]
           user_id: string
@@ -25,7 +24,6 @@ export type Database = {
           date: string
           date_created?: string
           id?: string
-          period_id?: string
           title?: string
           type?: Database["public"]["Enums"]["transaction_type"]
           user_id?: string
@@ -35,7 +33,6 @@ export type Database = {
           date?: string
           date_created?: string
           id?: string
-          period_id?: string
           title?: string
           type?: Database["public"]["Enums"]["transaction_type"]
           user_id?: string

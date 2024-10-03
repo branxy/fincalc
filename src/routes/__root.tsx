@@ -1,13 +1,12 @@
 import App from "@/components/app";
+import { Auth } from "@supabase/auth-ui-react";
 
 import { createRootRoute } from "@tanstack/react-router";
 
 import useSupabaseSession from "@/db/useSupabaseSession";
-import { Auth } from "@supabase/auth-ui-react";
+
 import { supabase } from "@/db/supabaseClient";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-
-
 
 export const Route = createRootRoute({
   component: Root,

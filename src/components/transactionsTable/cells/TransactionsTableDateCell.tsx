@@ -15,32 +15,29 @@ import {
   useEditTableCell,
 } from "@/lib/hooks";
 
-import { transactionDateChangedAndPeriodsRecalculated } from "@/features/transactions/transactionsSlice";
 import { cn } from "@/lib/utils";
 import { getDBDateFromObject } from "@/lib/date-utils";
 import { Transaction } from "@/features/types";
 import { useState } from "react";
-import { TransactionsTableRowProps } from "@/components/transactionsTable/TransactionsTableRow";
 
 interface TransactionsTableDateCellProps {
   transactionId: Transaction["id"];
   date: Transaction["date"];
-  periodEndBalance: TransactionsTableRowProps["periodEndBalance"];
+  columnSpan: 1 | 2;
 }
 
 function TransactionsTableDateCell({
   transactionId,
   date,
-  periodEndBalance,
+  columnSpan,
 }: TransactionsTableDateCellProps) {
   const [isEditing, setIsEditing, isHovered, setIsHovered, finishEditing] =
     useEditTableCell() as ReturnWithoutCellState;
-  const cellColSpan = periodEndBalance ? 1 : 2;
 
   return (
     <>
       {isEditing ? (
-        <td colSpan={cellColSpan}>
+        <td colSpan={columnSpan}>
           <TransactionsTableDateCellDatepicker
             transactionId={transactionId}
             transactionDate={date}
@@ -49,7 +46,7 @@ function TransactionsTableDateCell({
         </td>
       ) : (
         <td
-          colSpan={cellColSpan}
+          colSpan={columnSpan}
           className="editable h-full"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}

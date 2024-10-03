@@ -12,31 +12,35 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { useAppSelector } from "@/lib/hooks";
 import { selectAllTransactionTemplates } from "@/features/transaction-templates/transactionTemplateSlice";
-import { transactionAdded } from "@/features/transactions/transactionsSlice";
 
 import { useState } from "react";
+import { useAddTransactionMutation } from "@/features/api/apiSlice";
+import { toast } from "sonner";
 
-interface TransactionsTableAddTransactionBtnProps {
-  isLoading: boolean;
-}
-
-function TransactionsTableAddTransactionBtn({
-  isLoading,
-}: TransactionsTableAddTransactionBtnProps) {
+function TransactionsTableAddTransactionBtn() {
   const transactionTemplates = useAppSelector((state) =>
     selectAllTransactionTemplates(state),
   );
-  const dispatch = useAppDispatch();
+  const [addTransaction, { isLoading }] = useAddTransactionMutation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const handleAddTransaction = async () => {
+    try {
+      await addTransaction({}).unwrap();
+    } catch (e) {
+      console.error("Error in handleAddTransaction: ", e);
+      toast.error("Failed to add transaction");
+    }
+  };
 
   return (
     <div className="flex">
       <Button
         className="flex gap-2 rounded-br-none rounded-tr-none pr-2"
         disabled={isLoading}
-        onClick={() => dispatch(transactionAdded({}))}
+        onClick={handleAddTransaction}
       >
         <Spinner isLoading={isLoading} />
         Add transaction

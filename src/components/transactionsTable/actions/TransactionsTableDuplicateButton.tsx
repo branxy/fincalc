@@ -7,12 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import {
-  type TSelectedTransactions,
-  useAppDispatch,
-  useAppSelector,
-} from "@/lib/hooks";
-import { transactionDuplicated } from "@/features/transactions/transactionsSlice";
+import { type TSelectedTransactions, useAppSelector } from "@/lib/hooks";
 
 export interface TransactionsTableDuplicateButtonProps {
   selectedTransactions: TSelectedTransactions;
@@ -23,8 +18,6 @@ function TransactionsTableDuplicateButton({
 }: TransactionsTableDuplicateButtonProps) {
   const transactionsStatus = useAppSelector((state) => state.cashflow.status);
   const isLoading = transactionsStatus === "loading";
-
-  const dispatch = useAppDispatch();
 
   const duplicateTransaction = () => {
     dispatch(transactionDuplicated({ transactionId: selectedTransactions[0] }));

@@ -1,20 +1,18 @@
 import { supabase } from "@/db/supabaseClient";
 
-import { type Transaction } from "@/features/types";
+import type { Transaction } from "@/features/types";
 
-export async function fetchCashflow() {
+export const fetchTransactions = async () => {
   const { data, error } = await supabase
     .from("transactions")
     .select()
     .order("date", { ascending: true });
 
-  if (error) throw new Error(error.message);
-
-  return data as Omit<Transaction, "period_id">[];
-}
+  return { data, error };
+};
 
 export async function uploadTransaction(
-  payment: Omit<Transaction, "id" | "date_created">,
+  payment: Omit<Transaction, "id" | "user_id" | "date_created">,
 ) {
   const { data, error } = await supabase
     .from("transactions")
