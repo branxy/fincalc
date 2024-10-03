@@ -3,8 +3,6 @@ import { z } from "zod";
 
 type TransactionsTableRow = Database["public"]["Tables"]["transactions"]["Row"];
 export interface FinancePeriod {
-  id: string;
-  user_id: string;
   start_date: string;
   balance_start: number;
   balance_end: number;
@@ -28,8 +26,7 @@ export type Periods = FinancePeriod[];
 
 export interface Transaction {
   id: TransactionsTableRow["id"];
-  user_id: FinancePeriod["user_id"];
-  period_id: FinancePeriod["id"];
+  user_id: TransactionsTableRow["user_id"];
   type: TransactionsTableRow["type"];
   title: TransactionsTableRow["title"];
   amount: TransactionsTableRow["amount"];
@@ -72,31 +69,3 @@ export const zTransactionTemplate = z.object({
 });
 
 export type zTTransactionTemplate = z.infer<typeof zTransactionTemplate>;
-
-export interface CashFlowTable {
-  cashflow: Transactions;
-  status: "idle" | "loading" | "succeeded" | "failed";
-  error: string | null;
-}
-
-export interface StockCompensation {
-  id: Transaction["id"];
-  period_id: Transaction["period_id"];
-  type: "income/stock";
-  title: Transaction["title"];
-  amount: Transaction["amount"];
-  date: Transaction["date"];
-}
-
-export type StockCompensations = StockCompensation[];
-
-export interface FPCompensation {
-  id: Transaction["id"];
-  period_id: Transaction["period_id"];
-  type: "income/forward-payment";
-  title: Transaction["title"];
-  amount: Transaction["amount"];
-  date: Transaction["date"];
-}
-
-export type FPCompensations = FPCompensation[];

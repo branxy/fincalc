@@ -9,10 +9,9 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "@/lib/hooks";
-import { transactionDuplicated } from "@/features/transactions/transactionsSlice";
 
-import { FinancePeriod, Transaction } from "@/features/types";
-import { MarkedCashflow } from "@/lib/utils";
+import { Transaction } from "@/features/types";
+import { MarkedTransactions } from "@/lib/utils";
 import clsx from "clsx";
 import { useRef } from "react";
 
@@ -23,9 +22,7 @@ export interface TransactionsTableRowProps {
   amount: Transaction["amount"];
   date: Transaction["date"];
   selectedTransactions: TSelectedTransactions;
-  periodEndBalance:
-    | MarkedCashflow[FinancePeriod["id"]]["periodEndBalance"]
-    | null;
+  periodEndBalance: MarkedTransactions[Transaction["id"]] | null;
   handleSelectTransaction: (periodId: Transaction["id"]) => void;
   handleUpdateLastSelectedTransactionRef: (
     rowRef: React.MutableRefObject<HTMLTableRowElement>,
@@ -98,7 +95,7 @@ function TransactionsTableRow({
       <TransactionsTableDateCell
         transactionId={transactionId}
         date={date}
-        periodEndBalance={periodEndBalance}
+        columnSpan={periodEndBalance ? 1 : 2}
       />
       {periodEndBalance && (
         <EndBalance periodEndBalance={periodEndBalance} isLoading={isLoading} />

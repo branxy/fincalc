@@ -8,7 +8,7 @@ import {
   UnknownAction,
 } from "@reduxjs/toolkit";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   Transactions,
   Transaction,
@@ -59,12 +59,12 @@ export function useTableCheckbox(tableItems: Transactions) {
     }
   };
 
-  const handleSelectAllTransactions = () => {
+  const handleSelectAllTransactions = useCallback(() => {
     if (selectedTransactions.length < tableItems.length) {
       const allTransactionsIds = tableItems.map((i) => i.id);
       setSelectedTransactions(allTransactionsIds);
     } else setSelectedTransactions([]);
-  };
+  }, [tableItems, selectedTransactions]);
 
   const handleUpdateLastSelectedTransactionRef = (
     rowRef: React.MutableRefObject<HTMLTableRowElement>,

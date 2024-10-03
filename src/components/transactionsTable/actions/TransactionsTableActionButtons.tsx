@@ -11,7 +11,6 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "@/lib/hooks";
-import { deletedTransactionsAndPeriodsRecalculated } from "@/features/transactions/transactionsSlice";
 
 import { filterOptions } from "@/components/transactionsTable/actions/filters/filterFns";
 
@@ -36,13 +35,18 @@ function TransactionsTableActionButtons({
 }: TransactionsTableActionButtonsProps) {
   const transactionsStatus = useAppSelector((state) => state.cashflow.status);
   const isLoading = transactionsStatus === "loading";
+
   const dispatch = useAppDispatch();
+
   const { filter } = useSearch();
+
   const hasSelectedTransactions = selectedTransactions.length > 0,
     singleTransactionSelected = selectedTransactions.length === 1;
+
   const [selectedFilter, setSelectedFilter] =
     useState<TransactionFilterNames | null>(null);
-  const handleDeleteCashflowItems = () => {
+
+  const handleDeleteTransactions = () => {
     dispatch(
       deletedTransactionsAndPeriodsRecalculated({ selectedTransactions }),
     );
@@ -52,13 +56,13 @@ function TransactionsTableActionButtons({
   return (
     <div className="flex w-full items-start justify-between">
       <div className="flex flex-wrap gap-4">
-        <TransactionsTableAddTransactionBtn isLoading={isLoading} />
+        <TransactionsTableAddTransactionBtn />
         {hasSelectedTransactions && (
           <Button
             variant="destructive"
             className="gap-1.5"
             disabled={isLoading}
-            onClick={handleDeleteCashflowItems}
+            onClick={handleDeleteTransactions}
           >
             <Spinner isLoading={isLoading} />
             <span className="material-symbols-outlined">delete</span>
