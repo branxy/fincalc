@@ -34,12 +34,12 @@ import { useNavigate } from "@tanstack/react-router";
 import { Route, TransactionsSearchParams } from "@/routes/transactions";
 
 import { getDBDateFromObject } from "@/lib/date-utils";
-import { transactionTypes } from "@/components/transactionsTable/cells/TransactionsTableTypeCell";
+import { transactionTypes } from "@transactions/transactionTypes";
 import {
   TransactionFilters,
   TransactionFilterNames,
 } from "@/components/transactionsTable/actions/TransactionsTableActionButtons";
-import { filterOptions } from "./filterFns";
+import { filterOptions } from "@/components/transactionsTable/actions/filters//filterFns";
 
 export interface TransactionsTableFiltersProps {
   selectedFilter: TransactionFilterNames | null;
@@ -237,11 +237,8 @@ const TransactionDateFilter = ({
         navigate({
           search: (prev) => ({
             ...prev,
-            filter:
-              (("date." +
-                getDBDateFromObject(
-                  date!,
-                )) as TransactionsSearchParams["filter"]) ?? undefined,
+            filter: ("date." +
+              getDBDateFromObject(date!)) as TransactionsSearchParams["filter"],
           }),
         });
 

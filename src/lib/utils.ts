@@ -39,6 +39,8 @@ export const sortAndFilterTransactions = (
   const { sortBy, asc, filter } = searchParams;
 
   const { pivot, pivotIndex } = assignPivot([...transactions], filter);
+  if (!pivot || !pivotIndex) return [];
+
   const pivotSortingProperty = pivot[sortBy];
   const lesserThanPivot = [],
     greaterThanPivot = [];
@@ -46,21 +48,23 @@ export const sortAndFilterTransactions = (
   for (let i = 0; i < transactions.length; i++) {
     if (i === pivotIndex) continue;
 
-    const el = transactions[i];
-    const comparedSortingProperty = el[sortBy];
-    const passesFilter = filterSingleTransaction(el, filter);
+    const transaction = transactions[i];
+
+    const comparedSortingProperty = transaction[sortBy];
+    const passesFilter = filterSingleTransaction(transaction, filter);
+
     if (!passesFilter) continue;
 
-    const pivotIsGreater = isGreater(
+    const elementIsLesserThanPivot = comparedFieldIsLesserThanPivot(
       pivotSortingProperty,
       comparedSortingProperty,
       sortBy,
     );
 
-    if (pivotIsGreater) {
-      lesserThanPivot.push(el);
+    if (elementIsLesserThanPivot) {
+      lesserThanPivot.push(transaction);
     } else {
-      greaterThanPivot.push(el);
+      greaterThanPivot.push(transaction);
     }
   }
 
@@ -74,11 +78,28 @@ export const sortAndFilterTransactions = (
   }
 };
 
+type AssignPivotReturnType =
+  | {
+      pivot: Transaction;
+      pivotIndex: number;
+    }
+  | {
+      pivot: null;
+      pivotIndex: null;
+    };
+
 const assignPivot = (
   transactions: Transactions,
   filter: TransactionsSearchParams["filter"],
-) => {
-  const middleIndex = Math.floor(transactions.length / 2) - 1;
+): AssignPivotReturnType => {
+  if (!transactions.length) {
+    return {
+      pivot: null,
+      pivotIndex: null,
+    };
+  }
+
+  const middleIndex = Math.floor(transactions.length / 2);
   const pivotCandidate = transactions[middleIndex];
 
   const passesFilter = filterSingleTransaction(pivotCandidate, filter);
@@ -94,18 +115,25 @@ const assignPivot = (
   }
 };
 
-const isGreater = (
+const comparedFieldIsLesserThanPivot = (
   pivot: Transaction[TSortBy],
   comparedField: Transaction[TSortBy],
   sortBy: TSortBy,
 ): boolean => {
   switch (sortBy) {
     case "amount":
-      return pivot > comparedField;
+      return comparedField < pivot;
     case "date":
+      if (typeof pivot === "string" && typeof comparedField === "string") {
+        return comparedField < pivot;
+      } else {
+        throw new Error(
+          `Unexpected type of sorting fields: ${typeof pivot} and ${typeof comparedField}`,
+        );
+      }
     case "type":
       if (typeof pivot === "string" && typeof comparedField === "string") {
-        return Boolean(pivot.localeCompare(comparedField) > 1);
+        return comparedField.localeCompare(pivot) < 0;
       } else {
         throw new Error(
           `Unexpected type of sorting fields: ${typeof pivot} and ${typeof comparedField}`,
@@ -120,7 +148,9 @@ export const filterSingleTransaction = (
   transaction: Transaction,
   filter: TransactionsSearchParams["filter"],
 ): boolean => {
-  const [key, value] = filter!.split(".");
+  if (!filter) return true;
+
+  const [key, value] = filter.split(".");
   switch (key) {
     case "title":
       return includesString(transaction.title, value);

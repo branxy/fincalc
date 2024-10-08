@@ -1,5 +1,4 @@
 import FormError from "@/components/form-error";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +15,7 @@ import {
 
 import { useAppDispatch, useTransactionTemplateFormError } from "@/lib/hooks";
 import { transactionTemplateAdded } from "@/features/transaction-templates/transactionTemplateSlice";
+import { transactionTypes } from "@transactions/transactionTypes";
 
 import {
   Transaction,
@@ -24,7 +24,6 @@ import {
 } from "@/features/types";
 
 import { Fragment, useState } from "react";
-import { transactionTypes } from "@/components/transactionsTable/cells/TransactionsTableTypeCell";
 
 interface AddTransactionTemplateFormProps {
   setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;

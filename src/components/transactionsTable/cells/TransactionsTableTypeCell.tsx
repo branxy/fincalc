@@ -1,7 +1,4 @@
 import EditCellButton from "@/components/transactionsTable/cells/EditCellButton";
-import { Transaction } from "@/features/types";
-import { ReturnWithoutCellState, useEditTableCell } from "@/lib/hooks";
-
 import {
   Select,
   SelectContent,
@@ -14,7 +11,11 @@ import {
   SelectScrollUpButton,
   SelectScrollDownButton,
 } from "@/components/ui/select";
-import { transactionTypeChangedAndPeriodsRecalculated } from "@/features/transactions/transactionsSlice";
+
+import { ReturnWithoutCellState, useEditTableCell } from "@/lib/hooks";
+import { transactionTypes } from "@transactions/transactionTypes";
+
+import type { Transaction } from "@/features/types";
 import { Fragment } from "react/jsx-runtime";
 
 interface TransactionsTableTypeCellProps {
@@ -22,34 +23,17 @@ interface TransactionsTableTypeCellProps {
   type: Transaction["type"];
 }
 
-export const transactionTypes: Transaction["type"][][] = [
-  ["payment/fixed", "payment/variable"],
-  ["income/profit", "income/stock", "income/forward-payment"],
-  ["compensation/stock", "compensation/forward-payment"],
-];
-
 function TransactionsTableTypeCell({
   transactionId,
   type,
 }: TransactionsTableTypeCellProps) {
-  const [
-    isEditing,
-    setIsEditing,
-    isHovered,
-    setIsHovered,
-    finishEditing,
-    dispatch,
-  ] = useEditTableCell() as ReturnWithoutCellState;
+  const [isEditing, setIsEditing, isHovered, setIsHovered, finishEditing] =
+    useEditTableCell() as ReturnWithoutCellState;
 
   function finishEditingAndSave(newType: Transaction["type"]) {
     finishEditing();
     if (type !== newType) {
-      dispatch(
-        transactionTypeChangedAndPeriodsRecalculated({
-          transactionId,
-          newType,
-        }),
-      );
+      // change transaction type
     }
   }
 

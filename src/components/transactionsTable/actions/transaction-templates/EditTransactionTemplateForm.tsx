@@ -20,13 +20,14 @@ import {
   UpdateTransactionTemplate,
 } from "@/features/transaction-templates/transactionTemplateSlice";
 
+import { transactionTypes } from "@transactions/transactionTypes";
+
 import {
   Transaction,
   TTransactionTemplate,
   zTransactionTemplate,
 } from "@/features/types";
 import { Fragment, useState } from "react";
-import { transactionTypes } from "@/components/transactionsTable/cells/TransactionsTableTypeCell";
 
 export interface EditTransactionTemplateFormProps {
   template: TTransactionTemplate;

@@ -7,6 +7,7 @@
     "lib": ["es2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "esModuleInterop": true,
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -27,7 +28,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@periods/*": ["./src/features/periods/*"],
-      "@transactions/*": ["src/features/transactions/*"]
+      "@transactions/*": ["./src/features/transactions/*"]
     }
   },
   "include": ["src"]

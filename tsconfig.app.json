@@ -27,7 +27,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@periods/*": ["./src/features/periods/*"],
-      "@transactions/*": ["src/features/transactions/*"]
+      "@transactions/*": ["./src/features/transactions/*"]
     }
   },
   "include": ["src"]
