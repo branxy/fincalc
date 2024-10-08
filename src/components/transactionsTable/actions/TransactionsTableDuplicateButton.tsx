@@ -7,20 +7,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { type TSelectedTransactions, useAppSelector } from "@/lib/hooks";
+import { type TSelectedTransactions } from "@/lib/hooks";
 
 export interface TransactionsTableDuplicateButtonProps {
   selectedTransactions: TSelectedTransactions;
 }
 
 function TransactionsTableDuplicateButton({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   selectedTransactions,
 }: TransactionsTableDuplicateButtonProps) {
-  const transactionsStatus = useAppSelector((state) => state.cashflow.status);
-  const isLoading = transactionsStatus === "loading";
-
   const duplicateTransaction = () => {
-    dispatch(transactionDuplicated({ transactionId: selectedTransactions[0] }));
+    // RTKQ mutation
   };
 
   return (
@@ -29,6 +27,7 @@ function TransactionsTableDuplicateButton({
         <TooltipTrigger asChild>
           <Button
             onClick={duplicateTransaction}
+            //@ts-expect-error not implemented yet
             disabled={isLoading}
             className="flex-col"
           >

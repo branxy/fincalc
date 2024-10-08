@@ -4,11 +4,7 @@ import TransactionsTableAmountCell from "@/components/transactionsTable/cells/Tr
 import TransactionsTableTitleCell from "@/components/transactionsTable/cells/TransactionsTableTitleCell";
 import EndBalance from "@/components/transactionsTable/cells/EndBalance";
 
-import {
-  TSelectedTransactions,
-  useAppDispatch,
-  useAppSelector,
-} from "@/lib/hooks";
+import { TSelectedTransactions } from "@/lib/hooks";
 
 import { Transaction } from "@/features/types";
 import { MarkedTransactions } from "@/lib/utils";
@@ -40,13 +36,10 @@ function TransactionsTableRow({
   handleSelectTransaction,
   handleUpdateLastSelectedTransactionRef,
 }: TransactionsTableRowProps) {
-  const periodsStatus = useAppSelector((state) => state.periods.status);
-  const dispatch = useAppDispatch();
   const rowRef = useRef<HTMLTableRowElement>(null!);
   const isSelectedRow = Boolean(
-      selectedTransactions?.find((id) => id === transactionId),
-    ),
-    isLoading = periodsStatus === "loading";
+    selectedTransactions?.find((id) => id === transactionId),
+  );
 
   const handleDuplicateTransaction = (
     e: React.KeyboardEvent<HTMLTableRowElement>,
@@ -55,11 +48,13 @@ function TransactionsTableRow({
       return;
 
     e.preventDefault();
-    dispatch(
-      transactionDuplicated({
-        transactionId: selectedTransactions[0],
-      }),
-    );
+    // RTKQ mutation
+
+    // dispatch(
+    //   transactionDuplicated({
+    //     transactionId: selectedTransactions[0],
+    //   }),
+    // );
   };
 
   return (
@@ -97,9 +92,7 @@ function TransactionsTableRow({
         date={date}
         columnSpan={periodEndBalance ? 1 : 2}
       />
-      {periodEndBalance && (
-        <EndBalance periodEndBalance={periodEndBalance} isLoading={isLoading} />
-      )}
+      {periodEndBalance && <EndBalance periodEndBalance={periodEndBalance} />}
     </tr>
   );
 }

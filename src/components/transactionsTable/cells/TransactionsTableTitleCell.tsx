@@ -2,7 +2,6 @@ import EditCellButton from "@/components/transactionsTable/cells/EditCellButton"
 
 import { Input } from "@/components/ui/input";
 
-import { transactionTitleChanged } from "@/features/transactions/transactionsSlice";
 import { Transaction } from "@/features/types";
 import { ReturnWithCellState, useEditTableCell } from "@/lib/hooks";
 
@@ -22,7 +21,6 @@ function TransactionsTableTitleCell({
     isHovered,
     setIsHovered,
     finishEditing,
-    dispatch,
   ] = useEditTableCell(title) as ReturnWithCellState<string>;
 
   function handleCellFormSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -32,16 +30,15 @@ function TransactionsTableTitleCell({
 
   function finishEditingAndSave() {
     finishEditing();
-    if (title !== titleState) dispatchAction();
-  }
-
-  function dispatchAction() {
-    dispatch(
-      transactionTitleChanged({
-        transactionId,
-        newTitle: titleState.toString(),
-      }),
-    );
+    if (title !== titleState) {
+      // RTKQ mutation
+      // dispatch(
+      //   transactionTitleChanged({
+      //     transactionId,
+      //     newTitle: titleState.toString(),
+      //   }),
+      // );
+    }
   }
 
   return (

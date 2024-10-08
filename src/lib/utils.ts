@@ -2,11 +2,8 @@ import { supabase } from "@/db/supabaseClient";
 
 import {
   getCurrentWeek,
-  getDBStartDate,
-  getPreviousPeriodAndCurrentWeek,
   getPreviousPeriodByDate,
   getTodayDate,
-  getYearAndMonthNumber,
 } from "@/lib/date-utils";
 import { twMerge } from "tailwind-merge";
 import { includesString } from "@/components/transactionsTable/actions/filters/filterFns";
@@ -241,68 +238,29 @@ export const performAuthCheck = async () => {
 };
 
 type CreateTransactionProps = {
-  transactionTitle?: Transaction["title"];
-  transactionAmount?: Transaction["amount"];
-  transactionDate?: Transaction["date"];
-  transactionType?: Transaction["type"];
+  title?: Transaction["title"];
+  amount?: Transaction["amount"];
+  date?: Transaction["date"];
+  type?: Transaction["type"];
 };
 
 export const createTransaction = ({
-  transactionTitle,
-  transactionAmount,
-  transactionDate,
-  transactionType,
+  title,
+  amount,
+  date,
+  type,
 }: CreateTransactionProps): Pick<
   Transaction,
   "title" | "amount" | "type" | "date"
 > => {
   const newTransaction = {
-    type: transactionType ?? "payment/fixed",
-    title: transactionTitle ?? "New transaction",
-    amount: transactionAmount ?? 0,
-    date: transactionDate ?? getTodayDate(),
+    type: type ?? "payment/fixed",
+    title: title ?? "New transaction",
+    amount: amount ?? 0,
+    date: date ?? getTodayDate(),
   };
 
   return newTransaction;
-};
-
-export const createPeriod = (getState: () => unknown): FinancePeriod => {
-  const {
-      periods: { entities },
-    } = getState() as RootState,
-    periods = Object.values(entities);
-
-  const [prevPeriod, currentWeek] = getPreviousPeriodAndCurrentWeek(periods);
-  const [year, month] = getYearAndMonthNumber(),
-    currentWeekStartDate = getDBStartDate(year, month, currentWeek.startDate);
-
-  let newPeriod: FinancePeriod;
-
-  if (prevPeriod) {
-    const { balance_end, stock_end, forward_payments_end } = prevPeriod;
-
-    newPeriod = {
-      start_date: currentWeekStartDate,
-      balance_start: balance_end,
-      balance_end,
-      stock_start: stock_end,
-      stock_end,
-      forward_payments_start: forward_payments_end,
-      forward_payments_end,
-    };
-  } else {
-    newPeriod = {
-      start_date: currentWeekStartDate,
-      balance_start: 0,
-      balance_end: 0,
-      stock_start: 0,
-      stock_end: 0,
-      forward_payments_start: 0,
-      forward_payments_end: 0,
-    };
-  }
-
-  return newPeriod;
 };
 
 export const createPeriodWithDate = (
@@ -343,4 +301,13 @@ export const createPeriodWithDate = (
   }
 
   return newPeriod;
+};
+
+export const transactionIsWithinPeriodByDate = (
+  transactionDate: Transaction["date"],
+  periodStartDate: FinancePeriod["start_date"],
+) => {
+  return (
+    transactionDate >= periodStartDate && transactionDate <= periodStartDate + 6
+  );
 };

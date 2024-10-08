@@ -12,11 +12,11 @@ export const fetchTransactions = async () => {
 };
 
 export async function uploadTransaction(
-  payment: Omit<Transaction, "id" | "user_id" | "date_created">,
+  transaction: Omit<Transaction, "id" | "user_id" | "date_created">,
 ) {
   const { data, error } = await supabase
     .from("transactions")
-    .insert(payment)
+    .insert(transaction)
     .select();
 
   if (error?.message) {

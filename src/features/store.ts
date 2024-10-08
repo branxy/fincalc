@@ -1,6 +1,4 @@
 import { authSlice } from "@/features/auth/authSlice";
-import { transactionsSlice } from "@/features/transactions/transactionsSlice";
-import { periodsSlice } from "@/features/periods/periodsSlice";
 import { transactionTemplateSlice } from "@/features/transaction-templates/transactionTemplateSlice";
 import { apiSlice } from "@/features/api/apiSlice";
 
@@ -13,8 +11,6 @@ import {
 
 const rootReducer = combineSlices(
   authSlice,
-  periodsSlice,
-  transactionsSlice,
   transactionTemplateSlice,
   apiSlice,
 );

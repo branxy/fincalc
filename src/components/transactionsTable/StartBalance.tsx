@@ -2,12 +2,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
-import {
-  selectFirstPeriod,
-  startBalanceChanged,
-} from "@/features/periods/periodsSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-
 import { useState } from "react";
 
 export type UpdatedFormFields = {
@@ -21,14 +15,14 @@ interface StartBalanceProps {
 }
 
 function StartBalance({ setOpen }: StartBalanceProps) {
-  const { balance_start, stock_start, forward_payments_start } = useAppSelector(
-    (state) => selectFirstPeriod(state),
-  );
+  // RTKQ query, select first period
+
+  // const { balance_start, stock_start, forward_payments_start } = useAppSelector(
+  //   (state) => selectFirstPeriod(state),
+  // );
   const [newStartBalance, setNewStartBalance] = useState(balance_start);
   const [newStock, setNewStock] = useState(stock_start);
   const [newFP, setNewFP] = useState(forward_payments_start);
-
-  const dispatch = useAppDispatch();
 
   const onFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,7 +43,8 @@ function StartBalance({ setOpen }: StartBalanceProps) {
 
     const hasUpdates = Object.keys(updatedFields).length > 0;
     if (hasUpdates) {
-      dispatch(startBalanceChanged({ newBalance: updatedFields }));
+      // RTKQ mutation
+      // dispatch(startBalanceChanged({ newBalance: updatedFields }));
     }
 
     setOpen(false);

@@ -5,10 +5,6 @@ import { X } from "lucide-react";
 
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
-  selectTransactionsStatus,
-  transactionAdded,
-} from "@/features/transactions/transactionsSlice";
-import {
   selectTransactionTemplateById,
   transactionTemplateDeleted,
 } from "@/features/transaction-templates/transactionTemplateSlice";
@@ -27,6 +23,7 @@ const TransactionTemplate = forwardRef<
 >((props, ref) => {
   const { id, ...rest } = props;
   const t = useAppSelector((state) => selectTransactionTemplateById(state, id));
+  //@ts-expect-error Old Redux code, to be removed with RTKQ
   const status = useAppSelector(selectTransactionsStatus);
   const [currencySign] = useContext(CurrencyContext)!;
   const dispatch = useAppDispatch();
@@ -36,15 +33,10 @@ const TransactionTemplate = forwardRef<
       t.title.length >= 11 ? t.title.slice(0, 8) + "..." : t.title;
 
   const handleAddTransactionFromTemplate = () => {
+    //@ts-expect-error implement RTKQ mutation
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { title, amount, date, type } = t;
-    dispatch(
-      transactionAdded({
-        transactionTitle: title,
-        transactionAmount: amount,
-        transactionDate: date,
-        transactionType: type,
-      }),
-    );
+    // add transaction
   };
 
   return (

@@ -1,14 +1,9 @@
 import Navbar from "@/components/navbar";
 import { Toaster } from "sonner";
 
-import { store } from "@/features/store";
-import { initApp } from "@/features/periods/periodsSlice";
-
 import { Outlet } from "@tanstack/react-router";
 
 import React from "react";
-
-store.dispatch(initApp());
 
 const TanStackRouterDevtools =
   import.meta.env.VITE_ENV === "development"

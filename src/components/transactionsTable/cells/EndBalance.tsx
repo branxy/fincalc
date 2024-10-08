@@ -1,5 +1,3 @@
-import { LoaderCircle } from "lucide-react";
-
 import { useContext } from "react";
 import { CurrencyContext } from "@/components/providers";
 
@@ -8,21 +6,16 @@ import { cn, MarkedTransactions } from "@/lib/utils";
 
 interface EndBalanceProps {
   periodEndBalance: MarkedTransactions[Transaction["id"]] | null;
-  isLoading: boolean;
 }
 
-function EndBalance({ periodEndBalance, isLoading }: EndBalanceProps) {
+function EndBalance({ periodEndBalance }: EndBalanceProps) {
   const [currencySign] = useContext(CurrencyContext)!;
   if (!periodEndBalance) return;
 
   const { endBalance, endStock, endForwardPayments } = periodEndBalance,
     balanceIsNegative = endBalance < 0;
 
-  return isLoading ? (
-    <td>
-      <LoaderCircle className="animate-spin" />
-    </td>
-  ) : (
+  return (
     <td>
       <span className="block">
         End&nbsp;balance:&nbsp;

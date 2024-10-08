@@ -10,13 +10,10 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 
 import {
-  ReturnWithoutCellState,
-  useAppDispatch,
-  useEditTableCell,
+  ReturnWithoutCellState, useEditTableCell
 } from "@/lib/hooks";
 
 import { cn } from "@/lib/utils";
-import { getDBDateFromObject } from "@/lib/date-utils";
 import { Transaction } from "@/features/types";
 import { useState } from "react";
 
@@ -74,17 +71,17 @@ function TransactionsTableDateCellDatepicker({
 }) {
   const [datepickerOpen, setDatepickerOpen] = useState(true);
 
-  const dispatch = useAppDispatch();
-
   const handleSelectDate = (newDate: Date | undefined) => {
     if (newDate) {
       finishEditing();
-      dispatch(
-        transactionDateChangedAndPeriodsRecalculated({
-          transactionId,
-          newDate: getDBDateFromObject(newDate),
-        }),
-      );
+      // RTKQ mutation
+
+      // dispatch(
+      //   transactionDateChangedAndPeriodsRecalculated({
+      //     transactionId,
+      //     newDate: getDBDateFromObject(newDate),
+      //   }),
+      // );
     }
   };
 

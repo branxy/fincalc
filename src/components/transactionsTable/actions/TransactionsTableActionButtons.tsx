@@ -6,11 +6,7 @@ import TableInfo from "@/components/transactionsTable/TableInfo";
 import { Button } from "@/components/ui/button";
 import Spinner from "@/components/ui/spinner";
 
-import {
-  TSelectedTransactions,
-  useAppDispatch,
-  useAppSelector,
-} from "@/lib/hooks";
+import { TSelectedTransactions } from "@/lib/hooks";
 
 import { filterOptions } from "@/components/transactionsTable/actions/filters/filterFns";
 
@@ -33,11 +29,6 @@ function TransactionsTableActionButtons({
   selectedTransactions,
   setSelectedTransactions,
 }: TransactionsTableActionButtonsProps) {
-  const transactionsStatus = useAppSelector((state) => state.cashflow.status);
-  const isLoading = transactionsStatus === "loading";
-
-  const dispatch = useAppDispatch();
-
   const { filter } = useSearch();
 
   const hasSelectedTransactions = selectedTransactions.length > 0,
@@ -47,9 +38,7 @@ function TransactionsTableActionButtons({
     useState<TransactionFilterNames | null>(null);
 
   const handleDeleteTransactions = () => {
-    dispatch(
-      deletedTransactionsAndPeriodsRecalculated({ selectedTransactions }),
-    );
+    // RTKQ mutation
     setSelectedTransactions([]);
   };
 
@@ -61,10 +50,14 @@ function TransactionsTableActionButtons({
           <Button
             variant="destructive"
             className="gap-1.5"
+            //@ts-expect-error will be fixed with RTKQ
             disabled={isLoading}
             onClick={handleDeleteTransactions}
           >
-            <Spinner isLoading={isLoading} />
+            <Spinner
+              //@ts-expect-error will be fixed with RTKQ
+              isLoading={isLoading}
+            />
             <span className="material-symbols-outlined">delete</span>
           </Button>
         )}

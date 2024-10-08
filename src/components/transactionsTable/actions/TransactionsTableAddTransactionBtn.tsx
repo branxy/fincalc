@@ -14,9 +14,9 @@ import { ChevronDown } from "lucide-react";
 
 import { useAppSelector } from "@/lib/hooks";
 import { selectAllTransactionTemplates } from "@/features/transaction-templates/transactionTemplateSlice";
+import { useAddTransactionMutation } from "@/features/api/apiSlice";
 
 import { useState } from "react";
-import { useAddTransactionMutation } from "@/features/api/apiSlice";
 import { toast } from "sonner";
 
 function TransactionsTableAddTransactionBtn() {
@@ -28,7 +28,7 @@ function TransactionsTableAddTransactionBtn() {
 
   const handleAddTransaction = async () => {
     try {
-      await addTransaction({}).unwrap();
+      await addTransaction().unwrap();
     } catch (e) {
       console.error("Error in handleAddTransaction: ", e);
       toast.error("Failed to add transaction");

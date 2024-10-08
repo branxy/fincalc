@@ -1,4 +1,4 @@
-import { getPeriodWeekByDate } from "@/lib/date-utils";
+import { getMonths, getPeriodWeekByDate } from "@/lib/date-utils";
 
 import type {
   FinancePeriod,
@@ -6,6 +6,7 @@ import type {
   Transaction,
   Transactions,
 } from "@/features/types";
+import { transactionIsWithinPeriodByDate } from "@/lib/utils";
 
 export const getPeriodsFromTransactions = (
   transactions: Transactions,
@@ -193,3 +194,40 @@ export type Months = {
     saved: number;
   };
 };
+
+export function getPeriodsByMonth(
+  periods: Periods,
+  transactions: Transactions,
+) {
+  const sortedPeriods = periods.toSorted((a, b) =>
+    a.start_date.localeCompare(b.start_date),
+  );
+  const monthNames = getMonths();
+  const months: Months = {};
+
+  for (const p of sortedPeriods) {
+    const periodMonthNumber = new Date(p.start_date).getMonth(),
+      periodMonthName = monthNames[periodMonthNumber],
+      existingMonth = months[periodMonthName],
+      periodTransactions = transactions.filter((t) =>
+        transactionIsWithinPeriodByDate(t.date, p.start_date),
+      ),
+      transactionsSum = sumTransactionsByCategory(periodTransactions);
+
+    if (existingMonth) {
+      existingMonth.balance = p.balance_end;
+      existingMonth.earned += transactionsSum.earned;
+      existingMonth.spent += transactionsSum.spent;
+      existingMonth.saved += transactionsSum.saved;
+    } else {
+      months[periodMonthName] = {
+        balance: p.balance_end,
+        earned: transactionsSum.earned,
+        spent: transactionsSum.spent,
+        saved: transactionsSum.saved,
+      };
+    }
+  }
+
+  return months;
+}

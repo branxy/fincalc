@@ -1,8 +1,6 @@
 import EditCellButton from "@/components/transactionsTable/cells/EditCellButton";
 import { Input } from "@/components/ui/input";
 
-import { transactionAmountChangedAndPeriodsRecalculated } from "@/features/transactions/transactionsSlice";
-
 import { Transaction } from "@/features/types";
 
 import { ReturnWithCellState, useEditTableCell } from "@/lib/hooks";
@@ -25,7 +23,6 @@ function TransactionsTableAmountCell({
     isHovered,
     setIsHovered,
     finishEditing,
-    dispatch,
   ] = useEditTableCell(amount) as ReturnWithCellState<number>;
   const [currencySign] = useContext(CurrencyContext)!;
 
@@ -40,12 +37,13 @@ function TransactionsTableAmountCell({
   }
 
   function dispatchAction() {
-    dispatch(
-      transactionAmountChangedAndPeriodsRecalculated({
-        transactionId,
-        newAmount: amountState,
-      }),
-    );
+    // RTKQ mutation
+    // dispatch(
+    //   transactionAmountChangedAndPeriodsRecalculated({
+    //     transactionId,
+    //     newAmount: amountState,
+    //   }),
+    // );
   }
 
   return (

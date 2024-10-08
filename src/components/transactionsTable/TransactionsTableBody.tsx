@@ -1,7 +1,8 @@
 import { Transaction, Transactions } from "@/features/types";
 import TransactionsTableRow from "./TransactionsTableRow";
 import { TSelectedTransactions } from "@/lib/hooks";
-import { type MarkedTransactions } from "@/lib/utils";
+import { cn, type MarkedTransactions } from "@/lib/utils";
+import { useGetTransactionsQuery } from "@/features/api/apiSlice";
 
 export interface TransactionsTableBodyProps {
   transactions: Transactions;
@@ -20,10 +21,12 @@ export function TransactionsTableBody({
   handleSelectTransaction,
   handleUpdateLastSelectedTransactionRef,
 }: TransactionsTableBodyProps) {
+  const { isFetching } = useGetTransactionsQuery();
   const tableContent = transactions.map((t) => {
     const transactionPeriodStats = periodsStats[t.id] ?? null;
     return (
       <TransactionsTableRow
+        key={t.id}
         transactionType={t.type}
         transactionId={t.id}
         title={t.title}
@@ -39,5 +42,13 @@ export function TransactionsTableBody({
     );
   });
 
-  return <tbody>{tableContent}</tbody>;
+  return (
+    <tbody
+      className={cn({
+        "opacity-50": isFetching,
+      })}
+    >
+      {tableContent}
+    </tbody>
+  );
 }
