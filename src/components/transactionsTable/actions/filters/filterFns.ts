@@ -7,5 +7,5 @@ export const includesString = (
   filterValue: string,
 ) => {
   const search = transactionTitle.toString()?.toLowerCase();
-  return search.includes(filterValue);
+  return search.includes(filterValue.toString()?.toLowerCase());
 };
